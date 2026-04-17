@@ -8,8 +8,14 @@ function slashTitle(title: string) {
 export default function Projects() {
   const sectionRef = useRef<HTMLElement>(null);
   const stageRef = useRef<HTMLDivElement>(null);
+  const visualRef = useRef<HTMLDivElement>(null);
+  const trackRef = useRef<HTMLDivElement>(null);
   const [activeIndex, setActiveIndex] = useState(0);
-  const [scrollTrackProgress, setScrollTrackProgress] = useState(0);
+  const targetProgressRef = useRef(0);
+  const displayedProgressRef = useRef(0);
+  const rafRef = useRef<number | null>(null);
+  const driftKickRef = useRef(0);
+  const pulseLockRef = useRef(false);
 
   const steps = Math.max(1, projects.length - 1);
   const active = projects[activeIndex];
@@ -30,7 +36,7 @@ export default function Projects() {
       const normalized = scrolled / totalScrollable;
       const rawIndexProgress = normalized * steps;
 
-      setScrollTrackProgress(rawIndexProgress);
+      targetProgressRef.current = rawIndexProgress;
       setActiveIndex(prev => {
         const next = Math.max(0, Math.min(projects.length - 1, Math.floor(rawIndexProgress + 0.5)));
         return prev === next ? prev : next;
@@ -45,6 +51,32 @@ export default function Projects() {
       window.removeEventListener('resize', onScroll);
     };
   }, [steps]);
+
+  useEffect(() => {
+    const tick = () => {
+      const target = targetProgressRef.current;
+      const delta = target - displayedProgressRef.current;
+      const kick = driftKickRef.current;
+      displayedProgressRef.current += delta * 0.09 + kick;
+      driftKickRef.current *= 0.84;
+      if (Math.abs(delta) < 0.0008 && Math.abs(driftKickRef.current) < 0.0008) {
+        displayedProgressRef.current = target;
+      }
+      displayedProgressRef.current = Math.max(0, Math.min(steps, displayedProgressRef.current));
+
+      if (trackRef.current) {
+        trackRef.current.style.transform = `translate3d(0, -${displayedProgressRef.current * 100}%, 0)`;
+      }
+
+      rafRef.current = requestAnimationFrame(tick);
+    };
+
+    rafRef.current = requestAnimationFrame(tick);
+    return () => {
+      if (rafRef.current) cancelAnimationFrame(rafRef.current);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const goTo = (idx: number) => {
     const section = sectionRef.current;
@@ -62,9 +94,38 @@ export default function Projects() {
     window.scrollTo({ top: targetScroll, behavior: 'smooth' });
   };
 
-  const fractionalProgress =
-    scrollTrackProgress - Math.floor(Math.max(0, Math.min(steps, scrollTrackProgress)));
-  const imageScale = 1 + 0.045 * Math.sin(Math.PI * fractionalProgress);
+  useEffect(() => {
+    const section = sectionRef.current;
+    if (!section) return;
+
+    const onWheel = (e: WheelEvent) => {
+      if (Math.abs(e.deltaY) < 10) return;
+
+      const rect = section.getBoundingClientRect();
+      const inWorkViewport = rect.top <= window.innerHeight * 0.25 && rect.bottom >= window.innerHeight * 0.75;
+      if (!inWorkViewport) return;
+
+      const direction = e.deltaY > 0 ? 1 : -1;
+      driftKickRef.current += direction * 0.03;
+      driftKickRef.current = Math.max(-0.08, Math.min(0.08, driftKickRef.current));
+
+      if (visualRef.current && !pulseLockRef.current) {
+        pulseLockRef.current = true;
+        const el = visualRef.current;
+        el.classList.remove('projects-visual-scroll-pulse');
+        // Force reflow so animation can restart cleanly.
+        void el.offsetWidth;
+        el.classList.add('projects-visual-scroll-pulse');
+        window.setTimeout(() => {
+          el.classList.remove('projects-visual-scroll-pulse');
+          pulseLockRef.current = false;
+        }, 420);
+      }
+    };
+
+    window.addEventListener('wheel', onWheel, { passive: true });
+    return () => window.removeEventListener('wheel', onWheel);
+  }, []);
 
   return (
     <section
@@ -123,12 +184,14 @@ export default function Projects() {
 
             <div className="projects-visual-wrap">
               <div
+                ref={visualRef}
                 className="projects-visual-scroll"
-                style={{ transform: `translateY(10px) scale(${imageScale.toFixed(4)})` }}
+                style={{ transform: 'translateY(10px)' }}
               >
                 <div
+                  ref={trackRef}
                   className="projects-visual-track"
-                  style={{ transform: `translate3d(0, -${scrollTrackProgress * 100}%, 0)` }}
+                  style={{ transform: 'translate3d(0, 0, 0)' }}
                 >
                   {projects.map(project => (
                     <article key={project.id} className="projects-visual-item">
