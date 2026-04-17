@@ -209,28 +209,39 @@ body {
   border-color: rgba(190, 213, 255, 0.3);
 }
 
-.projects-scroller::-webkit-scrollbar {
-  display: none;
+.projects-monopo {
+  min-height: calc(100vh + (var(--projects-steps, 1) * 40vh));
+  padding-top: 0;
+  padding-bottom: 0;
 }
 
-.projects-monopo {
-  min-height: 170vh;
+.projects-inner {
+  min-height: inherit;
+  display: flex;
+  flex-direction: column;
 }
 
 .projects-stage {
   position: sticky;
-  top: 84px;
-  min-height: min(84vh, 900px);
+  top: 0;
+  min-height: 100vh;
+  padding-top: clamp(14px, 2.1vh, 26px);
+  padding-bottom: clamp(14px, 2.4vh, 28px);
   display: flex;
   flex-direction: column;
-  justify-content: center;
+  justify-content: space-between;
+}
+
+.projects-header {
+  margin-bottom: clamp(12px, 2.2vh, 24px);
 }
 
 .projects-layout {
   display: grid;
-  grid-template-columns: 34px minmax(220px, 0.7fr) minmax(0, 1.45fr);
+  grid-template-columns: 34px minmax(220px, 0.68fr) minmax(0, 1.5fr);
   gap: clamp(18px, 2.5vw, 44px);
   align-items: center;
+  flex: 1;
 }
 
 .projects-rail {
@@ -302,7 +313,7 @@ body {
 }
 
 .projects-tagline span::after {
-  content: "•";
+  content: "|";
   margin-left: 10px;
 }
 
@@ -313,27 +324,32 @@ body {
 
 .projects-visual-wrap {
   position: relative;
+  align-self: stretch;
 }
 
-.projects-visual-card {
+.projects-visual-scroll {
   border: 1px solid rgba(255, 255, 255, 0.14);
   background: rgba(8, 12, 25, 0.36);
   overflow: hidden;
-  min-height: min(66vh, 760px);
+  aspect-ratio: 16 / 9;
+  width: 100%;
+  max-height: min(64vh, 700px);
 }
 
-.projects-image-top {
-  height: 47%;
-  min-height: 240px;
+.projects-visual-track {
+  height: 100%;
+  width: 100%;
+  will-change: transform;
+  transition: transform 0.16s linear;
 }
 
-.projects-image-bottom {
-  height: 53%;
-  min-height: 260px;
+.projects-visual-item {
+  height: 100%;
+  width: 100%;
+  display: block;
 }
 
-.projects-image-top img,
-.projects-image-bottom img {
+.projects-visual-item img {
   width: 100%;
   height: 100%;
   object-fit: cover;
@@ -341,7 +357,7 @@ body {
 }
 
 .projects-bottom {
-  margin-top: 18px;
+  margin-top: clamp(10px, 1.8vh, 18px);
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -529,18 +545,13 @@ body {
     max-width: none;
   }
 
-  .projects-visual-card {
-    min-height: auto;
-  }
-
-  .projects-image-top,
-  .projects-image-bottom {
-    min-height: 150px;
+  .projects-visual-scroll {
+    max-height: none;
   }
 
   .projects-bottom {
     flex-wrap: wrap;
     justify-content: center;
   }
-
 }
+
