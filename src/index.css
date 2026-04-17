@@ -210,7 +210,7 @@ body {
 }
 
 .projects-monopo {
-  min-height: calc(100vh + (var(--projects-steps, 1) * 40vh));
+  min-height: calc(100vh + (var(--projects-steps, 1) * 44vh));
   padding-top: 0;
   padding-bottom: 0;
 }

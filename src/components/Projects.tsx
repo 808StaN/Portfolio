@@ -8,6 +8,7 @@ function slashTitle(title: string) {
 export default function Projects() {
   const sectionRef = useRef<HTMLElement>(null);
   const headerRef = useRef<HTMLDivElement>(null);
+  const stageRef = useRef<HTMLDivElement>(null);
   const [activeIndex, setActiveIndex] = useState(0);
   const [scrollTrackProgress, setScrollTrackProgress] = useState(0);
 
@@ -18,13 +19,13 @@ export default function Projects() {
     const onScroll = () => {
       const section = sectionRef.current;
       const header = headerRef.current;
-      if (!section || !header) return;
+      const stage = stageRef.current;
+      if (!section || !header || !stage) return;
 
       const sectionRect = section.getBoundingClientRect();
-      const headerRect = header.getBoundingClientRect();
       const sectionTopDoc = window.scrollY + sectionRect.top;
-      const headerTopDoc = window.scrollY + headerRect.top;
-      const startY = headerTopDoc;
+      const stagePaddingTop = Number.parseFloat(window.getComputedStyle(stage).paddingTop || '0') || 0;
+      const startY = sectionTopDoc + stagePaddingTop;
       const endY = sectionTopDoc + section.offsetHeight - window.innerHeight;
       const totalScrollable = Math.max(1, endY - startY);
       const scrolled = Math.min(Math.max(window.scrollY - startY, 0), totalScrollable);
@@ -50,14 +51,14 @@ export default function Projects() {
   const goTo = (idx: number) => {
     const section = sectionRef.current;
     const header = headerRef.current;
-    if (!section || !header) return;
+    const stage = stageRef.current;
+    if (!section || !header || !stage) return;
     const clamped = Math.max(0, Math.min(projects.length - 1, idx));
 
     const sectionRect = section.getBoundingClientRect();
-    const headerRect = header.getBoundingClientRect();
     const sectionTopDoc = window.scrollY + sectionRect.top;
-    const headerTopDoc = window.scrollY + headerRect.top;
-    const startY = headerTopDoc;
+    const stagePaddingTop = Number.parseFloat(window.getComputedStyle(stage).paddingTop || '0') || 0;
+    const startY = sectionTopDoc + stagePaddingTop;
     const endY = sectionTopDoc + section.offsetHeight - window.innerHeight;
     const totalScrollable = Math.max(1, endY - startY);
     const targetScroll = startY + (clamped / steps) * totalScrollable;
@@ -79,7 +80,7 @@ export default function Projects() {
       />
 
       <div className="section-inner projects-inner relative z-10">
-        <div className="projects-stage">
+        <div ref={stageRef} className="projects-stage">
           <div ref={headerRef} className="projects-header">
             <div className="flex items-center gap-3 mb-5">
             <span className="section-label">Selected Work</span>
