@@ -325,6 +325,7 @@ body {
 .projects-visual-wrap {
   position: relative;
   align-self: stretch;
+  margin-top: clamp(8px, 1.2vh, 14px);
 }
 
 .projects-visual-scroll {
@@ -334,6 +335,8 @@ body {
   aspect-ratio: 16 / 9;
   width: 100%;
   max-height: min(64vh, 700px);
+  transform-origin: center center;
+  transition: transform 0.2s ease-out;
 }
 
 .projects-visual-track {

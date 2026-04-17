@@ -7,7 +7,6 @@ function slashTitle(title: string) {
 
 export default function Projects() {
   const sectionRef = useRef<HTMLElement>(null);
-  const headerRef = useRef<HTMLDivElement>(null);
   const stageRef = useRef<HTMLDivElement>(null);
   const [activeIndex, setActiveIndex] = useState(0);
   const [scrollTrackProgress, setScrollTrackProgress] = useState(0);
@@ -18,9 +17,8 @@ export default function Projects() {
   useEffect(() => {
     const onScroll = () => {
       const section = sectionRef.current;
-      const header = headerRef.current;
       const stage = stageRef.current;
-      if (!section || !header || !stage) return;
+      if (!section || !stage) return;
 
       const sectionRect = section.getBoundingClientRect();
       const sectionTopDoc = window.scrollY + sectionRect.top;
@@ -50,9 +48,8 @@ export default function Projects() {
 
   const goTo = (idx: number) => {
     const section = sectionRef.current;
-    const header = headerRef.current;
     const stage = stageRef.current;
-    if (!section || !header || !stage) return;
+    if (!section || !stage) return;
     const clamped = Math.max(0, Math.min(projects.length - 1, idx));
 
     const sectionRect = section.getBoundingClientRect();
@@ -64,6 +61,10 @@ export default function Projects() {
     const targetScroll = startY + (clamped / steps) * totalScrollable;
     window.scrollTo({ top: targetScroll, behavior: 'smooth' });
   };
+
+  const fractionalProgress =
+    scrollTrackProgress - Math.floor(Math.max(0, Math.min(steps, scrollTrackProgress)));
+  const imageScale = 1 + 0.045 * Math.sin(Math.PI * fractionalProgress);
 
   return (
     <section
@@ -81,7 +82,7 @@ export default function Projects() {
 
       <div className="section-inner projects-inner relative z-10">
         <div ref={stageRef} className="projects-stage">
-          <div ref={headerRef} className="projects-header">
+          <div className="projects-header">
             <div className="flex items-center gap-3 mb-5">
             <span className="section-label">Selected Work</span>
             <div className="flex-1 h-px" style={{ background: 'rgba(255,255,255,0.07)' }} />
@@ -111,7 +112,6 @@ export default function Projects() {
             </div>
 
             <div className="projects-meta">
-              <span className="projects-kicker">Recent Work</span>
               <h2 className="projects-title">{slashTitle(active.title)}</h2>
               <p className="projects-category">{active.category}</p>
               <div className="projects-tagline">
@@ -122,7 +122,10 @@ export default function Projects() {
             </div>
 
             <div className="projects-visual-wrap">
-              <div className="projects-visual-scroll">
+              <div
+                className="projects-visual-scroll"
+                style={{ transform: `translateY(10px) scale(${imageScale.toFixed(4)})` }}
+              >
                 <div
                   className="projects-visual-track"
                   style={{ transform: `translate3d(0, -${scrollTrackProgress * 100}%, 0)` }}
