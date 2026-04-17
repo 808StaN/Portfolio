@@ -149,14 +149,6 @@ body {
   padding-block: var(--section-space-y);
 }
 
-.section-shell-projects {
-  padding-top: 0;
-}
-
-.section-shell-projects .section-inner {
-  padding-top: clamp(18px, 3vw, 44px);
-}
-
 .section-shell::before {
   content: none;
 }

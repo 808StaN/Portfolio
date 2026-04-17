@@ -35,14 +35,6 @@ export default function Hero() {
       className="relative w-full min-h-screen flex flex-col justify-center overflow-hidden"
       aria-label="Hero"
     >
-      {/* Front-page darkening at the bottom, mirrored with next section start */}
-      <div
-        className="absolute left-0 right-0 bottom-0 h-40 md:h-52 pointer-events-none"
-        style={{
-          background: 'linear-gradient(to bottom, rgba(5,8,20,0) 0%, rgba(5,8,20,0.28) 100%)',
-        }}
-      />
-
       {/* Content */}
       <div className="hero-inner relative z-10 flex flex-col justify-between min-h-screen pt-24 md:pt-28 pb-12 md:pb-14">
         <div className="flex-1 flex flex-col justify-end pb-6 md:pb-10">

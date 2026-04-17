@@ -118,16 +118,7 @@ export default function Projects() {
   const headerInView = useInView(headerRef, { once: true, margin: '-60px' });
 
   return (
-    <section id="work" className="section-shell section-shell-projects relative overflow-hidden">
-      {/* Fade starts exactly at second section top and decays downward */}
-      <div
-        className="absolute left-0 right-0 top-0 h-40 md:h-52 pointer-events-none"
-        style={{
-          zIndex: 0,
-          background: 'linear-gradient(to bottom, rgba(5,8,20,0.28) 0%, rgba(5,8,20,0) 100%)',
-        }}
-      />
-
+    <section id="work" className="section-shell relative overflow-hidden">
       {/* Subtle gradient background */}
       <div
         className="absolute inset-0 pointer-events-none"
