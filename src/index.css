@@ -209,6 +209,10 @@ body {
   border-color: rgba(190, 213, 255, 0.3);
 }
 
+.projects-scroller::-webkit-scrollbar {
+  display: none;
+}
+
 /* Skill pill */
 .skill-pill {
   background: rgba(17, 31, 70, 0.46);

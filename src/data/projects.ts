@@ -3,6 +3,7 @@ export interface Project {
   title: string;
   description: string;
   longDescription: string;
+  image: string;
   tags: string[];
   year: string;
   status: 'live' | 'case-study' | 'experimental';
@@ -19,6 +20,7 @@ export const projects: Project[] = [
       'Manga-styled anime guessing game with singleplayer and real-time multiplayer modes.',
     longDescription:
       'Players identify anime titles from scenes, compete for points, and climb rankings in online matches.',
+    image: 'https://opengraph.githubassets.com/1/808StaN/OtakuVersus',
     tags: ['TypeScript', 'Realtime', 'Game Logic', 'Vercel'],
     year: '2026',
     status: 'live',
@@ -33,6 +35,7 @@ export const projects: Project[] = [
       'Browser + desktop DAW built with React, Web Audio API, and Electron.',
     longDescription:
       'Music production workflow with track controls, timeline editing, and cross-platform desktop deployment.',
+    image: 'https://opengraph.githubassets.com/1/808StaN/OpenStudio',
     tags: ['JavaScript', 'React', 'Web Audio API', 'Electron'],
     year: '2026',
     status: 'live',
@@ -47,6 +50,7 @@ export const projects: Project[] = [
       'Chrome extension that downloads Instagram profile images and posts as ZIP files.',
     longDescription:
       'Lightweight extension focused on quick export flow and clean UX for photos and video assets.',
+    image: 'https://opengraph.githubassets.com/1/808StaN/InstaFetch',
     tags: ['JavaScript', 'Chrome Extension', 'ZIP', 'Browser APIs'],
     year: '2026',
     status: 'live',
@@ -61,6 +65,7 @@ export const projects: Project[] = [
       'Desktop application for managing clothing and footwear store inventory data.',
     longDescription:
       'CRUD-heavy desktop workflow designed for operational tasks such as stock updates and catalog management.',
+    image: 'https://opengraph.githubassets.com/1/808StaN/StoreManager',
     tags: ['C#', '.NET', 'Desktop App', 'Database'],
     year: '2026',
     status: 'case-study',
@@ -75,6 +80,7 @@ export const projects: Project[] = [
       'D2RMM mod mapping /players 1-8 to key presses for Diablo II: Resurrected offline mode.',
     longDescription:
       'Quality-of-life mod that removes command typing and enables instant difficulty scaling in gameplay.',
+    image: 'https://opengraph.githubassets.com/1/808StaN/D2R-PlayersQuickSwitch',
     tags: ['JavaScript', 'Game Modding', 'D2RMM', 'Automation'],
     year: '2026',
     status: 'experimental',
@@ -89,6 +95,7 @@ export const projects: Project[] = [
       'macOS-style titlebar controls theme for Zen Browser.',
     longDescription:
       'Focused CSS customization package recreating close/minimize/maximize controls with a native macOS feel.',
+    image: 'https://opengraph.githubassets.com/1/808StaN/zenBrowser_MacOS_Icons',
     tags: ['CSS', 'Theming', 'Zen Browser', 'UI Customization'],
     year: '2025',
     status: 'experimental',

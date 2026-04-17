@@ -1,136 +1,189 @@
-import { useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { motion, useInView } from 'framer-motion';
 import { projects } from '../data/projects';
 
 const easeOut = [0.16, 1, 0.3, 1] as const;
 
-function ProjectCard({ project, index }: { project: typeof projects[0]; index: number }) {
-  const ref = useRef<HTMLDivElement>(null);
-  const inView = useInView(ref, { once: true, margin: '-80px' });
+const statusLabel = {
+  live: 'Live',
+  'case-study': 'Case Study',
+  experimental: 'Experiment',
+} as const;
 
-  const statusLabel = {
-    live: 'Live',
-    'case-study': 'Case Study',
-    experimental: 'Experiment',
-  }[project.status];
+const statusColor = {
+  live: 'text-emerald-400',
+  'case-study': 'text-blue-400',
+  experimental: 'text-orange-400',
+} as const;
 
-  const statusColor = {
-    live: 'text-emerald-400',
-    'case-study': 'text-blue-400',
-    experimental: 'text-orange-400',
-  }[project.status];
-
+function ProjectSlide({ project }: { project: typeof projects[0] }) {
   return (
-    <motion.div
-      ref={ref}
-      initial={{ opacity: 0, y: 40 }}
-      animate={inView ? { opacity: 1, y: 0 } : {}}
-      transition={{ duration: 0.8, delay: index * 0.08, ease: easeOut }}
-      className="project-card group relative overflow-hidden cursor-pointer"
-      style={{ minHeight: '300px' }}
-      onClick={() => project.link && window.open(project.link, '_blank')}
-      tabIndex={0}
-      role="link"
-      aria-label={`${project.title} - ${project.description}`}
-      onKeyDown={e => e.key === 'Enter' && project.link && window.open(project.link, '_blank')}
+    <article
+      className="project-card overflow-hidden"
+      style={{ minHeight: 'min(72vh, 720px)' }}
     >
-      {/* Accent glow on hover */}
-      <div
-        className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none"
-        style={{
-          background: `radial-gradient(circle at 0% 0%, ${project.accent}18 0%, transparent 60%)`,
-        }}
-      />
-
-      {/* Top accent line */}
-      <div
-        className="absolute top-0 left-0 right-0 h-px opacity-0 group-hover:opacity-100 transition-opacity duration-500"
-        style={{ background: `linear-gradient(90deg, ${project.accent}80, transparent)` }}
-      />
-
-      <div className="relative p-7 md:p-8 flex flex-col h-full" style={{ minHeight: '300px' }}>
-        {/* Header row */}
-        <div className="flex items-start justify-between mb-5">
+      <div className="relative h-[42%] min-h-[220px]">
+        <img
+          src={project.image}
+          alt={`${project.title} preview`}
+          className="absolute inset-0 w-full h-full object-cover"
+          loading="lazy"
+        />
+        <div
+          className="absolute inset-0"
+          style={{
+            background:
+              'linear-gradient(to bottom, rgba(8,14,34,0.08) 0%, rgba(8,14,34,0.35) 62%, rgba(8,14,34,0.78) 100%)',
+          }}
+        />
+        <div className="absolute top-4 left-4 right-4 flex items-center justify-between">
           <span
             className="text-[11px] tracking-widest uppercase"
-            style={{ color: 'rgba(255,255,255,0.24)', fontFamily: 'var(--font-sans)' }}
+            style={{ color: 'rgba(255,255,255,0.4)', fontFamily: 'var(--font-sans)' }}
           >
             {project.index}
           </span>
           <div className="flex items-center gap-3">
-            <span className={`text-[11px] font-medium ${statusColor}`} style={{ fontFamily: 'var(--font-sans)' }}>
-              {statusLabel}
+            <span className={`text-[11px] font-medium ${statusColor[project.status]}`}>
+              {statusLabel[project.status]}
             </span>
-            <span className="text-[11px] text-white/30" style={{ fontFamily: 'var(--font-sans)' }}>
+            <span
+              className="text-[11px]"
+              style={{ color: 'rgba(255,255,255,0.35)', fontFamily: 'var(--font-sans)' }}
+            >
               {project.year}
             </span>
           </div>
         </div>
+      </div>
 
-        {/* Title */}
-        <h3
-          className="text-xl md:text-[1.65rem] font-600 text-white/90 mb-3 group-hover:text-white transition-colors duration-300"
-          style={{ fontFamily: 'var(--font-display)', letterSpacing: '-0.02em' }}
-        >
-          {project.title}
-        </h3>
+      <div className="p-7 md:p-9 flex flex-col gap-5 h-[58%] min-h-[300px]">
+        <div>
+          <h3
+            className="text-2xl md:text-4xl font-700 text-white/90 mb-2"
+            style={{ fontFamily: 'var(--font-display)', letterSpacing: '-0.02em' }}
+          >
+            {project.title}
+          </h3>
+          <p
+            className="text-base md:text-lg leading-relaxed"
+            style={{ color: 'rgba(255,255,255,0.6)', fontFamily: 'var(--font-sans)' }}
+          >
+            {project.description}
+          </p>
+        </div>
 
-        {/* Description */}
         <p
-          className="text-sm leading-relaxed mb-5 flex-1"
-          style={{ color: 'rgba(255,255,255,0.5)', fontFamily: 'var(--font-sans)' }}
+          className="text-sm md:text-base leading-relaxed"
+          style={{ color: 'rgba(255,255,255,0.46)', fontFamily: 'var(--font-sans)' }}
         >
-          {project.description}
+          {project.longDescription}
         </p>
 
-        {/* Tags */}
-        <div className="flex flex-wrap gap-2 mb-5">
-          {project.tags.map(tag => (
-            <span key={tag} className="skill-pill text-xs">
-              {tag}
-            </span>
-          ))}
-        </div>
+        <div className="mt-auto pt-3 flex flex-col gap-4">
+          <div className="flex flex-wrap gap-2">
+            {project.tags.map(tag => (
+              <span key={tag} className="skill-pill">
+                {tag}
+              </span>
+            ))}
+          </div>
 
-        {/* CTA */}
-        <div className="flex items-center gap-2 mt-auto">
-          <span
-            className="text-xs text-white/35 group-hover:text-white/60 transition-colors duration-300"
-            style={{ fontFamily: 'var(--font-sans)' }}
-          >
-            View project
-          </span>
-          <motion.span
-            className="text-xs text-white/35 group-hover:text-white/60"
-            animate={{ x: 0 }}
-            whileHover={{ x: 4 }}
-          >
-            -&gt;
-          </motion.span>
+          {project.link && (
+            <a
+              href={project.link}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-2 text-sm text-white/55 hover:text-white/85 transition-colors duration-300"
+              style={{ fontFamily: 'var(--font-sans)' }}
+            >
+              View repository
+              <span>-&gt;</span>
+            </a>
+          )}
         </div>
       </div>
-    </motion.div>
+    </article>
   );
 }
 
 export default function Projects() {
+  const sectionRef = useRef<HTMLElement>(null);
   const headerRef = useRef<HTMLDivElement>(null);
   const headerInView = useInView(headerRef, { once: true, margin: '-60px' });
+  const scrollerRef = useRef<HTMLDivElement>(null);
+  const lockRef = useRef(false);
+  const [activeIndex, setActiveIndex] = useState(0);
+
+  const goTo = (idx: number) => {
+    const clamped = Math.max(0, Math.min(projects.length - 1, idx));
+    const el = scrollerRef.current;
+    if (!el) return;
+    setActiveIndex(clamped);
+    el.scrollTo({
+      left: clamped * el.clientWidth,
+      behavior: 'smooth',
+    });
+  };
+
+  const next = () => goTo(activeIndex + 1);
+  const prev = () => goTo(activeIndex - 1);
+
+  useEffect(() => {
+    const el = scrollerRef.current;
+    if (!el) return;
+
+    const handleResize = () => {
+      el.scrollTo({ left: activeIndex * el.clientWidth });
+    };
+
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, [activeIndex]);
+
+  useEffect(() => {
+    const onWheel = (e: WheelEvent) => {
+      const section = sectionRef.current;
+      if (!section) return;
+      if (Math.abs(e.deltaY) < 14) return;
+
+      const rect = section.getBoundingClientRect();
+      const inSection = rect.top <= 120 && rect.bottom >= window.innerHeight * 0.55;
+      if (!inSection) return;
+
+      const isNext = e.deltaY > 0;
+      const canGoNext = activeIndex < projects.length - 1;
+      const canGoPrev = activeIndex > 0;
+
+      if ((isNext && canGoNext) || (!isNext && canGoPrev)) {
+        e.preventDefault();
+        if (lockRef.current) return;
+        lockRef.current = true;
+        if (isNext) next();
+        else prev();
+        window.setTimeout(() => {
+          lockRef.current = false;
+        }, 420);
+      }
+    };
+
+    window.addEventListener('wheel', onWheel, { passive: false });
+    return () => window.removeEventListener('wheel', onWheel);
+  }, [activeIndex]);
 
   return (
-    <section id="work" className="section-shell relative overflow-hidden">
-      {/* Subtle gradient background */}
+    <section id="work" ref={sectionRef} className="section-shell relative overflow-hidden">
       <div
         className="absolute inset-0 pointer-events-none"
         style={{
           zIndex: 0,
-          background: 'radial-gradient(ellipse 84% 54% at 50% 0%, rgba(120,162,255,0.14) 0%, rgba(22,128,255,0.05) 44%, transparent 74%)',
+          background:
+            'radial-gradient(ellipse 84% 54% at 50% 0%, rgba(120,162,255,0.14) 0%, rgba(22,128,255,0.05) 44%, transparent 74%)',
         }}
       />
 
       <div className="section-inner relative z-10">
-        {/* Section header */}
-        <div ref={headerRef} className="mb-12 md:mb-14">
+        <div ref={headerRef} className="mb-10 md:mb-12">
           <motion.div
             className="flex items-center gap-3 mb-5"
             initial={{ opacity: 0, x: -20 }}
@@ -139,7 +192,9 @@ export default function Projects() {
           >
             <span className="section-label">Selected Work</span>
             <div className="flex-1 h-px" style={{ background: 'rgba(255,255,255,0.07)' }} />
-            <span className="section-label">{projects.length} projects</span>
+            <span className="section-label">
+              {activeIndex + 1}/{projects.length}
+            </span>
           </motion.div>
 
           <motion.h2
@@ -155,33 +210,60 @@ export default function Projects() {
           </motion.h2>
         </div>
 
-        {/* Project grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-5">
-          {projects.map((project, i) => (
-            <ProjectCard key={project.id} project={project} index={i} />
-          ))}
+        <div className="relative">
+          <button
+            onClick={prev}
+            disabled={activeIndex === 0}
+            aria-label="Previous project"
+            className="hidden md:flex absolute left-4 top-1/2 -translate-y-1/2 z-20 w-11 h-11 rounded-full items-center justify-center border border-white/20 bg-black/25 text-white/75 hover:text-white hover:border-white/40 disabled:opacity-35 disabled:cursor-not-allowed transition-all duration-300"
+          >
+            &#x2039;
+          </button>
+
+          <button
+            onClick={next}
+            disabled={activeIndex === projects.length - 1}
+            aria-label="Next project"
+            className="hidden md:flex absolute right-4 top-1/2 -translate-y-1/2 z-20 w-11 h-11 rounded-full items-center justify-center border border-white/20 bg-black/25 text-white/75 hover:text-white hover:border-white/40 disabled:opacity-35 disabled:cursor-not-allowed transition-all duration-300"
+          >
+            &#x203A;
+          </button>
+
+          <div
+            ref={scrollerRef}
+            className="projects-scroller flex overflow-x-auto snap-x snap-mandatory"
+            style={{
+              scrollbarWidth: 'none',
+              msOverflowStyle: 'none',
+            }}
+            onScroll={e => {
+              const el = e.currentTarget;
+              const nextIndex = Math.round(el.scrollLeft / el.clientWidth);
+              if (nextIndex !== activeIndex) setActiveIndex(nextIndex);
+            }}
+          >
+            {projects.map(project => (
+              <div key={project.id} className="min-w-full snap-start">
+                <ProjectSlide project={project} />
+              </div>
+            ))}
+          </div>
         </div>
 
-        {/* Bottom CTA */}
-        <motion.div
-          className="mt-12 md:mt-14 flex justify-center"
-          initial={{ opacity: 0 }}
-          whileInView={{ opacity: 1 }}
-          viewport={{ once: true, margin: '-50px' }}
-          transition={{ duration: 0.8 }}
-        >
-          <a
-            href="https://github.com/808StaN?tab=repositories"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="btn-secondary flex items-center gap-3"
-          >
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-              <path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z" />
-            </svg>
-            See more on GitHub
-          </a>
-        </motion.div>
+        <div className="mt-6 flex items-center justify-center gap-2">
+          {projects.map((project, idx) => (
+            <button
+              key={project.id}
+              onClick={() => goTo(idx)}
+              aria-label={`Go to ${project.title}`}
+              className="h-2.5 rounded-full transition-all duration-300"
+              style={{
+                width: activeIndex === idx ? '30px' : '10px',
+                background: activeIndex === idx ? 'rgba(255,255,255,0.72)' : 'rgba(255,255,255,0.24)',
+              }}
+            />
+          ))}
+        </div>
       </div>
     </section>
   );
