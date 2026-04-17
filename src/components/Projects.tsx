@@ -1,6 +1,10 @@
 import { CSSProperties, useEffect, useRef, useState } from 'react';
 import { projects } from '../data/projects';
 
+const PULSE_DURATION_MS = 860;
+const PULSE_PEAK_SCALE = 1.128;
+const PULSE_SETTLE_SCALE = 1.045;
+
 function slashTitle(title: string) {
   return title.split(' ').join(' / ');
 }
@@ -15,10 +19,31 @@ export default function Projects() {
   const displayedProgressRef = useRef(0);
   const rafRef = useRef<number | null>(null);
   const driftKickRef = useRef(0);
-  const pulseLockRef = useRef(false);
+  const pulseAnimRef = useRef<Animation | null>(null);
+  const wheelAccumRef = useRef(0);
+  const lastPulseAtRef = useRef(0);
 
   const steps = Math.max(1, projects.length - 1);
   const active = projects[activeIndex];
+
+  const triggerPulse = () => {
+    const el = visualRef.current;
+    if (!el) return;
+    if (pulseAnimRef.current) pulseAnimRef.current.cancel();
+    pulseAnimRef.current = el.animate(
+      [
+        { transform: 'translateY(36px) scale(1)' },
+        { transform: `translateY(36px) scale(${PULSE_PEAK_SCALE})`, offset: 0.4 },
+        { transform: `translateY(36px) scale(${PULSE_SETTLE_SCALE})`, offset: 0.74 },
+        { transform: 'translateY(36px) scale(1)' },
+      ],
+      {
+        duration: PULSE_DURATION_MS,
+        easing: 'cubic-bezier(0.22, 0.72, 0.2, 1)',
+        fill: 'none',
+      }
+    );
+  };
 
   useEffect(() => {
     const onScroll = () => {
@@ -57,8 +82,8 @@ export default function Projects() {
       const target = targetProgressRef.current;
       const delta = target - displayedProgressRef.current;
       const kick = driftKickRef.current;
-      displayedProgressRef.current += delta * 0.09 + kick;
-      driftKickRef.current *= 0.84;
+      displayedProgressRef.current += delta * 0.1 + kick;
+      driftKickRef.current *= 0.9;
       if (Math.abs(delta) < 0.0008 && Math.abs(driftKickRef.current) < 0.0008) {
         displayedProgressRef.current = target;
       }
@@ -106,20 +131,17 @@ export default function Projects() {
       if (!inWorkViewport) return;
 
       const direction = e.deltaY > 0 ? 1 : -1;
-      driftKickRef.current += direction * 0.03;
-      driftKickRef.current = Math.max(-0.08, Math.min(0.08, driftKickRef.current));
+      driftKickRef.current += direction * 0.014;
+      driftKickRef.current = Math.max(-0.03, Math.min(0.03, driftKickRef.current));
 
-      if (visualRef.current && !pulseLockRef.current) {
-        pulseLockRef.current = true;
-        const el = visualRef.current;
-        el.classList.remove('projects-visual-scroll-pulse');
-        // Force reflow so animation can restart cleanly.
-        void el.offsetWidth;
-        el.classList.add('projects-visual-scroll-pulse');
-        window.setTimeout(() => {
-          el.classList.remove('projects-visual-scroll-pulse');
-          pulseLockRef.current = false;
-        }, 420);
+      // Trigger one pulse per wheel "step", not per raw wheel event packet.
+      wheelAccumRef.current += Math.abs(e.deltaY);
+      const now = performance.now();
+      const stepThreshold = 44;
+      if (wheelAccumRef.current >= stepThreshold && now - lastPulseAtRef.current > 120) {
+        wheelAccumRef.current = 0;
+        lastPulseAtRef.current = now;
+        triggerPulse();
       }
     };
 
@@ -186,7 +208,7 @@ export default function Projects() {
               <div
                 ref={visualRef}
                 className="projects-visual-scroll"
-                style={{ transform: 'translateY(10px)' }}
+                style={{ transform: 'translateY(36px)' }}
               >
                 <div
                   ref={trackRef}
