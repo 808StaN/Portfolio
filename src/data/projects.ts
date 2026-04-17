@@ -4,6 +4,8 @@ export interface Project {
   description: string;
   longDescription: string;
   image: string;
+  secondaryImage?: string;
+  category: string;
   tags: string[];
   year: string;
   status: 'live' | 'case-study' | 'experimental';
@@ -21,6 +23,8 @@ export const projects: Project[] = [
     longDescription:
       'Players identify anime titles from scenes, compete for points, and climb rankings in online matches.',
     image: 'https://opengraph.githubassets.com/1/808StaN/OtakuVersus',
+    secondaryImage: 'https://opengraph.githubassets.com/1/808StaN/OtakuVersus',
+    category: 'Web Application',
     tags: ['TypeScript', 'Realtime', 'Game Logic', 'Vercel'],
     year: '2026',
     status: 'live',
@@ -36,6 +40,8 @@ export const projects: Project[] = [
     longDescription:
       'Music production workflow with track controls, timeline editing, and cross-platform desktop deployment.',
     image: 'https://opengraph.githubassets.com/1/808StaN/OpenStudio',
+    secondaryImage: 'https://opengraph.githubassets.com/1/808StaN/OpenStudio',
+    category: 'Desktop + Web Tool',
     tags: ['JavaScript', 'React', 'Web Audio API', 'Electron'],
     year: '2026',
     status: 'live',
@@ -51,6 +57,8 @@ export const projects: Project[] = [
     longDescription:
       'Lightweight extension focused on quick export flow and clean UX for photos and video assets.',
     image: 'https://opengraph.githubassets.com/1/808StaN/InstaFetch',
+    secondaryImage: 'https://opengraph.githubassets.com/1/808StaN/InstaFetch',
+    category: 'Browser Extension',
     tags: ['JavaScript', 'Chrome Extension', 'ZIP', 'Browser APIs'],
     year: '2026',
     status: 'live',
@@ -66,6 +74,8 @@ export const projects: Project[] = [
     longDescription:
       'CRUD-heavy desktop workflow designed for operational tasks such as stock updates and catalog management.',
     image: 'https://opengraph.githubassets.com/1/808StaN/StoreManager',
+    secondaryImage: 'https://opengraph.githubassets.com/1/808StaN/StoreManager',
+    category: 'Desktop Application',
     tags: ['C#', '.NET', 'Desktop App', 'Database'],
     year: '2026',
     status: 'case-study',
@@ -81,6 +91,8 @@ export const projects: Project[] = [
     longDescription:
       'Quality-of-life mod that removes command typing and enables instant difficulty scaling in gameplay.',
     image: 'https://opengraph.githubassets.com/1/808StaN/D2R-PlayersQuickSwitch',
+    secondaryImage: 'https://opengraph.githubassets.com/1/808StaN/D2R-PlayersQuickSwitch',
+    category: 'Game Modding',
     tags: ['JavaScript', 'Game Modding', 'D2RMM', 'Automation'],
     year: '2026',
     status: 'experimental',
@@ -96,6 +108,8 @@ export const projects: Project[] = [
     longDescription:
       'Focused CSS customization package recreating close/minimize/maximize controls with a native macOS feel.',
     image: 'https://opengraph.githubassets.com/1/808StaN/zenBrowser_MacOS_Icons',
+    secondaryImage: 'https://opengraph.githubassets.com/1/808StaN/zenBrowser_MacOS_Icons',
+    category: 'UI Theming',
     tags: ['CSS', 'Theming', 'Zen Browser', 'UI Customization'],
     year: '2025',
     status: 'experimental',
