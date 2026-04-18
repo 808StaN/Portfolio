@@ -290,25 +290,18 @@ export default function App() {
       };
     };
 
-    const onWheel = (e: WheelEvent) => {
-      const deltaPx =
-        e.deltaMode === 1
-          ? e.deltaY * 16
-          : e.deltaMode === 2
-            ? e.deltaY * window.innerHeight
-            : e.deltaY;
-      if (Math.abs(deltaPx) < 4) return;
-
+    const stepByDirection = (
+      direction: 1 | -1,
+      preventDefault?: () => void,
+    ) => {
       const sections = getSections();
       if (sections.length < 2) return;
       const sectionTops = getSectionTargetTops(sections);
 
       if (lock) {
-        e.preventDefault();
+        preventDefault?.();
         return;
       }
-
-      const direction = deltaPx > 0 ? 1 : -1;
 
       const workState = getWorkScrollState();
       const inWorkRange =
@@ -317,7 +310,7 @@ export default function App() {
         workState.y <= workState.endY + window.innerHeight * 0.08;
 
       if (inWorkRange) {
-        e.preventDefault();
+        preventDefault?.();
         const now = performance.now();
         if (now < workStepLockUntil) {
           return;
@@ -395,7 +388,7 @@ export default function App() {
 
       if (nextIdx === currentIdx) return;
 
-      e.preventDefault();
+      preventDefault?.();
       const currentTop = sectionTops[currentIdx];
       const nextTop = sectionTops[nextIdx];
       if (Math.abs(nextTop - currentTop) <= SECTION_TOP_EPS) {
@@ -415,9 +408,52 @@ export default function App() {
       }, lockMs);
     };
 
+    const onWheel = (e: WheelEvent) => {
+      const deltaPx =
+        e.deltaMode === 1
+          ? e.deltaY * 16
+          : e.deltaMode === 2
+            ? e.deltaY * window.innerHeight
+            : e.deltaY;
+      if (Math.abs(deltaPx) < 4) return;
+      const direction = deltaPx > 0 ? 1 : -1;
+      stepByDirection(direction as 1 | -1, () => e.preventDefault());
+    };
+
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.repeat) return;
+      if (e.altKey || e.ctrlKey || e.metaKey || e.shiftKey) return;
+      const target = e.target as HTMLElement | null;
+      const tag = target?.tagName;
+      if (
+        target?.isContentEditable ||
+        tag === "INPUT" ||
+        tag === "TEXTAREA" ||
+        tag === "SELECT"
+      ) {
+        return;
+      }
+
+      if (e.key === "ArrowDown") {
+        window.dispatchEvent(
+          new CustomEvent("projects-step-input", { detail: { direction: 1 } }),
+        );
+        stepByDirection(1, () => e.preventDefault());
+        return;
+      }
+      if (e.key === "ArrowUp") {
+        window.dispatchEvent(
+          new CustomEvent("projects-step-input", { detail: { direction: -1 } }),
+        );
+        stepByDirection(-1, () => e.preventDefault());
+      }
+    };
+
     window.addEventListener("wheel", onWheel, { passive: false });
+    window.addEventListener("keydown", onKeyDown, { passive: false });
     return () => {
       window.removeEventListener("wheel", onWheel);
+      window.removeEventListener("keydown", onKeyDown);
       publishVirtualSection(null);
       if (cancelWorkStepAnim) cancelWorkStepAnim();
     };

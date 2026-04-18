@@ -244,13 +244,25 @@ export default function Projects() {
     const section = sectionRef.current;
     if (!section) return;
 
+    const shouldPulseInViewport = () => {
+      const rect = section.getBoundingClientRect();
+      return (
+        rect.top <= window.innerHeight * 0.25 &&
+        rect.bottom >= window.innerHeight * 0.75
+      );
+    };
+
+    const tryPulse = () => {
+      const now = performance.now();
+      if (now - lastPulseAtRef.current <= 120) return;
+      lastPulseAtRef.current = now;
+      triggerPulse();
+    };
+
     const onWheel = (e: WheelEvent) => {
       if (Math.abs(e.deltaY) < 10) return;
 
-      const rect = section.getBoundingClientRect();
-      const inWorkViewport =
-        rect.top <= window.innerHeight * 0.25 &&
-        rect.bottom >= window.innerHeight * 0.75;
+      const inWorkViewport = shouldPulseInViewport();
       if (!inWorkViewport) return;
 
       const direction = e.deltaY > 0 ? 1 : -1;
@@ -264,20 +276,24 @@ export default function Projects() {
 
       // Trigger one pulse per wheel "step", not per raw wheel event packet.
       wheelAccumRef.current += Math.abs(e.deltaY);
-      const now = performance.now();
       const stepThreshold = 44;
-      if (
-        wheelAccumRef.current >= stepThreshold &&
-        now - lastPulseAtRef.current > 120
-      ) {
+      if (wheelAccumRef.current >= stepThreshold) {
         wheelAccumRef.current = 0;
-        lastPulseAtRef.current = now;
-        triggerPulse();
+        tryPulse();
       }
     };
 
+    const onStepInput = () => {
+      if (!shouldPulseInViewport()) return;
+      tryPulse();
+    };
+
     window.addEventListener("wheel", onWheel, { passive: true });
-    return () => window.removeEventListener("wheel", onWheel);
+    window.addEventListener("projects-step-input", onStepInput);
+    return () => {
+      window.removeEventListener("wheel", onWheel);
+      window.removeEventListener("projects-step-input", onStepInput);
+    };
   }, [isFirefox]);
 
   return (
