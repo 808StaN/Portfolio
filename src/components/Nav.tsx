@@ -10,43 +10,70 @@ const links = [
 
 export default function Nav() {
   const [scrolled, setScrolled] = useState(false);
+  const [docked, setDocked] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const [activeSection, setActiveSection] = useState('');
   const lastY = useRef(0);
-  const [visible, setVisible] = useState(true);
+  const [topVisible, setTopVisible] = useState(true);
+
+  const getSectionTargetTop = (section: HTMLElement) => {
+    const maxScrollTop = Math.max(0, document.documentElement.scrollHeight - window.innerHeight);
+    return Math.min(section.offsetTop, maxScrollTop);
+  };
 
   useEffect(() => {
     const onScroll = () => {
       const y = window.scrollY;
+      const home = document.getElementById('home');
+      const homeEnd = home ? Math.max(120, home.offsetHeight - 96) : Math.max(120, window.innerHeight - 96);
+
       setScrolled(y > 40);
-      setVisible(y < lastY.current || y < 80);
+      const isDocked = y >= homeEnd;
+      setDocked(isDocked);
+      setTopVisible(!isDocked && (y < lastY.current || y < 80));
       lastY.current = y;
     };
+    onScroll();
     window.addEventListener('scroll', onScroll, { passive: true });
     return () => window.removeEventListener('scroll', onScroll);
   }, []);
 
-  // Active section tracker
   useEffect(() => {
-    const observer = new IntersectionObserver(
-      entries => {
-        entries.forEach(e => {
-          if (e.isIntersecting) setActiveSection(e.target.id);
-        });
-      },
-      { threshold: 0.4 }
-    );
-    ['work', 'about', 'stack', 'contact'].forEach(id => {
-      const el = document.getElementById(id);
-      if (el) observer.observe(el);
-    });
-    return () => observer.disconnect();
+    const ids = ['work', 'about', 'stack', 'contact'];
+    const updateActiveSection = () => {
+      if (window.scrollY + window.innerHeight >= document.documentElement.scrollHeight - 2) {
+        setActiveSection('contact');
+        return;
+      }
+
+      const y = window.scrollY + 2;
+      let nextActive = '';
+
+      ids.forEach(id => {
+        const section = document.getElementById(id) as HTMLElement | null;
+        if (!section) return;
+        if (getSectionTargetTop(section) <= y) {
+          nextActive = id;
+        }
+      });
+
+      setActiveSection(nextActive);
+    };
+
+    updateActiveSection();
+    window.addEventListener('scroll', updateActiveSection, { passive: true });
+    window.addEventListener('resize', updateActiveSection);
+    return () => {
+      window.removeEventListener('scroll', updateActiveSection);
+      window.removeEventListener('resize', updateActiveSection);
+    };
   }, []);
 
   const handleLink = (href: string) => {
     setMenuOpen(false);
-    const el = document.querySelector(href);
-    el?.scrollIntoView({ behavior: 'smooth' });
+    const el = document.querySelector(href) as HTMLElement | null;
+    if (!el) return;
+    window.scrollTo({ top: getSectionTargetTop(el), behavior: 'smooth' });
   };
 
   return (
@@ -54,17 +81,14 @@ export default function Nav() {
       <motion.header
         className="fixed top-0 left-0 right-0 z-50"
         initial={{ y: -80, opacity: 0 }}
-        animate={{ y: visible ? 0 : -80, opacity: visible ? 1 : 0 }}
+        animate={{ y: topVisible ? 0 : -80, opacity: topVisible ? 1 : 0 }}
         transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
       >
-        <nav
-          className={`h-16 transition-all duration-500 ${scrolled ? 'nav-blur' : ''}`}
-        >
+        <nav className={`h-16 transition-all duration-500 ${scrolled ? 'nav-blur' : ''}`}>
           <div
             className="hero-inner h-full flex items-center justify-between"
             style={{ width: 'min(1600px, calc(100% - (var(--page-gutter) * 1.2)))' }}
           >
-            {/* Logo */}
             <a
               href="#"
               onClick={e => {
@@ -85,7 +109,6 @@ export default function Nav() {
               </span>
             </a>
 
-            {/* Desktop links */}
             <div className="hidden md:flex items-center gap-8">
               {links.map(link => (
                 <button
@@ -108,7 +131,6 @@ export default function Nav() {
               ))}
             </div>
 
-            {/* Desktop CTA */}
             <div className="hidden md:flex items-center gap-4">
               <a
                 href="https://github.com/808StaN"
@@ -124,7 +146,6 @@ export default function Nav() {
               </a>
             </div>
 
-            {/* Mobile menu button */}
             <button
               className="md:hidden flex flex-col gap-1.5 p-2 cursor-pointer bg-transparent border-none"
               onClick={() => setMenuOpen(v => !v)}
@@ -151,7 +172,51 @@ export default function Nav() {
         </nav>
       </motion.header>
 
-      {/* Mobile menu */}
+      <AnimatePresence>
+        {docked && (
+          <motion.aside
+            className="hidden md:flex flex-col items-start gap-7 fixed top-1/2 -translate-y-1/2 left-[max(14px,calc(var(--page-gutter)*0.55))] z-50"
+            aria-label="Section navigation"
+            initial={{ opacity: 0, x: -10 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: -10 }}
+            transition={{ duration: 0.22, ease: [0.16, 1, 0.3, 1] }}
+          >
+            {links.map(link => (
+              <button
+                key={`side-${link.href}`}
+                onClick={() => handleLink(link.href)}
+                className={`text-sm transition-all duration-300 cursor-pointer bg-transparent border-none relative group ${
+                  activeSection === link.href.slice(1)
+                    ? 'text-white'
+                    : 'text-white/50 hover:text-white/85'
+                }`}
+                style={{ fontFamily: 'var(--font-sans)', letterSpacing: '0.01em' }}
+              >
+                {link.label}
+                <span
+                  className={`absolute -bottom-0.5 left-0 h-px bg-white/50 transition-all duration-300 ${
+                    activeSection === link.href.slice(1) ? 'w-full' : 'w-0 group-hover:w-full'
+                  }`}
+                />
+              </button>
+            ))}
+            <a
+              href="https://github.com/808StaN"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-2 text-sm text-white/50 hover:text-white/85 transition-colors duration-300"
+              style={{ fontFamily: 'var(--font-sans)' }}
+            >
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                <path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z" />
+              </svg>
+              GitHub
+            </a>
+          </motion.aside>
+        )}
+      </AnimatePresence>
+
       <AnimatePresence>
         {menuOpen && (
           <motion.div

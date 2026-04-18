@@ -49,15 +49,22 @@ export default function App() {
     let lock = false;
     const lockMs = 720;
 
-    const getSections = () =>
-      Array.from(document.querySelectorAll('main section[id]')) as HTMLElement[];
+    const getSections = () => Array.from(document.querySelectorAll('main section[id]')) as HTMLElement[];
+
+    const getSectionTargetTop = (section: HTMLElement) => {
+      const maxScrollTop = Math.max(0, document.documentElement.scrollHeight - window.innerHeight);
+      return Math.min(section.offsetTop, maxScrollTop);
+    };
 
     const getCurrentIndex = (sections: HTMLElement[]) => {
-      const y = window.scrollY;
+      if (window.scrollY + window.innerHeight >= document.documentElement.scrollHeight - 2) {
+        return sections.length - 1;
+      }
+      const y = window.scrollY + 2;
       let currentIdx = 0;
       sections.forEach((section, idx) => {
-        const top = section.offsetTop;
-        if (top <= y + 120) {
+        const top = getSectionTargetTop(section);
+        if (top <= y) {
           currentIdx = idx;
         }
       });
@@ -127,7 +134,7 @@ export default function App() {
         if (targetIdx !== currentIdx) {
           e.preventDefault();
           lock = true;
-          sections[targetIdx].scrollIntoView({ behavior: 'smooth', block: 'start' });
+          window.scrollTo({ top: getSectionTargetTop(sections[targetIdx]), behavior: 'smooth' });
           window.setTimeout(() => {
             lock = false;
           }, lockMs);
@@ -141,7 +148,7 @@ export default function App() {
 
       e.preventDefault();
       lock = true;
-      sections[nextIdx].scrollIntoView({ behavior: 'smooth', block: 'start' });
+      window.scrollTo({ top: getSectionTargetTop(sections[nextIdx]), behavior: 'smooth' });
       window.setTimeout(() => {
         lock = false;
       }, lockMs);
