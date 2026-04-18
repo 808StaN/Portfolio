@@ -145,7 +145,8 @@ body {
 
 .section-shell {
   position: relative;
-  padding-block: var(--section-space-y);
+  padding-top: clamp(14px, 2.1vh, 26px);
+  padding-bottom: var(--section-space-y);
 }
 
 .section-shell::before {

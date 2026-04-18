@@ -27,8 +27,8 @@ export default function Nav() {
       const home = document.getElementById('home');
       const homeEnd = home ? Math.max(120, home.offsetHeight - 96) : Math.max(120, window.innerHeight - 96);
 
-      setScrolled(y > 40);
       const isDocked = y >= homeEnd;
+      setScrolled(isDocked && y > 40);
       setDocked(isDocked);
       setTopVisible(!isDocked && (y < lastY.current || y < 80));
       lastY.current = y;
