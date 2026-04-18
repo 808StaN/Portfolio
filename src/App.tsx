@@ -50,6 +50,8 @@ export default function App() {
     const lockMs = 720;
     let workStepLockUntil = 0;
     const workStepLockMs = 420;
+    const isFirefox = /firefox/i.test(navigator.userAgent);
+    let cancelWorkStepAnim: (() => void) | null = null;
 
     const getSections = () => Array.from(document.querySelectorAll('main section[id]')) as HTMLElement[];
 
@@ -135,6 +137,37 @@ export default function App() {
       };
     };
 
+    const animateScrollTo = (targetY: number, durationMs: number, onDone: () => void) => {
+      const startY = window.scrollY;
+      const delta = targetY - startY;
+      if (Math.abs(delta) < 0.5) {
+        window.scrollTo({ top: targetY, behavior: 'auto' });
+        onDone();
+        return () => {};
+      }
+
+      const startAt = performance.now();
+      let rafId = 0;
+      const easeOutCubic = (t: number) => 1 - Math.pow(1 - t, 3);
+
+      const tick = (now: number) => {
+        const t = Math.min(1, (now - startAt) / durationMs);
+        const nextY = startY + delta * easeOutCubic(t);
+        window.scrollTo({ top: nextY, behavior: 'auto' });
+        if (t < 1) {
+          rafId = requestAnimationFrame(tick);
+          return;
+        }
+        window.scrollTo({ top: targetY, behavior: 'auto' });
+        onDone();
+      };
+
+      rafId = requestAnimationFrame(tick);
+      return () => {
+        if (rafId) cancelAnimationFrame(rafId);
+      };
+    };
+
     const onWheel = (e: WheelEvent) => {
       if (Math.abs(e.deltaY) < 4) return;
 
@@ -169,10 +202,18 @@ export default function App() {
           const targetY =
             workState.startY + (nextStep / workState.steps) * workState.totalScrollable;
           lock = true;
-          window.scrollTo({ top: targetY, behavior: 'smooth' });
-          window.setTimeout(() => {
-            lock = false;
-          }, 520);
+          if (isFirefox) {
+            if (cancelWorkStepAnim) cancelWorkStepAnim();
+            cancelWorkStepAnim = animateScrollTo(targetY, 520, () => {
+              lock = false;
+              cancelWorkStepAnim = null;
+            });
+          } else {
+            window.scrollTo({ top: targetY, behavior: 'smooth' });
+            window.setTimeout(() => {
+              lock = false;
+            }, 520);
+          }
           return;
         }
 
@@ -206,7 +247,10 @@ export default function App() {
     };
 
     window.addEventListener('wheel', onWheel, { passive: false });
-    return () => window.removeEventListener('wheel', onWheel);
+    return () => {
+      window.removeEventListener('wheel', onWheel);
+      if (cancelWorkStepAnim) cancelWorkStepAnim();
+    };
   }, []);
 
   return (

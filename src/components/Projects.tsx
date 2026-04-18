@@ -23,6 +23,7 @@ function readCurrentScale(el: HTMLElement) {
 }
 
 export default function Projects() {
+  const isFirefox = /firefox/i.test(navigator.userAgent);
   const sectionRef = useRef<HTMLElement>(null);
   const stageRef = useRef<HTMLDivElement>(null);
   const visualRef = useRef<HTMLDivElement>(null);
@@ -32,6 +33,8 @@ export default function Projects() {
   const displayedProgressRef = useRef(0);
   const rafRef = useRef<number | null>(null);
   const driftKickRef = useRef(0);
+  const prevScrollYRef = useRef(0);
+  const entrySpeedLimitUntilRef = useRef(0);
   const pulseAnimRef = useRef<Animation | null>(null);
   const wheelAccumRef = useRef(0);
   const lastPulseAtRef = useRef(0);
@@ -88,6 +91,13 @@ export default function Projects() {
         0;
       const startY = sectionTopDoc + stagePaddingTop;
       const endY = sectionTopDoc + section.offsetHeight - window.innerHeight;
+      const currentY = window.scrollY;
+      const prevY = prevScrollYRef.current;
+      const enteredFromBelow = prevY > endY + 2 && currentY <= endY + 2;
+      if (enteredFromBelow) {
+        entrySpeedLimitUntilRef.current = performance.now() + 900;
+      }
+      prevScrollYRef.current = currentY;
       const totalScrollable = Math.max(1, endY - startY);
       const scrolled = Math.min(
         Math.max(window.scrollY - startY, 0),
@@ -106,6 +116,7 @@ export default function Projects() {
       });
     };
 
+    prevScrollYRef.current = window.scrollY;
     onScroll();
     window.addEventListener("scroll", onScroll, { passive: true });
     window.addEventListener("resize", onScroll);
@@ -116,13 +127,34 @@ export default function Projects() {
   }, [steps]);
 
   useEffect(() => {
+    if (isFirefox && trackRef.current) {
+      // Firefox + RAF updates can cause visible tail/snap when CSS transition also runs.
+      trackRef.current.style.transition = "none";
+    }
+  }, [isFirefox]);
+
+  useEffect(() => {
     const tick = () => {
+      const now = performance.now();
       const target = targetProgressRef.current;
       const delta = target - displayedProgressRef.current;
-      const kick = driftKickRef.current;
-      displayedProgressRef.current += delta * 0.1 + kick;
-      driftKickRef.current *= 0.9;
-      if (Math.abs(delta) < 0.0008 && Math.abs(driftKickRef.current) < 0.0008) {
+      const kick = isFirefox ? 0 : driftKickRef.current;
+      const follow = isFirefox ? 0.14 : 0.1;
+      let step = delta * follow + kick;
+      if (now < entrySpeedLimitUntilRef.current) {
+        const maxStepPerFrame = isFirefox ? 0.04 : 0.05;
+        step = Math.max(-maxStepPerFrame, Math.min(maxStepPerFrame, step));
+      }
+      displayedProgressRef.current += step;
+      if (!isFirefox) {
+        driftKickRef.current *= 0.9;
+      } else {
+        driftKickRef.current = 0;
+      }
+      if (
+        Math.abs(delta) < (isFirefox ? 0.002 : 0.0008) &&
+        Math.abs(driftKickRef.current) < (isFirefox ? 0.002 : 0.0008)
+      ) {
         displayedProgressRef.current = target;
       }
       displayedProgressRef.current = Math.max(
@@ -175,11 +207,13 @@ export default function Projects() {
       if (!inWorkViewport) return;
 
       const direction = e.deltaY > 0 ? 1 : -1;
-      driftKickRef.current += direction * 0.014;
-      driftKickRef.current = Math.max(
-        -0.03,
-        Math.min(0.03, driftKickRef.current),
-      );
+      if (!isFirefox) {
+        driftKickRef.current += direction * 0.014;
+        driftKickRef.current = Math.max(
+          -0.03,
+          Math.min(0.03, driftKickRef.current),
+        );
+      }
 
       // Trigger one pulse per wheel "step", not per raw wheel event packet.
       wheelAccumRef.current += Math.abs(e.deltaY);
@@ -197,7 +231,7 @@ export default function Projects() {
 
     window.addEventListener("wheel", onWheel, { passive: true });
     return () => window.removeEventListener("wheel", onWheel);
-  }, []);
+  }, [isFirefox]);
 
   return (
     <section
