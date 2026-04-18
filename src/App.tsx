@@ -7,7 +7,6 @@ import Stack from './components/Stack';
 import Contact from './components/Contact';
 import Footer from './components/Footer';
 import Cursor from './components/Cursor';
-import PageLoader from './components/PageLoader';
 import WebGLBackground from './components/WebGLBackground';
 import GrainOverlay from './components/GrainOverlay';
 
@@ -162,9 +161,6 @@ export default function App() {
       </div>
       <div className="app-ambient" aria-hidden="true" />
       <div className="app-vignette" aria-hidden="true" />
-
-      {/* Page loader */}
-      <PageLoader />
 
       {/* Film grain overlay */}
       <GrainOverlay />
