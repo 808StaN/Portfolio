@@ -4,9 +4,22 @@ import { projects } from "../data/projects";
 const PULSE_DURATION_MS = 1500;
 const PULSE_PEAK_SCALE = 1.15;
 const PULSE_SETTLE_SCALE = 1.045;
+const PULSE_MIN_INCREMENT = 0.02;
+const PULSE_MAX_SCALE = 1.22;
 
 function slashTitle(title: string) {
   return title.split(" ").join(" / ");
+}
+
+function readCurrentScale(el: HTMLElement) {
+  const transform = window.getComputedStyle(el).transform;
+  if (!transform || transform === "none") return 1;
+  try {
+    const matrix = new DOMMatrixReadOnly(transform);
+    return Math.hypot(matrix.a, matrix.b) || 1;
+  } catch {
+    return 1;
+  }
 }
 
 export default function Projects() {
@@ -29,16 +42,27 @@ export default function Projects() {
   const triggerPulse = () => {
     const el = visualRef.current;
     if (!el) return;
+
+    const startScale = readCurrentScale(el);
+    const peakScale = Math.min(
+      PULSE_MAX_SCALE,
+      Math.max(PULSE_PEAK_SCALE, startScale + PULSE_MIN_INCREMENT),
+    );
+    const settleScale = Math.max(
+      PULSE_SETTLE_SCALE,
+      Math.min(peakScale - 0.01, (startScale + peakScale) / 2),
+    );
+
     if (pulseAnimRef.current) pulseAnimRef.current.cancel();
     pulseAnimRef.current = el.animate(
       [
-        { transform: "translateY(36px) scale(1)" },
+        { transform: `translateY(36px) scale(${startScale})` },
         {
-          transform: `translateY(36px) scale(${PULSE_PEAK_SCALE})`,
+          transform: `translateY(36px) scale(${peakScale})`,
           offset: 0.4,
         },
         {
-          transform: `translateY(36px) scale(${PULSE_SETTLE_SCALE})`,
+          transform: `translateY(36px) scale(${settleScale})`,
           offset: 0.74,
         },
         { transform: "translateY(36px) scale(1)" },
