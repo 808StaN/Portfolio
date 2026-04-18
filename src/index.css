@@ -64,6 +64,13 @@ body {
     brightness(calc(1 - (var(--scroll-progress) * 0.06)));
 }
 
+.global-webgl-layer .webgl-preview,
+.global-webgl-layer .webgl-preview canvas {
+  width: 100% !important;
+  height: 100% !important;
+  display: block;
+}
+
 .app-ambient {
   position: fixed;
   inset: -16vh -12vw -8vh;

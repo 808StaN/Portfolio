@@ -121,13 +121,14 @@ const FRAGMENT_SHADER = `
   void main() {
     vec2 uv = gl_FragCoord.xy / u_resolution.xy;
     float aspect = u_resolution.x / u_resolution.y;
+    float viewScale = 1.5; // < 1.0 = zoom out (show wider area)
 
     // correct for aspect
-    vec2 p = (uv - 0.5) * vec2(aspect, 1.0);
+    vec2 p = (uv - 0.5) * vec2(aspect, 1.0) * viewScale;
 
     // ── Mouse displacement ─────────────────────────────────────────
     vec2 mouse = u_mouse;                               // 0..1
-    vec2 mouseP = (mouse - 0.5) * vec2(aspect, 1.0);   // aspect-corrected
+    vec2 mouseP = (mouse - 0.5) * vec2(aspect, 1.0) * viewScale;   // aspect-corrected
     float mouseDist = length(p - mouseP);
     float mouseInfluence = exp(-mouseDist * mouseDist * 2.2) * u_mouse_ease;
 
