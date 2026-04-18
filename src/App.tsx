@@ -111,34 +111,31 @@ export default function App() {
         return;
       }
 
+      const currentIdx = getCurrentIndex(sections);
       const direction = e.deltaY > 0 ? 1 : -1;
-      const workState = getWorkScrollState();
-      if (workState.inWorkBounds) {
+      const currentSection = sections[currentIdx];
+      const inWorkSection = currentSection?.id === 'work';
+
+      if (inWorkSection) {
+        const workState = getWorkScrollState();
         const canExitForward = direction === 1 && workState.atEnd;
         const canExitBackward = direction === -1 && workState.atStart;
         if (!canExitForward && !canExitBackward) {
           return;
         }
 
-        const workIdx = sections.findIndex(section => section.id === 'work');
-        if (workIdx !== -1) {
-          const targetIdx = Math.max(
-            0,
-            Math.min(sections.length - 1, workIdx + (direction > 0 ? 1 : -1))
-          );
-          if (targetIdx !== workIdx) {
-            e.preventDefault();
-            lock = true;
-            sections[targetIdx].scrollIntoView({ behavior: 'smooth', block: 'start' });
-            window.setTimeout(() => {
-              lock = false;
-            }, lockMs);
-            return;
-          }
+        const targetIdx = Math.max(0, Math.min(sections.length - 1, currentIdx + direction));
+        if (targetIdx !== currentIdx) {
+          e.preventDefault();
+          lock = true;
+          sections[targetIdx].scrollIntoView({ behavior: 'smooth', block: 'start' });
+          window.setTimeout(() => {
+            lock = false;
+          }, lockMs);
+          return;
         }
       }
 
-      const currentIdx = getCurrentIndex(sections);
       const nextIdx = Math.max(0, Math.min(sections.length - 1, currentIdx + direction));
 
       if (nextIdx === currentIdx) return;
