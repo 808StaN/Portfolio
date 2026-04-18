@@ -14,9 +14,8 @@ export default function Nav() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [activeSection, setActiveSection] = useState('');
   const lastY = useRef(0);
+  const virtualActiveRef = useRef<string | null>(null);
   const [topVisible, setTopVisible] = useState(true);
-  const wasAtBottomRef = useRef(false);
-  const bottomNavStageRef = useRef<0 | 1>(0); // 0 = stack, 1 = contact
 
   const getSectionTargetTop = (section: HTMLElement) => {
     const maxScrollTop = Math.max(0, document.documentElement.scrollHeight - window.innerHeight);
@@ -42,62 +41,71 @@ export default function Nav() {
 
   useEffect(() => {
     const ids = ['work', 'about', 'stack', 'contact'];
-    const updateActiveSection = () => {
-      const atBottom = window.scrollY + window.innerHeight >= document.documentElement.scrollHeight - 2;
+    const SECTION_TOP_EPS = 1;
 
-      if (atBottom) {
-        if (!wasAtBottomRef.current) {
-          bottomNavStageRef.current = 0;
-        }
-        wasAtBottomRef.current = true;
-        setActiveSection(bottomNavStageRef.current === 0 ? 'stack' : 'contact');
-        return;
+    const getCollapsedGroupRange = (tops: number[], idx: number) => {
+      const baseTop = tops[idx];
+      let start = idx;
+      while (start > 0 && Math.abs(tops[start - 1] - baseTop) <= SECTION_TOP_EPS) {
+        start -= 1;
       }
-      wasAtBottomRef.current = false;
-      bottomNavStageRef.current = 0;
+      let end = idx;
+      while (end < tops.length - 1 && Math.abs(tops[end + 1] - baseTop) <= SECTION_TOP_EPS) {
+        end += 1;
+      }
+      return [start, end] as const;
+    };
 
+    const updateActiveSection = () => {
+      const sections = ids
+        .map(id => document.getElementById(id) as HTMLElement | null)
+        .filter((section): section is HTMLElement => Boolean(section));
+      if (sections.length === 0) return;
+
+      const tops = sections.map(getSectionTargetTop);
       const y = window.scrollY + 2;
-      let nextActive = '';
-
-      ids.forEach(id => {
-        const section = document.getElementById(id) as HTMLElement | null;
-        if (!section) return;
-        if (getSectionTargetTop(section) <= y) {
-          nextActive = id;
+      let candidateIdx = 0;
+      tops.forEach((top, idx) => {
+        if (top <= y) {
+          candidateIdx = idx;
         }
       });
+      const [groupStart, groupEnd] = getCollapsedGroupRange(tops, candidateIdx);
 
-      setActiveSection(nextActive);
+      let resolvedIdx = groupStart !== groupEnd ? groupStart : candidateIdx;
+      const virtualId = virtualActiveRef.current;
+      if (virtualId) {
+        const virtualIdx = sections.findIndex(section => section.id === virtualId);
+        if (virtualIdx >= groupStart && virtualIdx <= groupEnd) {
+          resolvedIdx = virtualIdx;
+        } else {
+          virtualActiveRef.current = null;
+        }
+      }
+
+      setActiveSection(sections[resolvedIdx]?.id ?? '');
+    };
+
+    const onVirtualSectionChange = (event: Event) => {
+      const detail = (event as CustomEvent<{ id?: string | null }>).detail;
+      virtualActiveRef.current = detail?.id ?? null;
+      updateActiveSection();
     };
 
     updateActiveSection();
     window.addEventListener('scroll', updateActiveSection, { passive: true });
     window.addEventListener('resize', updateActiveSection);
+    window.addEventListener('virtual-section-change', onVirtualSectionChange);
     return () => {
       window.removeEventListener('scroll', updateActiveSection);
       window.removeEventListener('resize', updateActiveSection);
+      window.removeEventListener('virtual-section-change', onVirtualSectionChange);
     };
-  }, []);
-
-  useEffect(() => {
-    const onWheel = (e: WheelEvent) => {
-      const atBottom = window.scrollY + window.innerHeight >= document.documentElement.scrollHeight - 2;
-      if (!atBottom) return;
-      if (e.deltaY > 0 && bottomNavStageRef.current === 0) {
-        bottomNavStageRef.current = 1;
-        setActiveSection('contact');
-      } else if (e.deltaY < 0 && bottomNavStageRef.current === 1) {
-        bottomNavStageRef.current = 0;
-        setActiveSection('stack');
-      }
-    };
-
-    window.addEventListener('wheel', onWheel, { passive: true });
-    return () => window.removeEventListener('wheel', onWheel);
   }, []);
 
   const handleLink = (href: string) => {
     setMenuOpen(false);
+    virtualActiveRef.current = null;
     const el = document.querySelector(href) as HTMLElement | null;
     if (!el) return;
     window.scrollTo({ top: getSectionTargetTop(el), behavior: 'smooth' });

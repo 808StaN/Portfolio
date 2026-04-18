@@ -52,7 +52,9 @@ export default function App() {
     const workStepLockMs = 420;
     const isFirefox = /firefox/i.test(navigator.userAgent);
     let cancelWorkStepAnim: (() => void) | null = null;
-    let bottomStage: 0 | 1 = 1; // 0 = stack, 1 = contact
+    let virtualSectionIndex: number | null = null;
+    let virtualSectionId: string | null = null;
+    const SECTION_TOP_EPS = 1;
 
     const getSections = () => Array.from(document.querySelectorAll('main section[id]')) as HTMLElement[];
 
@@ -61,32 +63,65 @@ export default function App() {
       return Math.min(section.offsetTop, maxScrollTop);
     };
 
-    const getCurrentIndex = (sections: HTMLElement[]) => {
-      if (window.scrollY + window.innerHeight >= document.documentElement.scrollHeight - 2) {
-        return sections.length - 1;
-      }
-      const y = window.scrollY + 2;
-      let currentIdx = 0;
-      sections.forEach((section, idx) => {
-        const top = getSectionTargetTop(section);
-        if (top <= y) {
-          currentIdx = idx;
-        }
-      });
-      return currentIdx;
+    const publishVirtualSection = (id: string | null) => {
+      window.dispatchEvent(new CustomEvent('virtual-section-change', { detail: { id } }));
     };
 
-    const getNextDistinctIndex = (sections: HTMLElement[], currentIdx: number, direction: 1 | -1) => {
-      const currentTop = getSectionTargetTop(sections[currentIdx]);
-      let idx = currentIdx + direction;
-      while (idx >= 0 && idx < sections.length) {
-        const top = getSectionTargetTop(sections[idx]);
-        if (Math.abs(top - currentTop) > 1) {
-          return idx;
-        }
-        idx += direction;
+    const setVirtualSectionIndex = (nextIndex: number | null, sections: HTMLElement[]) => {
+      const nextId = nextIndex === null ? null : sections[nextIndex]?.id ?? null;
+      if (virtualSectionIndex === nextIndex && virtualSectionId === nextId) return;
+      virtualSectionIndex = nextIndex;
+      virtualSectionId = nextId;
+      publishVirtualSection(nextId);
+    };
+
+    const getSectionTargetTops = (sections: HTMLElement[]) => sections.map(getSectionTargetTop);
+
+    const getCollapsedGroupRange = (tops: number[], idx: number) => {
+      const baseTop = tops[idx];
+      let start = idx;
+      while (start > 0 && Math.abs(tops[start - 1] - baseTop) <= SECTION_TOP_EPS) {
+        start -= 1;
       }
-      return currentIdx;
+      let end = idx;
+      while (end < tops.length - 1 && Math.abs(tops[end + 1] - baseTop) <= SECTION_TOP_EPS) {
+        end += 1;
+      }
+      return [start, end] as const;
+    };
+
+    const resolveCurrentIndex = (sections: HTMLElement[], tops: number[]) => {
+      const y = window.scrollY + 2;
+      let candidateIdx = 0;
+      tops.forEach((top, idx) => {
+        if (top <= y) {
+          candidateIdx = idx;
+        }
+      });
+      const [groupStart, groupEnd] = getCollapsedGroupRange(tops, candidateIdx);
+      const candidateTop = tops[candidateIdx];
+
+      if (virtualSectionIndex !== null) {
+        const v = virtualSectionIndex;
+        const inSameGroup =
+          v >= groupStart &&
+          v <= groupEnd &&
+          Math.abs(tops[v] - candidateTop) <= SECTION_TOP_EPS;
+        if (inSameGroup) {
+          return v;
+        }
+        setVirtualSectionIndex(null, sections);
+      }
+
+      if (groupStart !== groupEnd) {
+        return groupStart;
+      }
+      return candidateIdx;
+    };
+
+    const getNextIndex = (currentIdx: number, direction: 1 | -1, total: number) => {
+      const next = currentIdx + direction;
+      return Math.max(0, Math.min(total - 1, next));
     };
 
     const getWorkScrollState = () => {
@@ -193,7 +228,7 @@ export default function App() {
 
       const sections = getSections();
       if (sections.length < 2) return;
-      const atBottom = window.scrollY + window.innerHeight >= document.documentElement.scrollHeight - 2;
+      const sectionTops = getSectionTargetTops(sections);
 
       if (lock) {
         e.preventDefault();
@@ -201,21 +236,6 @@ export default function App() {
       }
 
       const direction = deltaPx > 0 ? 1 : -1;
-
-      if (!atBottom) {
-        bottomStage = 1;
-      } else {
-        if (direction < 0 && bottomStage === 1) {
-          bottomStage = 0;
-          e.preventDefault();
-          return;
-        }
-        if (direction > 0 && bottomStage === 0) {
-          bottomStage = 1;
-          e.preventDefault();
-          return;
-        }
-      }
 
       const workState = getWorkScrollState();
       const inWorkRange =
@@ -236,6 +256,7 @@ export default function App() {
         workStepLockUntil = now + workStepLockMs;
 
         if (movedInProjects) {
+          setVirtualSectionIndex(null, sections);
           const targetY =
             workState.startY + (nextStep / workState.steps) * workState.totalScrollable;
           lock = true;
@@ -254,13 +275,24 @@ export default function App() {
           return;
         }
 
-        const currentIdx = getCurrentIndex(sections);
+        const currentIdx = resolveCurrentIndex(sections, sectionTops);
         const workIdx = sections.findIndex(section => section.id === 'work');
         const baseIdx = workIdx === -1 ? currentIdx : workIdx;
-        const workTargetIdx = getNextDistinctIndex(sections, baseIdx, direction as 1 | -1);
+        const workTargetIdx = getNextIndex(baseIdx, direction as 1 | -1, sections.length);
         if (workTargetIdx !== baseIdx) {
+          const currentTop = sectionTops[baseIdx];
+          const targetTop = sectionTops[workTargetIdx];
+          if (Math.abs(targetTop - currentTop) <= SECTION_TOP_EPS) {
+            setVirtualSectionIndex(workTargetIdx, sections);
+            lock = true;
+            window.setTimeout(() => {
+              lock = false;
+            }, 180);
+            return;
+          }
+          setVirtualSectionIndex(null, sections);
           lock = true;
-          window.scrollTo({ top: getSectionTargetTop(sections[workTargetIdx]), behavior: 'smooth' });
+          window.scrollTo({ top: targetTop, behavior: 'smooth' });
           window.setTimeout(() => {
             lock = false;
           }, lockMs);
@@ -270,20 +302,26 @@ export default function App() {
 
       workStepLockUntil = 0;
 
-      let currentIdx = getCurrentIndex(sections);
-      if (atBottom && bottomStage === 0) {
-        const stackIdx = sections.findIndex(section => section.id === 'stack');
-        if (stackIdx >= 0) {
-          currentIdx = stackIdx;
-        }
-      }
-      const nextIdx = getNextDistinctIndex(sections, currentIdx, direction as 1 | -1);
+      const currentIdx = resolveCurrentIndex(sections, sectionTops);
+      const nextIdx = getNextIndex(currentIdx, direction as 1 | -1, sections.length);
 
       if (nextIdx === currentIdx) return;
 
       e.preventDefault();
+      const currentTop = sectionTops[currentIdx];
+      const nextTop = sectionTops[nextIdx];
+      if (Math.abs(nextTop - currentTop) <= SECTION_TOP_EPS) {
+        setVirtualSectionIndex(nextIdx, sections);
+        lock = true;
+        window.setTimeout(() => {
+          lock = false;
+        }, 180);
+        return;
+      }
+
+      setVirtualSectionIndex(null, sections);
       lock = true;
-      window.scrollTo({ top: getSectionTargetTop(sections[nextIdx]), behavior: 'smooth' });
+      window.scrollTo({ top: nextTop, behavior: 'smooth' });
       window.setTimeout(() => {
         lock = false;
       }, lockMs);
@@ -292,6 +330,7 @@ export default function App() {
     window.addEventListener('wheel', onWheel, { passive: false });
     return () => {
       window.removeEventListener('wheel', onWheel);
+      publishVirtualSection(null);
       if (cancelWorkStepAnim) cancelWorkStepAnim();
     };
   }, []);
