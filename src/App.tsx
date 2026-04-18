@@ -74,20 +74,20 @@ export default function App() {
     const getWorkScrollState = () => {
       const section = document.getElementById('work') as HTMLElement | null;
       if (!section) {
-        return { inWorkViewport: false, atStart: false, atEnd: false };
+        return { inWorkBounds: false, atStart: false, atEnd: false, startY: 0, endY: 0, y: window.scrollY };
       }
 
       const rect = section.getBoundingClientRect();
       const inWorkBounds = rect.top < window.innerHeight && rect.bottom > 0;
       if (!inWorkBounds) {
-        return { inWorkBounds: false, atStart: false, atEnd: false };
+        return { inWorkBounds: false, atStart: false, atEnd: false, startY: 0, endY: 0, y: window.scrollY };
       }
 
       const stage = section.querySelector('.projects-stage') as HTMLElement | null;
       const stepsRaw = getComputedStyle(section).getPropertyValue('--projects-steps').trim();
       const steps = Math.max(1, Number.parseInt(stepsRaw || '1', 10));
       if (!stage) {
-        return { inWorkBounds: true, atStart: false, atEnd: false };
+        return { inWorkBounds: true, atStart: false, atEnd: false, startY: 0, endY: 0, y: window.scrollY };
       }
 
       const sectionTopDoc = window.scrollY + rect.top;
@@ -103,6 +103,9 @@ export default function App() {
         inWorkBounds: true,
         atStart: rawIndexProgress <= epsilon,
         atEnd: rawIndexProgress >= steps - epsilon,
+        startY,
+        endY,
+        y: window.scrollY,
       };
     };
 
@@ -124,6 +127,24 @@ export default function App() {
 
       if (inWorkSection) {
         const workState = getWorkScrollState();
+
+        if (workState.inWorkBounds) {
+          const distanceToEnd = Math.max(0, workState.endY - workState.y);
+          const distanceToStart = Math.max(0, workState.y - workState.startY);
+          const overForward = direction === 1 && !workState.atEnd && e.deltaY > distanceToEnd;
+          const overBackward = direction === -1 && !workState.atStart && Math.abs(e.deltaY) > distanceToStart;
+
+          // Keep native fast scrolling in projects, only clamp the final overshoot packet.
+          if (overForward || overBackward) {
+            e.preventDefault();
+            window.scrollTo({
+              top: overForward ? workState.endY : workState.startY,
+              behavior: 'auto',
+            });
+            return;
+          }
+        }
+
         const canExitForward = direction === 1 && workState.atEnd;
         const canExitBackward = direction === -1 && workState.atStart;
         if (!canExitForward && !canExitBackward) {

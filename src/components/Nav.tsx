@@ -84,7 +84,18 @@ export default function Nav() {
         animate={{ y: topVisible ? 0 : -80, opacity: topVisible ? 1 : 0 }}
         transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
       >
-        <nav className={`h-16 transition-all duration-500 ${scrolled ? 'nav-blur' : ''}`}>
+        <nav
+          className={`h-16 ${scrolled ? 'nav-blur' : ''}`}
+          style={
+            scrolled
+              ? undefined
+              : {
+                  background: 'transparent',
+                  backdropFilter: 'none',
+                  WebkitBackdropFilter: 'none',
+                }
+          }
+        >
           <div
             className="hero-inner h-full flex items-center justify-between"
             style={{ width: 'min(1600px, calc(100% - (var(--page-gutter) * 1.2)))' }}
