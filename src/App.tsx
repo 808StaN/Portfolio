@@ -1,29 +1,63 @@
-import { useEffect } from 'react';
-import Nav from './components/Nav';
-import Hero from './components/Hero';
-import Projects from './components/Projects';
-import About from './components/About';
-import Stack from './components/Stack';
-import Contact from './components/Contact';
-import Footer from './components/Footer';
-import Cursor from './components/Cursor';
-import WebGLBackground from './components/WebGLBackground';
-import GrainOverlay from './components/GrainOverlay';
+import { useEffect } from "react";
+import Nav from "./components/Nav";
+import Hero from "./components/Hero";
+import Projects from "./components/Projects";
+import About from "./components/About";
+import Stack from "./components/Stack";
+import Contact from "./components/Contact";
+import Footer from "./components/Footer";
+import Cursor from "./components/Cursor";
+import WebGLBackground from "./components/WebGLBackground";
+import GrainOverlay from "./components/GrainOverlay";
 
 export default function App() {
   // Smooth scroll polyfill / locking during load
   useEffect(() => {
-    document.documentElement.style.scrollBehavior = 'smooth';
+    document.documentElement.style.scrollBehavior = "smooth";
   }, []);
 
   useEffect(() => {
     const root = document.documentElement;
     let rafId = 0;
+    const lerp = (a: number, b: number, t: number) => a + (b - a) * t;
+    const hsla = (h: number, s: number, l: number, a: number) =>
+      `hsla(${h.toFixed(1)} ${s.toFixed(1)}% ${l.toFixed(1)}% / ${a.toFixed(3)})`;
 
     const updateScrollProgress = () => {
       const scrollable = root.scrollHeight - window.innerHeight;
-      const progress = scrollable > 0 ? window.scrollY / scrollable : 0;
-      root.style.setProperty('--scroll-progress', progress.toFixed(4));
+      const progressRaw = scrollable > 0 ? window.scrollY / scrollable : 0;
+      const progress = Math.max(0, Math.min(1, progressRaw));
+      root.style.setProperty("--scroll-progress", progress.toFixed(4));
+      const trackHue = lerp(228, 296, progress);
+      const thumbHue = lerp(222, 308, progress);
+      const hoverHue = lerp(230, 314, progress);
+      root.style.setProperty(
+        "--scrollbar-track",
+        hsla(
+          trackHue,
+          lerp(66, 66, progress),
+          lerp(24, 24, progress),
+          lerp(0.99, 0.99, progress),
+        ),
+      );
+      root.style.setProperty(
+        "--scrollbar-thumb",
+        hsla(
+          thumbHue,
+          lerp(74, 86, progress),
+          lerp(52, 64, progress),
+          lerp(0.82, 0.78, progress),
+        ),
+      );
+      root.style.setProperty(
+        "--scrollbar-thumb-hover",
+        hsla(
+          hoverHue,
+          lerp(88, 98, progress),
+          lerp(70, 82, progress),
+          lerp(0.96, 0.92, progress),
+        ),
+      );
       rafId = 0;
     };
 
@@ -34,14 +68,17 @@ export default function App() {
     };
 
     updateScrollProgress();
-    window.addEventListener('scroll', onScrollOrResize, { passive: true });
-    window.addEventListener('resize', onScrollOrResize);
+    window.addEventListener("scroll", onScrollOrResize, { passive: true });
+    window.addEventListener("resize", onScrollOrResize);
 
     return () => {
-      window.removeEventListener('scroll', onScrollOrResize);
-      window.removeEventListener('resize', onScrollOrResize);
+      window.removeEventListener("scroll", onScrollOrResize);
+      window.removeEventListener("resize", onScrollOrResize);
       if (rafId) cancelAnimationFrame(rafId);
-      root.style.removeProperty('--scroll-progress');
+      root.style.removeProperty("--scroll-progress");
+      root.style.removeProperty("--scrollbar-track");
+      root.style.removeProperty("--scrollbar-thumb");
+      root.style.removeProperty("--scrollbar-thumb-hover");
     };
   }, []);
 
@@ -56,35 +93,55 @@ export default function App() {
     let virtualSectionId: string | null = null;
     const SECTION_TOP_EPS = 1;
 
-    const getSections = () => Array.from(document.querySelectorAll('main section[id]')) as HTMLElement[];
+    const getSections = () =>
+      Array.from(
+        document.querySelectorAll("main section[id]"),
+      ) as HTMLElement[];
 
     const getSectionTargetTop = (section: HTMLElement) => {
-      const maxScrollTop = Math.max(0, document.documentElement.scrollHeight - window.innerHeight);
+      const maxScrollTop = Math.max(
+        0,
+        document.documentElement.scrollHeight - window.innerHeight,
+      );
       return Math.min(section.offsetTop, maxScrollTop);
     };
 
     const publishVirtualSection = (id: string | null) => {
-      window.dispatchEvent(new CustomEvent('virtual-section-change', { detail: { id } }));
+      window.dispatchEvent(
+        new CustomEvent("virtual-section-change", { detail: { id } }),
+      );
     };
 
-    const setVirtualSectionIndex = (nextIndex: number | null, sections: HTMLElement[]) => {
-      const nextId = nextIndex === null ? null : sections[nextIndex]?.id ?? null;
-      if (virtualSectionIndex === nextIndex && virtualSectionId === nextId) return;
+    const setVirtualSectionIndex = (
+      nextIndex: number | null,
+      sections: HTMLElement[],
+    ) => {
+      const nextId =
+        nextIndex === null ? null : (sections[nextIndex]?.id ?? null);
+      if (virtualSectionIndex === nextIndex && virtualSectionId === nextId)
+        return;
       virtualSectionIndex = nextIndex;
       virtualSectionId = nextId;
       publishVirtualSection(nextId);
     };
 
-    const getSectionTargetTops = (sections: HTMLElement[]) => sections.map(getSectionTargetTop);
+    const getSectionTargetTops = (sections: HTMLElement[]) =>
+      sections.map(getSectionTargetTop);
 
     const getCollapsedGroupRange = (tops: number[], idx: number) => {
       const baseTop = tops[idx];
       let start = idx;
-      while (start > 0 && Math.abs(tops[start - 1] - baseTop) <= SECTION_TOP_EPS) {
+      while (
+        start > 0 &&
+        Math.abs(tops[start - 1] - baseTop) <= SECTION_TOP_EPS
+      ) {
         start -= 1;
       }
       let end = idx;
-      while (end < tops.length - 1 && Math.abs(tops[end + 1] - baseTop) <= SECTION_TOP_EPS) {
+      while (
+        end < tops.length - 1 &&
+        Math.abs(tops[end + 1] - baseTop) <= SECTION_TOP_EPS
+      ) {
         end += 1;
       }
       return [start, end] as const;
@@ -119,13 +176,17 @@ export default function App() {
       return candidateIdx;
     };
 
-    const getNextIndex = (currentIdx: number, direction: 1 | -1, total: number) => {
+    const getNextIndex = (
+      currentIdx: number,
+      direction: 1 | -1,
+      total: number,
+    ) => {
       const next = currentIdx + direction;
       return Math.max(0, Math.min(total - 1, next));
     };
 
     const getWorkScrollState = () => {
-      const section = document.getElementById('work') as HTMLElement | null;
+      const section = document.getElementById("work") as HTMLElement | null;
       if (!section) {
         return {
           inWorkBounds: false,
@@ -152,9 +213,13 @@ export default function App() {
         };
       }
 
-      const stage = section.querySelector('.projects-stage') as HTMLElement | null;
-      const stepsRaw = getComputedStyle(section).getPropertyValue('--projects-steps').trim();
-      const steps = Math.max(1, Number.parseInt(stepsRaw || '1', 10));
+      const stage = section.querySelector(
+        ".projects-stage",
+      ) as HTMLElement | null;
+      const stepsRaw = getComputedStyle(section)
+        .getPropertyValue("--projects-steps")
+        .trim();
+      const steps = Math.max(1, Number.parseInt(stepsRaw || "1", 10));
       if (!stage) {
         return {
           inWorkBounds: true,
@@ -168,11 +233,15 @@ export default function App() {
       }
 
       const sectionTopDoc = window.scrollY + rect.top;
-      const stagePaddingTop = Number.parseFloat(getComputedStyle(stage).paddingTop || '0') || 0;
+      const stagePaddingTop =
+        Number.parseFloat(getComputedStyle(stage).paddingTop || "0") || 0;
       const startY = sectionTopDoc + stagePaddingTop;
       const endY = sectionTopDoc + section.offsetHeight - window.innerHeight;
       const totalScrollable = Math.max(1, endY - startY);
-      const scrolled = Math.min(Math.max(window.scrollY - startY, 0), totalScrollable);
+      const scrolled = Math.min(
+        Math.max(window.scrollY - startY, 0),
+        totalScrollable,
+      );
       const rawIndexProgress = (scrolled / totalScrollable) * steps;
 
       return {
@@ -186,11 +255,15 @@ export default function App() {
       };
     };
 
-    const animateScrollTo = (targetY: number, durationMs: number, onDone: () => void) => {
+    const animateScrollTo = (
+      targetY: number,
+      durationMs: number,
+      onDone: () => void,
+    ) => {
       const startY = window.scrollY;
       const delta = targetY - startY;
       if (Math.abs(delta) < 0.5) {
-        window.scrollTo({ top: targetY, behavior: 'auto' });
+        window.scrollTo({ top: targetY, behavior: "auto" });
         onDone();
         return () => {};
       }
@@ -202,12 +275,12 @@ export default function App() {
       const tick = (now: number) => {
         const t = Math.min(1, (now - startAt) / durationMs);
         const nextY = startY + delta * easeOutCubic(t);
-        window.scrollTo({ top: nextY, behavior: 'auto' });
+        window.scrollTo({ top: nextY, behavior: "auto" });
         if (t < 1) {
           rafId = requestAnimationFrame(tick);
           return;
         }
-        window.scrollTo({ top: targetY, behavior: 'auto' });
+        window.scrollTo({ top: targetY, behavior: "auto" });
         onDone();
       };
 
@@ -250,15 +323,22 @@ export default function App() {
           return;
         }
 
-        const currentStep = Math.max(0, Math.min(workState.steps, Math.round(workState.progress)));
-        const nextStep = Math.max(0, Math.min(workState.steps, currentStep + direction));
+        const currentStep = Math.max(
+          0,
+          Math.min(workState.steps, Math.round(workState.progress)),
+        );
+        const nextStep = Math.max(
+          0,
+          Math.min(workState.steps, currentStep + direction),
+        );
         const movedInProjects = nextStep !== currentStep;
         workStepLockUntil = now + workStepLockMs;
 
         if (movedInProjects) {
           setVirtualSectionIndex(null, sections);
           const targetY =
-            workState.startY + (nextStep / workState.steps) * workState.totalScrollable;
+            workState.startY +
+            (nextStep / workState.steps) * workState.totalScrollable;
           lock = true;
           if (isFirefox) {
             if (cancelWorkStepAnim) cancelWorkStepAnim();
@@ -267,7 +347,7 @@ export default function App() {
               cancelWorkStepAnim = null;
             });
           } else {
-            window.scrollTo({ top: targetY, behavior: 'smooth' });
+            window.scrollTo({ top: targetY, behavior: "smooth" });
             window.setTimeout(() => {
               lock = false;
             }, 520);
@@ -276,9 +356,13 @@ export default function App() {
         }
 
         const currentIdx = resolveCurrentIndex(sections, sectionTops);
-        const workIdx = sections.findIndex(section => section.id === 'work');
+        const workIdx = sections.findIndex((section) => section.id === "work");
         const baseIdx = workIdx === -1 ? currentIdx : workIdx;
-        const workTargetIdx = getNextIndex(baseIdx, direction as 1 | -1, sections.length);
+        const workTargetIdx = getNextIndex(
+          baseIdx,
+          direction as 1 | -1,
+          sections.length,
+        );
         if (workTargetIdx !== baseIdx) {
           const currentTop = sectionTops[baseIdx];
           const targetTop = sectionTops[workTargetIdx];
@@ -292,7 +376,7 @@ export default function App() {
           }
           setVirtualSectionIndex(null, sections);
           lock = true;
-          window.scrollTo({ top: targetTop, behavior: 'smooth' });
+          window.scrollTo({ top: targetTop, behavior: "smooth" });
           window.setTimeout(() => {
             lock = false;
           }, lockMs);
@@ -303,7 +387,11 @@ export default function App() {
       workStepLockUntil = 0;
 
       const currentIdx = resolveCurrentIndex(sections, sectionTops);
-      const nextIdx = getNextIndex(currentIdx, direction as 1 | -1, sections.length);
+      const nextIdx = getNextIndex(
+        currentIdx,
+        direction as 1 | -1,
+        sections.length,
+      );
 
       if (nextIdx === currentIdx) return;
 
@@ -321,15 +409,15 @@ export default function App() {
 
       setVirtualSectionIndex(null, sections);
       lock = true;
-      window.scrollTo({ top: nextTop, behavior: 'smooth' });
+      window.scrollTo({ top: nextTop, behavior: "smooth" });
       window.setTimeout(() => {
         lock = false;
       }, lockMs);
     };
 
-    window.addEventListener('wheel', onWheel, { passive: false });
+    window.addEventListener("wheel", onWheel, { passive: false });
     return () => {
-      window.removeEventListener('wheel', onWheel);
+      window.removeEventListener("wheel", onWheel);
       publishVirtualSection(null);
       if (cancelWorkStepAnim) cancelWorkStepAnim();
     };
@@ -338,7 +426,7 @@ export default function App() {
   return (
     <div
       className="app-shell relative min-h-screen"
-      style={{ background: 'var(--color-bg)', color: 'var(--color-text)' }}
+      style={{ background: "var(--color-bg)", color: "var(--color-text)" }}
     >
       <div className="global-webgl-layer" aria-hidden="true">
         <WebGLBackground />
