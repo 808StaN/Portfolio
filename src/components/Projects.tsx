@@ -29,6 +29,9 @@ export default function Projects() {
   const visualRef = useRef<HTMLDivElement>(null);
   const trackRef = useRef<HTMLDivElement>(null);
   const [activeIndex, setActiveIndex] = useState(0);
+  const [repoDescriptions, setRepoDescriptions] = useState<Record<string, string>>(
+    {},
+  );
   const targetProgressRef = useRef(0);
   const displayedProgressRef = useRef(0);
   const rafRef = useRef<number | null>(null);
@@ -41,6 +44,48 @@ export default function Projects() {
 
   const steps = Math.max(1, projects.length - 1);
   const active = projects[activeIndex];
+  const activeDescription = repoDescriptions[active.id] ?? active.description;
+
+  useEffect(() => {
+    const controller = new AbortController();
+
+    const readRepoPath = (url?: string) => {
+      if (!url) return null;
+      const match = url.match(/github\.com\/([^/]+)\/([^/#?]+)/i);
+      if (!match) return null;
+      return `${match[1]}/${match[2]}`;
+    };
+
+    const loadDescriptions = async () => {
+      const entries = await Promise.all(
+        projects.map(async (project) => {
+          const repoPath = readRepoPath(project.link);
+          if (!repoPath) return [project.id, ""] as const;
+          try {
+            const response = await fetch(`https://api.github.com/repos/${repoPath}`, {
+              signal: controller.signal,
+            });
+            if (!response.ok) return [project.id, ""] as const;
+            const data = (await response.json()) as { description?: string };
+            return [project.id, (data.description || "").trim()] as const;
+          } catch {
+            return [project.id, ""] as const;
+          }
+        }),
+      );
+
+      if (controller.signal.aborted) return;
+
+      const next: Record<string, string> = {};
+      for (const [id, description] of entries) {
+        if (description) next[id] = description;
+      }
+      setRepoDescriptions(next);
+    };
+
+    loadDescriptions();
+    return () => controller.abort();
+  }, []);
 
   const triggerPulse = () => {
     const el = visualRef.current;
@@ -286,11 +331,22 @@ export default function Projects() {
             <div className="projects-meta">
               <h2 className="projects-title">{slashTitle(active.title)}</h2>
               <p className="projects-category">{active.category}</p>
+              <p className="projects-description">{activeDescription}</p>
               <div className="projects-tagline">
-                {active.tags.slice(0, 3).map((t) => (
+                {active.tags.map((t) => (
                   <span key={t}>{t}</span>
                 ))}
               </div>
+              {active.link ? (
+                <a
+                  href={active.link}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="projects-repo-btn"
+                >
+                  View repository -&gt;
+                </a>
+              ) : null}
             </div>
 
             <div className="projects-visual-wrap">
