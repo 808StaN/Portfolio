@@ -15,6 +15,8 @@ export default function Nav() {
   const [activeSection, setActiveSection] = useState('');
   const lastY = useRef(0);
   const [topVisible, setTopVisible] = useState(true);
+  const wasAtBottomRef = useRef(false);
+  const bottomNavStageRef = useRef<0 | 1>(0); // 0 = stack, 1 = contact
 
   const getSectionTargetTop = (section: HTMLElement) => {
     const maxScrollTop = Math.max(0, document.documentElement.scrollHeight - window.innerHeight);
@@ -41,10 +43,18 @@ export default function Nav() {
   useEffect(() => {
     const ids = ['work', 'about', 'stack', 'contact'];
     const updateActiveSection = () => {
-      if (window.scrollY + window.innerHeight >= document.documentElement.scrollHeight - 2) {
-        setActiveSection('contact');
+      const atBottom = window.scrollY + window.innerHeight >= document.documentElement.scrollHeight - 2;
+
+      if (atBottom) {
+        if (!wasAtBottomRef.current) {
+          bottomNavStageRef.current = 0;
+        }
+        wasAtBottomRef.current = true;
+        setActiveSection(bottomNavStageRef.current === 0 ? 'stack' : 'contact');
         return;
       }
+      wasAtBottomRef.current = false;
+      bottomNavStageRef.current = 0;
 
       const y = window.scrollY + 2;
       let nextActive = '';
@@ -67,6 +77,23 @@ export default function Nav() {
       window.removeEventListener('scroll', updateActiveSection);
       window.removeEventListener('resize', updateActiveSection);
     };
+  }, []);
+
+  useEffect(() => {
+    const onWheel = (e: WheelEvent) => {
+      const atBottom = window.scrollY + window.innerHeight >= document.documentElement.scrollHeight - 2;
+      if (!atBottom) return;
+      if (e.deltaY > 0 && bottomNavStageRef.current === 0) {
+        bottomNavStageRef.current = 1;
+        setActiveSection('contact');
+      } else if (e.deltaY < 0 && bottomNavStageRef.current === 1) {
+        bottomNavStageRef.current = 0;
+        setActiveSection('stack');
+      }
+    };
+
+    window.addEventListener('wheel', onWheel, { passive: true });
+    return () => window.removeEventListener('wheel', onWheel);
   }, []);
 
   const handleLink = (href: string) => {

@@ -52,6 +52,7 @@ export default function App() {
     const workStepLockMs = 420;
     const isFirefox = /firefox/i.test(navigator.userAgent);
     let cancelWorkStepAnim: (() => void) | null = null;
+    let bottomStage: 0 | 1 = 1; // 0 = stack, 1 = contact
 
     const getSections = () => Array.from(document.querySelectorAll('main section[id]')) as HTMLElement[];
 
@@ -72,6 +73,19 @@ export default function App() {
           currentIdx = idx;
         }
       });
+      return currentIdx;
+    };
+
+    const getNextDistinctIndex = (sections: HTMLElement[], currentIdx: number, direction: 1 | -1) => {
+      const currentTop = getSectionTargetTop(sections[currentIdx]);
+      let idx = currentIdx + direction;
+      while (idx >= 0 && idx < sections.length) {
+        const top = getSectionTargetTop(sections[idx]);
+        if (Math.abs(top - currentTop) > 1) {
+          return idx;
+        }
+        idx += direction;
+      }
       return currentIdx;
     };
 
@@ -169,17 +183,40 @@ export default function App() {
     };
 
     const onWheel = (e: WheelEvent) => {
-      if (Math.abs(e.deltaY) < 4) return;
+      const deltaPx =
+        e.deltaMode === 1
+          ? e.deltaY * 16
+          : e.deltaMode === 2
+            ? e.deltaY * window.innerHeight
+            : e.deltaY;
+      if (Math.abs(deltaPx) < 4) return;
 
       const sections = getSections();
       if (sections.length < 2) return;
+      const atBottom = window.scrollY + window.innerHeight >= document.documentElement.scrollHeight - 2;
 
       if (lock) {
         e.preventDefault();
         return;
       }
 
-      const direction = e.deltaY > 0 ? 1 : -1;
+      const direction = deltaPx > 0 ? 1 : -1;
+
+      if (!atBottom) {
+        bottomStage = 1;
+      } else {
+        if (direction < 0 && bottomStage === 1) {
+          bottomStage = 0;
+          e.preventDefault();
+          return;
+        }
+        if (direction > 0 && bottomStage === 0) {
+          bottomStage = 1;
+          e.preventDefault();
+          return;
+        }
+      }
+
       const workState = getWorkScrollState();
       const inWorkRange =
         workState.inWorkBounds &&
@@ -220,7 +257,7 @@ export default function App() {
         const currentIdx = getCurrentIndex(sections);
         const workIdx = sections.findIndex(section => section.id === 'work');
         const baseIdx = workIdx === -1 ? currentIdx : workIdx;
-        const workTargetIdx = Math.max(0, Math.min(sections.length - 1, baseIdx + direction));
+        const workTargetIdx = getNextDistinctIndex(sections, baseIdx, direction as 1 | -1);
         if (workTargetIdx !== baseIdx) {
           lock = true;
           window.scrollTo({ top: getSectionTargetTop(sections[workTargetIdx]), behavior: 'smooth' });
@@ -233,8 +270,14 @@ export default function App() {
 
       workStepLockUntil = 0;
 
-      const currentIdx = getCurrentIndex(sections);
-      const nextIdx = Math.max(0, Math.min(sections.length - 1, currentIdx + direction));
+      let currentIdx = getCurrentIndex(sections);
+      if (atBottom && bottomStage === 0) {
+        const stackIdx = sections.findIndex(section => section.id === 'stack');
+        if (stackIdx >= 0) {
+          currentIdx = stackIdx;
+        }
+      }
+      const nextIdx = getNextDistinctIndex(sections, currentIdx, direction as 1 | -1);
 
       if (nextIdx === currentIdx) return;
 
