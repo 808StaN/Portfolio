@@ -413,8 +413,21 @@ body {
 }
 
 .projects-visual-scroll {
-  border: 1px solid rgba(255, 255, 255, 0.14);
-  background: rgba(8, 12, 25, 0.36);
+  position: relative;
+  border-radius: 10px;
+  border: 1x solid rgba(173, 199, 255, 0.22);
+  background:
+    linear-gradient(
+      160deg,
+      rgba(255, 255, 255, 0.07) 0%,
+      rgba(255, 255, 255, 0.01) 28%,
+      rgba(79, 142, 247, 0.1) 100%
+    ),
+    rgba(8, 12, 25, 0.36);
+  box-shadow:
+    0 20px 48px rgba(8, 14, 38, 0.42),
+    0 0 0 1px rgba(255, 255, 255, 0.05) inset,
+    0 0 26px rgba(113, 146, 255, 0.18);
   overflow: hidden;
   aspect-ratio: 16 / 9;
   width: 100%;
@@ -423,7 +436,26 @@ body {
   will-change: transform;
 }
 
+.projects-visual-scroll::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  border-radius: inherit;
+  background: linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.2) 0%,
+    rgba(255, 255, 255, 0.04) 24%,
+    rgba(137, 171, 255, 0.02) 55%,
+    rgba(173, 199, 255, 0.16) 100%
+  );
+  mix-blend-mode: screen;
+  opacity: 0.5;
+}
+
 .projects-visual-track {
+  display: flex;
+  flex-direction: column;
   height: 100%;
   width: 100%;
   will-change: transform;
@@ -431,6 +463,7 @@ body {
 }
 
 .projects-visual-item {
+  flex: 0 0 100%;
   height: 100%;
   width: 100%;
   display: block;

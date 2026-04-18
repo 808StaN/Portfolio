@@ -208,7 +208,9 @@ export default function Projects() {
       );
 
       if (trackRef.current) {
-        trackRef.current.style.transform = `translate3d(0, -${displayedProgressRef.current * 100}%, 0)`;
+        const frameHeight = visualRef.current?.clientHeight ?? 0;
+        const translateY = displayedProgressRef.current * frameHeight;
+        trackRef.current.style.transform = `translate3d(0, -${translateY}px, 0)`;
       }
 
       rafRef.current = requestAnimationFrame(tick);
