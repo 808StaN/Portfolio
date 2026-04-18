@@ -48,6 +48,8 @@ export default function App() {
   useEffect(() => {
     let lock = false;
     const lockMs = 720;
+    let workStepLockUntil = 0;
+    const workStepLockMs = 420;
 
     const getSections = () => Array.from(document.querySelectorAll('main section[id]')) as HTMLElement[];
 
@@ -74,20 +76,44 @@ export default function App() {
     const getWorkScrollState = () => {
       const section = document.getElementById('work') as HTMLElement | null;
       if (!section) {
-        return { inWorkBounds: false, atStart: false, atEnd: false, startY: 0, endY: 0, y: window.scrollY };
+        return {
+          inWorkBounds: false,
+          startY: 0,
+          endY: 0,
+          y: window.scrollY,
+          steps: 1,
+          totalScrollable: 1,
+          progress: 0,
+        };
       }
 
       const rect = section.getBoundingClientRect();
       const inWorkBounds = rect.top < window.innerHeight && rect.bottom > 0;
       if (!inWorkBounds) {
-        return { inWorkBounds: false, atStart: false, atEnd: false, startY: 0, endY: 0, y: window.scrollY };
+        return {
+          inWorkBounds: false,
+          startY: 0,
+          endY: 0,
+          y: window.scrollY,
+          steps: 1,
+          totalScrollable: 1,
+          progress: 0,
+        };
       }
 
       const stage = section.querySelector('.projects-stage') as HTMLElement | null;
       const stepsRaw = getComputedStyle(section).getPropertyValue('--projects-steps').trim();
       const steps = Math.max(1, Number.parseInt(stepsRaw || '1', 10));
       if (!stage) {
-        return { inWorkBounds: true, atStart: false, atEnd: false, startY: 0, endY: 0, y: window.scrollY };
+        return {
+          inWorkBounds: true,
+          startY: 0,
+          endY: 0,
+          y: window.scrollY,
+          steps,
+          totalScrollable: 1,
+          progress: 0,
+        };
       }
 
       const sectionTopDoc = window.scrollY + rect.top;
@@ -97,20 +123,20 @@ export default function App() {
       const totalScrollable = Math.max(1, endY - startY);
       const scrolled = Math.min(Math.max(window.scrollY - startY, 0), totalScrollable);
       const rawIndexProgress = (scrolled / totalScrollable) * steps;
-      const epsilon = 0.12;
 
       return {
         inWorkBounds: true,
-        atStart: rawIndexProgress <= epsilon,
-        atEnd: rawIndexProgress >= steps - epsilon,
         startY,
         endY,
         y: window.scrollY,
+        steps,
+        totalScrollable,
+        progress: Math.max(0, Math.min(steps, rawIndexProgress)),
       };
     };
 
     const onWheel = (e: WheelEvent) => {
-      if (Math.abs(e.deltaY) < 18) return;
+      if (Math.abs(e.deltaY) < 4) return;
 
       const sections = getSections();
       if (sections.length < 2) return;
@@ -120,49 +146,53 @@ export default function App() {
         return;
       }
 
-      const currentIdx = getCurrentIndex(sections);
       const direction = e.deltaY > 0 ? 1 : -1;
-      const currentSection = sections[currentIdx];
-      const inWorkSection = currentSection?.id === 'work';
+      const workState = getWorkScrollState();
+      const inWorkRange =
+        workState.inWorkBounds &&
+        workState.y >= workState.startY - window.innerHeight * 0.12 &&
+        workState.y <= workState.endY + window.innerHeight * 0.08;
 
-      if (inWorkSection) {
-        const workState = getWorkScrollState();
-
-        if (workState.inWorkBounds) {
-          const distanceToEnd = Math.max(0, workState.endY - workState.y);
-          const distanceToStart = Math.max(0, workState.y - workState.startY);
-          const overForward = direction === 1 && !workState.atEnd && e.deltaY > distanceToEnd;
-          const overBackward = direction === -1 && !workState.atStart && Math.abs(e.deltaY) > distanceToStart;
-
-          // Keep native fast scrolling in projects, only clamp the final overshoot packet.
-          if (overForward || overBackward) {
-            e.preventDefault();
-            window.scrollTo({
-              top: overForward ? workState.endY : workState.startY,
-              behavior: 'auto',
-            });
-            return;
-          }
-        }
-
-        const canExitForward = direction === 1 && workState.atEnd;
-        const canExitBackward = direction === -1 && workState.atStart;
-        if (!canExitForward && !canExitBackward) {
+      if (inWorkRange) {
+        e.preventDefault();
+        const now = performance.now();
+        if (now < workStepLockUntil) {
           return;
         }
 
-        const targetIdx = Math.max(0, Math.min(sections.length - 1, currentIdx + direction));
-        if (targetIdx !== currentIdx) {
-          e.preventDefault();
+        const currentStep = Math.max(0, Math.min(workState.steps, Math.round(workState.progress)));
+        const nextStep = Math.max(0, Math.min(workState.steps, currentStep + direction));
+        const movedInProjects = nextStep !== currentStep;
+        workStepLockUntil = now + workStepLockMs;
+
+        if (movedInProjects) {
+          const targetY =
+            workState.startY + (nextStep / workState.steps) * workState.totalScrollable;
           lock = true;
-          window.scrollTo({ top: getSectionTargetTop(sections[targetIdx]), behavior: 'smooth' });
+          window.scrollTo({ top: targetY, behavior: 'smooth' });
+          window.setTimeout(() => {
+            lock = false;
+          }, 520);
+          return;
+        }
+
+        const currentIdx = getCurrentIndex(sections);
+        const workIdx = sections.findIndex(section => section.id === 'work');
+        const baseIdx = workIdx === -1 ? currentIdx : workIdx;
+        const workTargetIdx = Math.max(0, Math.min(sections.length - 1, baseIdx + direction));
+        if (workTargetIdx !== baseIdx) {
+          lock = true;
+          window.scrollTo({ top: getSectionTargetTop(sections[workTargetIdx]), behavior: 'smooth' });
           window.setTimeout(() => {
             lock = false;
           }, lockMs);
-          return;
         }
+        return;
       }
 
+      workStepLockUntil = 0;
+
+      const currentIdx = getCurrentIndex(sections);
       const nextIdx = Math.max(0, Math.min(sections.length - 1, currentIdx + direction));
 
       if (nextIdx === currentIdx) return;
