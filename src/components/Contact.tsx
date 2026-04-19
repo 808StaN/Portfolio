@@ -15,12 +15,28 @@ const channels = [
     ),
   },
   {
-    label: 'Main Projects',
-    handle: '/808StaN?tab=repositories',
-    href: 'https://github.com/808StaN?tab=repositories',
+    label: 'LinkedIn',
+    handle: '/in/dawidstanisz',
+    href: 'https://www.linkedin.com/in/dawidstanisz',
     icon: (
       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-        <path d="M4 6h16M4 12h16M4 18h10" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
+        <path
+          d="M6.94 8.5a1.44 1.44 0 1 1 0-2.88 1.44 1.44 0 0 1 0 2.88ZM5.7 9.8h2.48v8.5H5.7v-8.5Zm4.02 0h2.38v1.16h.03c.33-.63 1.15-1.3 2.37-1.3 2.53 0 3 1.67 3 3.84v4.8h-2.48v-4.25c0-1.01-.02-2.32-1.41-2.32-1.42 0-1.64 1.1-1.64 2.24v4.33H9.72v-8.5Z"
+          fill="currentColor"
+        />
+      </svg>
+    ),
+  },
+  {
+    label: 'Email',
+    handle: 'dstanisz.dev@gmail.com',
+    href: 'mailto:dstanisz.dev@gmail.com',
+    icon: (
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+        <path
+          d="M4 6.75A1.75 1.75 0 0 1 5.75 5h12.5A1.75 1.75 0 0 1 20 6.75v10.5A1.75 1.75 0 0 1 18.25 19H5.75A1.75 1.75 0 0 1 4 17.25V6.75Zm1.5.3v.17l6.5 4.56 6.5-4.56v-.17a.25.25 0 0 0-.25-.25H5.75a.25.25 0 0 0-.25.25Zm13 1.99-6.07 4.25a.75.75 0 0 1-.86 0L5.5 9.04v8.2c0 .14.11.25.25.25h12.5a.25.25 0 0 0 .25-.25v-8.2Z"
+          fill="currentColor"
+        />
       </svg>
     ),
   },
@@ -60,9 +76,9 @@ export default function Contact() {
               animate={inView ? { opacity: 1, y: 0 } : {}}
               transition={{ duration: 0.8, delay: 0.1, ease: easeOut }}
             >
-              Ready to
+              Open to new
               <br />
-              <span style={{ color: 'rgba(255,255,255,0.5)' }}>build together.</span>
+              <span style={{ color: 'rgba(255,255,255,0.5)' }}>opportunities.</span>
             </motion.h2>
 
             <motion.p
@@ -72,8 +88,7 @@ export default function Contact() {
               animate={inView ? { opacity: 1, y: 0 } : {}}
               transition={{ duration: 0.8, delay: 0.2, ease: easeOut }}
             >
-              Best contact path is GitHub. If your team needs a React/Node.js engineer for product work,
-              integrations, or tooling, reach out and I will respond quickly.
+              The best way to reach me is through LinkedIn or email. I am open to internship opportunities and full-time roles, with a willingness to relocate. I’m eager to grow as a developer and contribute to meaningful products.
             </motion.p>
           </div>
 
@@ -82,27 +97,6 @@ export default function Contact() {
               initial={{ opacity: 0, y: 20 }}
               animate={inView ? { opacity: 1, y: 0 } : {}}
               transition={{ duration: 0.8, delay: 0.3, ease: easeOut }}
-            >
-              <span
-                className="text-[11px] uppercase tracking-widest mb-3 block"
-                style={{ color: 'rgba(255,255,255,0.3)', fontFamily: 'var(--font-sans)' }}
-              >
-                Location
-              </span>
-              <span
-                className="text-lg md:text-xl font-medium text-white/80"
-                style={{ fontFamily: 'var(--font-display)', letterSpacing: '-0.02em' }}
-              >
-                Poland (UTC+1 / UTC+2)
-              </span>
-            </motion.div>
-
-            <div className="divider" />
-
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={inView ? { opacity: 1, y: 0 } : {}}
-              transition={{ duration: 0.8, delay: 0.4, ease: easeOut }}
             >
               <span
                 className="text-[11px] uppercase tracking-widest mb-5 block"
