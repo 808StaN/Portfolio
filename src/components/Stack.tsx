@@ -7,32 +7,22 @@ const categories = [
   {
     label: 'Frontend',
     color: '#4f8ef7',
-    skills: ['React', 'TypeScript', 'JavaScript', 'HTML', 'CSS', 'Vite'],
+    skills: ['React', 'TypeScript', 'JavaScript', 'HTML', 'CSS', 'Vite', 'React Router', 'Tailwind CSS', 'TanStack Query', 'Redux Toolkit'],
   },
   {
     label: 'Backend',
     color: '#14b8a6',
-    skills: ['Node.js', 'REST APIs', 'Auth', 'Realtime Features', 'Database Integration'],
+    skills: ['Node.js', 'TypeScript', 'Express', 'Prisma ORM', 'JWT Auth'],
   },
   {
-    label: 'Desktop and Tooling',
+    label: 'Databases and Data Access',
+    color: '#06b6d4',
+    skills: ['PostgreSQL', 'SQL Server', 'Azure SQL', 'ADO.NET'],
+  },
+  {
+    label: 'Desktop',
     color: '#f97316',
-    skills: ['Electron', 'C# / .NET', 'Java', 'CLI Scripts', 'Project Automation'],
-  },
-  {
-    label: 'Browser Extensions',
-    color: '#10b981',
-    skills: ['Chrome Extensions', 'Manifest V3', 'DOM APIs', 'Content Scripts', 'Packaging'],
-  },
-  {
-    label: 'Audio and Creative',
-    color: '#f59e0b',
-    skills: ['Web Audio API', 'Interactive UI', 'Game Logic', 'Visual Styling'],
-  },
-  {
-    label: 'Workflow',
-    color: '#ec4899',
-    skills: ['GitHub', 'Vercel', 'Debugging', 'Shipping MVPs', 'Continuous Iteration'],
+    skills: ['Electron', 'C# 12', '.NET 8', 'Windows Forms (MDI)'],
   },
 ];
 
@@ -52,7 +42,7 @@ function CategoryBlock({
       animate={inView ? { opacity: 1, y: 0 } : {}}
       transition={{ duration: 0.7, delay: 0.1 + index * 0.07, ease: easeOut }}
     >
-      <div className="flex items-center gap-3 mb-4">
+      <div className="flex items-center gap-3" style={{ marginBottom: '10px' }}>
         <div className="w-1.5 h-1.5 rounded-full" style={{ background: cat.color }} />
         <span
           className="text-[11px] uppercase tracking-[0.17em]"
@@ -116,7 +106,7 @@ export default function Stack() {
           </motion.h2>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-9 md:gap-10">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-9 md:gap-10" style={{ marginTop: '10px' }}>
           {categories.map((cat, i) => (
             <CategoryBlock key={cat.label} cat={cat} index={i} inView={inView} />
           ))}
