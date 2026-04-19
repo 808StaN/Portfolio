@@ -3,28 +3,21 @@ import { motion, useInView } from 'framer-motion';
 
 const easeOut = [0.16, 1, 0.3, 1] as const;
 
-const stats = [
-  { value: '11', label: 'Public repositories' },
-  { value: '2', label: 'GitHub stars' },
-  { value: '2024', label: 'Active since' },
-  { value: 'PL', label: 'Based in Poland' },
-];
-
-const values = [
+const certificates = [
   {
-    icon: 'o',
-    title: 'Ship Real Products',
-    text: 'I focus on usable apps, extensions, and desktop tools that solve concrete problems.',
+    title: 'Front-End Engineer Career Path',
+    issuer: 'Codecademy',
+    href: 'https://www.codecademy.com/profiles/DawidStanisz/certificates/2682884a0719474f96407efe432fdd87',
   },
   {
-    icon: '[]',
-    title: 'Full-Stack Practicality',
-    text: 'React and Node.js first, with room for desktop stacks and game-related tooling when needed.',
+    title: 'Full-Stack Engineer Path',
+    issuer: 'Codecademy',
+    href: 'https://www.codecademy.com/profiles/DawidStanisz/certificates/705dcb15de0da4dd9d9fc4f3274b430e',
   },
   {
-    icon: '<>',
-    title: 'Consistent Iteration',
-    text: 'I prefer fast feedback loops, measurable progress, and clean refactors over overengineering.',
+    title: 'Build Web Apps with ASP.NET Skill Path',
+    issuer: 'Codecademy',
+    href: 'https://www.codecademy.com/profiles/DawidStanisz/certificates/5ec9a3897d4c940011f50142',
   },
 ];
 
@@ -57,100 +50,92 @@ export default function About() {
           <div className="flex-1 h-px" style={{ background: 'rgba(255,255,255,0.07)' }} />
         </motion.div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-[minmax(0,1.08fr)_minmax(0,0.92fr)] gap-14 lg:gap-20">
+        <div className="grid grid-cols-1 lg:grid-cols-[minmax(0,1.08fr)_minmax(0,0.92fr)] gap-12 lg:gap-16">
           <div>
             <motion.h2
-              className="section-title text-white/90 mb-8 max-w-[13ch]"
-              style={{ fontSize: 'clamp(1.95rem, 3.5vw, 3.8rem)' }}
+              className="section-title text-white/90 max-w-[20ch]"
+              style={{ fontSize: 'clamp(1.95rem, 3.5vw, 3.7rem)', marginBottom: 'clamp(1.75rem, 3.2vw, 2.6rem)' }}
               initial={{ opacity: 0, y: 30 }}
               animate={inView ? { opacity: 1, y: 0 } : {}}
               transition={{ duration: 0.8, delay: 0.1, ease: easeOut }}
             >
               Building products
               <br />
-              <span style={{ color: 'rgba(255,255,255,0.5)' }}>that people use.</span>
+              <span style={{ color: 'rgba(255,255,255,0.56)' }}>with frontend precision and backend reliability.</span>
             </motion.h2>
 
             <motion.div
-              className="space-y-4 max-w-[66ch]"
+              className="space-y-4 max-w-[66ch] mb-7"
               initial={{ opacity: 0, y: 20 }}
               animate={inView ? { opacity: 1, y: 0 } : {}}
               transition={{ duration: 0.8, delay: 0.2, ease: easeOut }}
             >
               <p className="text-sm md:text-base leading-[1.75]" style={{ color: 'rgba(255,255,255,0.56)', fontFamily: 'var(--font-sans)' }}>
-                I am StaN, a full-stack developer from Poland focused on React and Node.js. I build web products,
-                browser extensions, and desktop applications.
+                Hi, I&apos;m Dawid, a full-stack developer based in Poland, specializing in React and Node.js.
               </p>
               <p className="text-sm md:text-base leading-[1.75]" style={{ color: 'rgba(255,255,255,0.5)', fontFamily: 'var(--font-sans)' }}>
-                My repositories include OtakuVersus, OpenStudio, InstaFetch, and tooling projects that mix frontend
-                execution with practical backend logic.
+                I mainly build web applications and websites with React, focusing on performance, clean architecture,
+                and practical backend integration using Node.js. Alongside that, I develop smaller JavaScript
+                projects, including browser extensions, simple tools, and occasional game modifications. I&apos;ve also
+                worked a bit with C#, building desktop applications.
               </p>
               <p className="text-sm md:text-base leading-[1.75]" style={{ color: 'rgba(255,255,255,0.45)', fontFamily: 'var(--font-sans)' }}>
-                Open for freelance and full-time opportunities where product delivery speed and quality both matter.
+                I&apos;m currently studying at WSIiZ in Rzeszów while actively developing my skills through projects
+                like OpenStudio and OtakuVersus, combining strong frontend execution with real-world backend logic.
+              </p>
+              <p className="text-sm md:text-base leading-[1.75]" style={{ color: 'rgba(255,255,255,0.42)', fontFamily: 'var(--font-sans)' }}>
+                I&apos;m open to relocation and looking for opportunities where I can grow as a developer and build
+                meaningful products.
               </p>
             </motion.div>
+
+            <motion.a
+              href="/CV_Dawid_Stanisz.pdf"
+              download
+              className="projects-repo-btn about-cv-btn"
+              initial={{ opacity: 0, y: 24 }}
+              animate={inView ? { opacity: 1, y: 0 } : {}}
+              transition={{ duration: 0.8, delay: 0.28, ease: easeOut }}
+            >
+              Download CV -&gt;
+            </motion.a>
           </div>
 
-          <div className="flex flex-col gap-10">
+          <div className="flex flex-col gap-8">
             <motion.div
-              className="grid grid-cols-2 gap-px"
-              style={{ background: 'rgba(255,255,255,0.07)', borderRadius: '16px', overflow: 'hidden' }}
+              className="project-card about-certs-shell"
               initial={{ opacity: 0, y: 30 }}
               animate={inView ? { opacity: 1, y: 0 } : {}}
               transition={{ duration: 0.8, delay: 0.25, ease: easeOut }}
             >
-              {stats.map((stat, i) => (
-                <div
-                  key={stat.label}
-                  className="flex flex-col justify-center p-7"
-                  style={{
-                    background: 'rgba(10,18,44,0.68)',
-                    borderRadius: i === 0 ? '16px 0 0 0' : i === 1 ? '0 16px 0 0' : i === 2 ? '0 0 0 16px' : '0 0 16px 0',
-                  }}
-                >
-                  <span className="counter-number">{stat.value}</span>
-                  <span
-                    className="text-[11px] mt-1"
-                    style={{ color: 'rgba(255,255,255,0.38)', fontFamily: 'var(--font-sans)' }}
+              <p className="about-certs-label">Certificates</p>
+              <div className="about-certs-list">
+                {certificates.map((certificate, i) => (
+                  <motion.article
+                    key={certificate.title}
+                    className="about-cert-item"
+                    initial={{ opacity: 0, x: 20 }}
+                    animate={inView ? { opacity: 1, x: 0 } : {}}
+                    transition={{ duration: 0.65, delay: 0.35 + i * 0.1, ease: easeOut }}
                   >
-                    {stat.label}
-                  </span>
-                </div>
-              ))}
+                    <div className="about-cert-copy">
+                      <h3 className="about-cert-title">
+                        {certificate.title}
+                      </h3>
+                      <p className="about-cert-issuer">{certificate.issuer}</p>
+                    </div>
+                    <a
+                      href={certificate.href}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="projects-repo-btn about-cert-link"
+                    >
+                      View certificate -&gt;
+                    </a>
+                  </motion.article>
+                ))}
+              </div>
             </motion.div>
-
-            <div className="space-y-5">
-              {values.map((v, i) => (
-                <motion.div
-                  key={v.title}
-                  className="flex gap-4 group"
-                  initial={{ opacity: 0, x: 20 }}
-                  animate={inView ? { opacity: 1, x: 0 } : {}}
-                  transition={{ duration: 0.7, delay: 0.35 + i * 0.1, ease: easeOut }}
-                >
-                  <span
-                    className="text-sm mt-0.5 text-white/25 group-hover:text-white/55 transition-colors duration-300 select-none"
-                    aria-hidden="true"
-                  >
-                    {v.icon}
-                  </span>
-                  <div>
-                    <h4
-                      className="text-sm font-500 text-white/70 mb-1.5"
-                      style={{ fontFamily: 'var(--font-display)', letterSpacing: '-0.01em' }}
-                    >
-                      {v.title}
-                    </h4>
-                    <p
-                      className="text-sm leading-relaxed"
-                      style={{ color: 'rgba(255,255,255,0.44)', fontFamily: 'var(--font-sans)' }}
-                    >
-                      {v.text}
-                    </p>
-                  </div>
-                </motion.div>
-              ))}
-            </div>
           </div>
         </div>
       </div>
