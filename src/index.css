@@ -392,7 +392,6 @@ body {
   font-family: var(--font-sans);
   font-size: 0.78rem;
   letter-spacing: 0.04em;
-  text-transform: uppercase;
   color: rgba(255, 255, 255, 0.78);
   border: 1px solid rgba(255, 255, 255, 0.3);
   border-radius: 9999px;

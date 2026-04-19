@@ -97,7 +97,7 @@ export default function About() {
               animate={inView ? { opacity: 1, y: 0 } : {}}
               transition={{ duration: 0.8, delay: 0.28, ease: easeOut }}
             >
-              Download CV -&gt;
+              Download CV
             </motion.a>
           </div>
 

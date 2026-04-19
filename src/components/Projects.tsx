@@ -362,7 +362,7 @@ export default function Projects() {
                   rel="noopener noreferrer"
                   className="projects-repo-btn"
                 >
-                  View repository -&gt;
+                  View repository
                 </a>
               ) : null}
             </div>
@@ -403,7 +403,7 @@ export default function Projects() {
               rel="noopener noreferrer"
               className="projects-discover-btn"
             >
-              Discover all projects -&gt;
+              Discover all my projects
             </a>
           </div>
         </div>

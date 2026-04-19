@@ -1,7 +1,7 @@
 import { useEffect, useRef } from 'react';
 import { motion, useReducedMotion } from 'framer-motion';
 
-const words = ['production-ready', 'full-stack', 'reactive', 'reliable'];
+const words = ['fast', 'scalable', 'reliable', 'modern'];
 
 const easeOut = [0.16, 1, 0.3, 1] as const;
 
@@ -59,7 +59,7 @@ export default function Hero() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.9, delay: 0.32, ease: easeOut }}
             >
-              Building
+              I build
             </motion.h1>
           </div>
 
@@ -92,11 +92,11 @@ export default function Hero() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.9, delay: 0.56, ease: easeOut }}
             >
-              experiences.
+              web apps.
             </motion.h1>
           </div>
 
-          {/* Sub + CTAs */}
+          {/* Sub */}
           <div className="mt-8 flex flex-col sm:flex-row sm:items-end justify-between gap-6 md:gap-8">
             <motion.p
               className="max-w-md text-sm md:text-base leading-relaxed"
@@ -105,70 +105,30 @@ export default function Hero() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.9, delay: 0.7, ease: easeOut }}
             >
-              Building production-ready web apps, browser extensions, and desktop tools.
-              Focused on practical delivery, clean UX, and robust implementation.
-            </motion.p>
-
-            <motion.div
-              className="flex items-center gap-4"
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.9, delay: 0.82, ease: easeOut }}
-            >
-              <a
-                href="#work"
-                className="btn-primary"
-                onClick={e => {
-                  e.preventDefault();
-                  document.getElementById('work')?.scrollIntoView({ behavior: 'smooth' });
-                }}
-              >
-                View Work
-              </a>
-              <a
-                href="#contact"
-                className="btn-secondary"
-                onClick={e => {
-                  e.preventDefault();
-                  document.getElementById('contact')?.scrollIntoView({ behavior: 'smooth' });
-                }}
-              >
-                Contact
-              </a>
-            </motion.div>
+React + Node.js Developer focused on building web apps and desktop tools. I care about speed, clean UX, and practical delivery from concept to release.            </motion.p>
           </div>
         </div>
 
         {/* Bottom meta row */}
         <motion.div
-          className="relative flex items-center justify-start min-h-[68px]"
+          className="relative flex items-center justify-center min-h-[68px]"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 1.2, duration: 0.8 }}
         >
-          <div className="flex items-center gap-3">
-            <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+          <div className="absolute left-1/2 -translate-x-1/2 bottom-5 md:bottom-6 flex flex-col items-center gap-2.5">
             <span
-              className="text-[10px] text-white/30 uppercase tracking-widest"
-              style={{ fontFamily: 'var(--font-sans)' }}
-            >
-              Open to work
-            </span>
-          </div>
-
-          <div className="absolute left-1/2 -translate-x-1/2 bottom-5 md:bottom-6 flex flex-col items-center gap-2">
-            <span
-              className="text-[10px] text-white/25 uppercase tracking-widest"
-              style={{ fontFamily: 'var(--font-sans)' }}
+              className="text-[10px] uppercase tracking-[0.18em]"
+              style={{ color: 'rgba(255,255,255,0.5)', fontFamily: 'var(--font-sans)' }}
             >
               Scroll
             </span>
-            <div className="scroll-indicator">
-              <svg width="12" height="18" viewBox="0 0 12 18" fill="none" aria-hidden="true">
+            <div className="scroll-indicator" style={{ opacity: 0.8 }}>
+              <svg width="14" height="20" viewBox="0 0 12 18" fill="none" aria-hidden="true">
                 <path
                   d="M6 1V17M6 17L1 12M6 17L11 12"
-                  stroke="rgba(255,255,255,0.25)"
-                  strokeWidth="1.2"
+                  stroke="rgba(255,255,255,0.52)"
+                  strokeWidth="1.4"
                   strokeLinecap="round"
                   strokeLinejoin="round"
                 />

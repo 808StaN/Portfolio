@@ -131,9 +131,6 @@ export default function Contact() {
                         {s.handle}
                       </span>
                     </div>
-                    <span className="ml-auto text-white/20 group-hover:text-white/45 group-hover:translate-x-1 transition-all duration-300">
-                      -&gt;
-                    </span>
                   </a>
                 ))}
               </div>
