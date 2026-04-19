@@ -1,7 +1,7 @@
-import otakuVersusImage from "../assets/projects/OtakuVersus.png";
+import otakuVersusImage from "../assets/projects/OtakuVersus.jpg";
 import openStudioImage from "../assets/projects/OpenStudio.gif";
-import instaFetchImage from "../assets/projects/InstaFetch.png";
-import storeManagerImage from "../assets/projects/StoreManager.png";
+import instaFetchImage from "../assets/projects/InstaFetch.jpg";
+import storeManagerImage from "../assets/projects/StoreManager.jpg";
 
 export interface Project {
   id: string;

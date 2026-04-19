@@ -479,7 +479,7 @@ body {
 .projects-visual-scroll {
   position: relative;
   border-radius: 10px;
-  border: 1x solid rgba(173, 199, 255, 0.22);
+  /* border: 1px solid rgba(173, 199, 255, 0.22); */
   background:
     linear-gradient(
       160deg,
