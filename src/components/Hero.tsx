@@ -1,7 +1,7 @@
 import { useEffect, useRef } from 'react';
 import { motion, useReducedMotion } from 'framer-motion';
 
-const words = ['fast', 'scalable', 'reliable', 'modern'];
+const words = ['fast', 'scalable', 'reliable','responsive', 'modern'];
 
 const easeOut = [0.16, 1, 0.3, 1] as const;
 
