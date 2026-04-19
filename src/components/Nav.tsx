@@ -135,25 +135,7 @@ export default function Nav() {
             className="hero-inner h-full flex items-center justify-between"
             style={{ width: 'min(1600px, calc(100% - (var(--page-gutter) * 1.2)))' }}
           >
-            <a
-              href="#"
-              onClick={e => {
-                e.preventDefault();
-                window.scrollTo({ top: 0, behavior: 'smooth' });
-              }}
-              className="flex items-center gap-2 group focus-visible:outline-none"
-              aria-label="Home"
-            >
-              <div className="w-7 h-7 rounded-full border border-white/20 flex items-center justify-center relative overflow-hidden group-hover:border-white/40 transition-colors duration-300">
-                <div className="w-2 h-2 rounded-full bg-white/80 group-hover:scale-110 transition-transform duration-300" />
-              </div>
-              <span
-                style={{ fontFamily: 'var(--font-display)' }}
-                className="text-sm font-600 tracking-tight text-white/90 group-hover:text-white transition-colors duration-300"
-              >
-                StaN
-              </span>
-            </a>
+            <div className="w-[84px]" aria-hidden="true" />
 
             <div className="hidden md:flex items-center gap-8">
               {links.map(link => (
