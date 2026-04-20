@@ -205,10 +205,10 @@ export default function Nav() {
           <motion.aside
             className="hidden md:flex flex-col items-start gap-7 fixed top-1/2 -translate-y-1/2 left-[max(14px,calc(var(--page-gutter)*0.55))] z-50"
             aria-label="Section navigation"
-            initial={{ opacity: 0, x: -10 }}
-            animate={{ opacity: 1, x: 0 }}
-            exit={{ opacity: 0, x: -10 }}
-            transition={{ duration: 0.22, ease: [0.16, 1, 0.3, 1] }}
+            initial={{ opacity: 0, y: "-52vh", scale: 0.96 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: "-22vh", scale: 0.98 }}
+            transition={{ duration: 0.42, ease: [0.16, 1, 0.3, 1] }}
           >
             {links.map(link => (
               <button
