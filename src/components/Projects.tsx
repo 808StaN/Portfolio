@@ -16,6 +16,7 @@ export default function Projects() {
     dir: 1 | -1;
   } | null>(null);
   const transitionTimerRef = useRef<number | null>(null);
+  const queuedTargetRef = useRef<number | null>(null);
 
   const active = projects[activeIndex];
   const activeDescription = repoDescriptions[active.id] ?? active.description;
@@ -66,20 +67,33 @@ export default function Projects() {
       if (transitionTimerRef.current) {
         window.clearTimeout(transitionTimerRef.current);
       }
+      queuedTargetRef.current = null;
     };
   }, []);
 
-  const goTo = (idx: number) => {
-    const clamped = Math.max(0, Math.min(projects.length - 1, idx));
-    if (clamped === activeIndex) return;
-    if (transition) return;
-    const dir: 1 | -1 = clamped > activeIndex ? 1 : -1;
-    setTransition({ from: activeIndex, to: clamped, dir });
-    setActiveIndex(clamped);
+  const runTransition = (from: number, to: number) => {
+    const dir: 1 | -1 = to > from ? 1 : -1;
+    setTransition({ from, to, dir });
+    setActiveIndex(to);
     transitionTimerRef.current = window.setTimeout(() => {
       setTransition(null);
       transitionTimerRef.current = null;
+      const queued = queuedTargetRef.current;
+      queuedTargetRef.current = null;
+      if (queued !== null && queued !== to) {
+        runTransition(to, queued);
+      }
     }, 520);
+  };
+
+  const goTo = (idx: number) => {
+    const clamped = Math.max(0, Math.min(projects.length - 1, idx));
+    if (clamped === activeIndex && !transition) return;
+    if (transition) {
+      queuedTargetRef.current = clamped;
+      return;
+    }
+    runTransition(activeIndex, clamped);
   };
 
   const isFirst = activeIndex === 0;
@@ -157,6 +171,7 @@ export default function Projects() {
                   {transition ? (
                     <>
                       <article
+                        key={`out-${transition.from}-${transition.to}-${transition.dir}`}
                         className={`projects-visual-item projects-visual-layer ${transition.dir === 1 ? "projects-slide-out-left" : "projects-slide-out-right"}`}
                       >
                         <img
@@ -166,6 +181,7 @@ export default function Projects() {
                         />
                       </article>
                       <article
+                        key={`in-${transition.from}-${transition.to}-${transition.dir}`}
                         className={`projects-visual-item projects-visual-layer ${transition.dir === 1 ? "projects-slide-in-right" : "projects-slide-in-left"}`}
                       >
                         <img
@@ -193,7 +209,7 @@ export default function Projects() {
                     type="button"
                     className="projects-image-control-btn"
                     onClick={() => goTo(activeIndex - 1)}
-                    disabled={isFirst || !!transition}
+                    disabled={isFirst}
                     aria-label="Previous project"
                   >
                     <svg
@@ -211,7 +227,7 @@ export default function Projects() {
                     type="button"
                     className="projects-image-control-btn"
                     onClick={() => goTo(activeIndex + 1)}
-                    disabled={isLast || !!transition}
+                    disabled={isLast}
                     aria-label="Next project"
                   >
                     <svg
