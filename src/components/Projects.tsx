@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { projects } from "../data/projects";
 
 function slashTitle(title: string) {
@@ -10,6 +10,12 @@ export default function Projects() {
   const [repoDescriptions, setRepoDescriptions] = useState<Record<string, string>>(
     {},
   );
+  const [transition, setTransition] = useState<{
+    from: number;
+    to: number;
+    dir: 1 | -1;
+  } | null>(null);
+  const transitionTimerRef = useRef<number | null>(null);
 
   const active = projects[activeIndex];
   const activeDescription = repoDescriptions[active.id] ?? active.description;
@@ -55,9 +61,25 @@ export default function Projects() {
     return () => controller.abort();
   }, []);
 
+  useEffect(() => {
+    return () => {
+      if (transitionTimerRef.current) {
+        window.clearTimeout(transitionTimerRef.current);
+      }
+    };
+  }, []);
+
   const goTo = (idx: number) => {
     const clamped = Math.max(0, Math.min(projects.length - 1, idx));
+    if (clamped === activeIndex) return;
+    if (transition) return;
+    const dir: 1 | -1 = clamped > activeIndex ? 1 : -1;
+    setTransition({ from: activeIndex, to: clamped, dir });
     setActiveIndex(clamped);
+    transitionTimerRef.current = window.setTimeout(() => {
+      setTransition(null);
+      transitionTimerRef.current = null;
+    }, 520);
   };
 
   const isFirst = activeIndex === 0;
@@ -131,47 +153,90 @@ export default function Projects() {
 
             <div className="projects-visual-wrap">
               <div className="projects-visual-scroll">
-                <article className="projects-visual-item">
-                  <img
-                    src={active.image}
-                    alt={`${active.title} preview`}
-                    loading="lazy"
-                  />
-                </article>
+                <div className="projects-visual-stack">
+                  {transition ? (
+                    <>
+                      <article
+                        className={`projects-visual-item projects-visual-layer ${transition.dir === 1 ? "projects-slide-out-left" : "projects-slide-out-right"}`}
+                      >
+                        <img
+                          src={projects[transition.from].image}
+                          alt={`${projects[transition.from].title} preview`}
+                          loading="lazy"
+                        />
+                      </article>
+                      <article
+                        className={`projects-visual-item projects-visual-layer ${transition.dir === 1 ? "projects-slide-in-right" : "projects-slide-in-left"}`}
+                      >
+                        <img
+                          src={projects[transition.to].image}
+                          alt={`${projects[transition.to].title} preview`}
+                          loading="lazy"
+                        />
+                      </article>
+                    </>
+                  ) : (
+                    <article className="projects-visual-item projects-visual-layer">
+                      <img
+                        src={active.image}
+                        alt={`${active.title} preview`}
+                        loading="lazy"
+                      />
+                    </article>
+                  )}
+                </div>
               </div>
 
               <div className="projects-image-controls">
-                <button
-                  type="button"
-                  className="projects-image-control-btn"
-                  onClick={() => goTo(activeIndex - 1)}
-                  disabled={isFirst}
-                  aria-label="Previous project"
+                <div className="projects-image-step-controls">
+                  <button
+                    type="button"
+                    className="projects-image-control-btn"
+                    onClick={() => goTo(activeIndex - 1)}
+                    disabled={isFirst || !!transition}
+                    aria-label="Previous project"
+                  >
+                    <svg
+                      className="projects-arrow-svg"
+                      width="20"
+                      height="20"
+                      viewBox="0 0 18 16"
+                      fill="none"
+                      aria-hidden="true"
+                    >
+                      <polyline points="10.5 3.5 5.5 8 10.5 12.5" />
+                    </svg>
+                  </button>
+                  <button
+                    type="button"
+                    className="projects-image-control-btn"
+                    onClick={() => goTo(activeIndex + 1)}
+                    disabled={isLast || !!transition}
+                    aria-label="Next project"
+                  >
+                    <svg
+                      className="projects-arrow-svg"
+                      width="20"
+                      height="20"
+                      viewBox="0 0 14 16"
+                      fill="none"
+                      aria-hidden="true"
+                    >
+                      <polyline points="5.5 3.5 10.5 8 5.5 12.5" />
+                    </svg>
+                  </button>
+                </div>
+
+                <a
+                  href="https://github.com/808StaN?tab=repositories"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="projects-discover-btn projects-discover-inline"
                 >
-                  {"\u2190"}
-                </button>
-                <button
-                  type="button"
-                  className="projects-image-control-btn"
-                  onClick={() => goTo(activeIndex + 1)}
-                  disabled={isLast}
-                  aria-label="Next project"
-                >
-                  {"\u2192"}
-                </button>
+                  Discover all my projects
+                </a>
               </div>
             </div>
-          </div>
-
-          <div className="projects-bottom">
-            <a
-              href="https://github.com/808StaN?tab=repositories"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="projects-discover-btn"
-            >
-              Discover all my projects
-            </a>
           </div>
         </div>
       </div>

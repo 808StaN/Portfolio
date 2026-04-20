@@ -10,9 +10,9 @@ const certificates = [
     href: 'https://www.codecademy.com/profiles/DawidStanisz/certificates/2682884a0719474f96407efe432fdd87',
   },
   {
-    title: 'Full-Stack Engineer Path',
+    title: 'Full-Stack Engineer Career Path',
     issuer: 'Codecademy',
-    href: 'https://www.codecademy.com/profiles/DawidStanisz/certificates/705dcb15de0da4dd9d9fc4f3274b430e',
+    href: 'https://www.codecademy.com/profiles/DawidStanisz/certificates/ffd0f42cce1a44e9a0108b365047a0a6',
   },
   {
     title: 'Build Web Apps with ASP.NET Skill Path',
@@ -90,7 +90,7 @@ export default function About() {
             </motion.div>
 
             <motion.a
-              href="/CV_Dawid_Stanisz.pdf"
+              href="/Dawid_Stanisz_CV.pdf"
               download
               className="projects-repo-btn about-cv-btn"
               initial={{ opacity: 0, y: 24 }}
@@ -130,7 +130,7 @@ export default function About() {
                       rel="noreferrer"
                       className="projects-repo-btn about-cert-link"
                     >
-                      View certificate -&gt;
+                      View certificate
                     </a>
                   </motion.article>
                 ))}
