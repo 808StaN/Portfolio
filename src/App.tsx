@@ -435,16 +435,10 @@ export default function App() {
       }
 
       if (e.key === "ArrowDown") {
-        window.dispatchEvent(
-          new CustomEvent("projects-step-input", { detail: { direction: 1 } }),
-        );
         stepByDirection(1, () => e.preventDefault());
         return;
       }
       if (e.key === "ArrowUp") {
-        window.dispatchEvent(
-          new CustomEvent("projects-step-input", { detail: { direction: -1 } }),
-        );
         stepByDirection(-1, () => e.preventDefault());
       }
     };

@@ -1,48 +1,16 @@
-import { CSSProperties, useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { projects } from "../data/projects";
-
-const PULSE_DURATION_MS = 1500;
-const PULSE_PEAK_SCALE = 1.15;
-const PULSE_SETTLE_SCALE = 1.045;
-const PULSE_MIN_INCREMENT = 0.02;
-const PULSE_MAX_SCALE = 1.22;
 
 function slashTitle(title: string) {
   return title.split(" ").join(" / ");
 }
 
-function readCurrentScale(el: HTMLElement) {
-  const transform = window.getComputedStyle(el).transform;
-  if (!transform || transform === "none") return 1;
-  try {
-    const matrix = new DOMMatrixReadOnly(transform);
-    return Math.hypot(matrix.a, matrix.b) || 1;
-  } catch {
-    return 1;
-  }
-}
-
 export default function Projects() {
-  const isFirefox = /firefox/i.test(navigator.userAgent);
-  const sectionRef = useRef<HTMLElement>(null);
-  const stageRef = useRef<HTMLDivElement>(null);
-  const visualRef = useRef<HTMLDivElement>(null);
-  const trackRef = useRef<HTMLDivElement>(null);
   const [activeIndex, setActiveIndex] = useState(0);
   const [repoDescriptions, setRepoDescriptions] = useState<Record<string, string>>(
     {},
   );
-  const targetProgressRef = useRef(0);
-  const displayedProgressRef = useRef(0);
-  const rafRef = useRef<number | null>(null);
-  const driftKickRef = useRef(0);
-  const prevScrollYRef = useRef(0);
-  const entrySpeedLimitUntilRef = useRef(0);
-  const pulseAnimRef = useRef<Animation | null>(null);
-  const wheelAccumRef = useRef(0);
-  const lastPulseAtRef = useRef(0);
 
-  const steps = Math.max(1, projects.length - 1);
   const active = projects[activeIndex];
   const activeDescription = repoDescriptions[active.id] ?? active.description;
 
@@ -87,222 +55,16 @@ export default function Projects() {
     return () => controller.abort();
   }, []);
 
-  const triggerPulse = () => {
-    const el = visualRef.current;
-    if (!el) return;
-
-    const startScale = readCurrentScale(el);
-    const peakScale = Math.min(
-      PULSE_MAX_SCALE,
-      Math.max(PULSE_PEAK_SCALE, startScale + PULSE_MIN_INCREMENT),
-    );
-    const settleScale = Math.max(
-      PULSE_SETTLE_SCALE,
-      Math.min(peakScale - 0.01, (startScale + peakScale) / 2),
-    );
-
-    if (pulseAnimRef.current) pulseAnimRef.current.cancel();
-    pulseAnimRef.current = el.animate(
-      [
-        { transform: `translateY(36px) scale(${startScale})` },
-        {
-          transform: `translateY(36px) scale(${peakScale})`,
-          offset: 0.4,
-        },
-        {
-          transform: `translateY(36px) scale(${settleScale})`,
-          offset: 0.74,
-        },
-        { transform: "translateY(36px) scale(1)" },
-      ],
-      {
-        duration: PULSE_DURATION_MS,
-        easing: "cubic-bezier(0.22, 0.72, 0.2, 1)",
-        fill: "none",
-      },
-    );
-  };
-
-  useEffect(() => {
-    const onScroll = () => {
-      const section = sectionRef.current;
-      const stage = stageRef.current;
-      if (!section || !stage) return;
-
-      const sectionRect = section.getBoundingClientRect();
-      const sectionTopDoc = window.scrollY + sectionRect.top;
-      const stagePaddingTop =
-        Number.parseFloat(window.getComputedStyle(stage).paddingTop || "0") ||
-        0;
-      const startY = sectionTopDoc + stagePaddingTop;
-      const endY = sectionTopDoc + section.offsetHeight - window.innerHeight;
-      const currentY = window.scrollY;
-      const prevY = prevScrollYRef.current;
-      const enteredFromBelow = prevY > endY + 2 && currentY <= endY + 2;
-      if (enteredFromBelow) {
-        entrySpeedLimitUntilRef.current = performance.now() + 900;
-      }
-      prevScrollYRef.current = currentY;
-      const totalScrollable = Math.max(1, endY - startY);
-      const scrolled = Math.min(
-        Math.max(window.scrollY - startY, 0),
-        totalScrollable,
-      );
-      const normalized = scrolled / totalScrollable;
-      const rawIndexProgress = normalized * steps;
-
-      targetProgressRef.current = rawIndexProgress;
-      setActiveIndex((prev) => {
-        const next = Math.max(
-          0,
-          Math.min(projects.length - 1, Math.floor(rawIndexProgress + 0.5)),
-        );
-        return prev === next ? prev : next;
-      });
-    };
-
-    prevScrollYRef.current = window.scrollY;
-    onScroll();
-    window.addEventListener("scroll", onScroll, { passive: true });
-    window.addEventListener("resize", onScroll);
-    return () => {
-      window.removeEventListener("scroll", onScroll);
-      window.removeEventListener("resize", onScroll);
-    };
-  }, [steps]);
-
-  useEffect(() => {
-    if (isFirefox && trackRef.current) {
-      // Firefox + RAF updates can cause visible tail/snap when CSS transition also runs.
-      trackRef.current.style.transition = "none";
-    }
-  }, [isFirefox]);
-
-  useEffect(() => {
-    const tick = () => {
-      const now = performance.now();
-      const target = targetProgressRef.current;
-      const delta = target - displayedProgressRef.current;
-      const kick = isFirefox ? 0 : driftKickRef.current;
-      const follow = isFirefox ? 0.14 : 0.1;
-      let step = delta * follow + kick;
-      if (now < entrySpeedLimitUntilRef.current) {
-        const maxStepPerFrame = isFirefox ? 0.04 : 0.05;
-        step = Math.max(-maxStepPerFrame, Math.min(maxStepPerFrame, step));
-      }
-      displayedProgressRef.current += step;
-      if (!isFirefox) {
-        driftKickRef.current *= 0.9;
-      } else {
-        driftKickRef.current = 0;
-      }
-      if (
-        Math.abs(delta) < (isFirefox ? 0.002 : 0.0008) &&
-        Math.abs(driftKickRef.current) < (isFirefox ? 0.002 : 0.0008)
-      ) {
-        displayedProgressRef.current = target;
-      }
-      displayedProgressRef.current = Math.max(
-        0,
-        Math.min(steps, displayedProgressRef.current),
-      );
-
-      if (trackRef.current) {
-        const frameHeight = visualRef.current?.clientHeight ?? 0;
-        const translateY = displayedProgressRef.current * frameHeight;
-        trackRef.current.style.transform = `translate3d(0, -${translateY}px, 0)`;
-      }
-
-      rafRef.current = requestAnimationFrame(tick);
-    };
-
-    rafRef.current = requestAnimationFrame(tick);
-    return () => {
-      if (rafRef.current) cancelAnimationFrame(rafRef.current);
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
   const goTo = (idx: number) => {
-    const section = sectionRef.current;
-    const stage = stageRef.current;
-    if (!section || !stage) return;
     const clamped = Math.max(0, Math.min(projects.length - 1, idx));
-
-    const sectionRect = section.getBoundingClientRect();
-    const sectionTopDoc = window.scrollY + sectionRect.top;
-    const stagePaddingTop =
-      Number.parseFloat(window.getComputedStyle(stage).paddingTop || "0") || 0;
-    const startY = sectionTopDoc + stagePaddingTop;
-    const endY = sectionTopDoc + section.offsetHeight - window.innerHeight;
-    const totalScrollable = Math.max(1, endY - startY);
-    const targetScroll = startY + (clamped / steps) * totalScrollable;
-    window.scrollTo({ top: targetScroll, behavior: "smooth" });
+    setActiveIndex(clamped);
   };
 
-  useEffect(() => {
-    const section = sectionRef.current;
-    if (!section) return;
-
-    const shouldPulseInViewport = () => {
-      const rect = section.getBoundingClientRect();
-      return (
-        rect.top <= window.innerHeight * 0.25 &&
-        rect.bottom >= window.innerHeight * 0.75
-      );
-    };
-
-    const tryPulse = () => {
-      const now = performance.now();
-      if (now - lastPulseAtRef.current <= 120) return;
-      lastPulseAtRef.current = now;
-      triggerPulse();
-    };
-
-    const onWheel = (e: WheelEvent) => {
-      if (Math.abs(e.deltaY) < 10) return;
-
-      const inWorkViewport = shouldPulseInViewport();
-      if (!inWorkViewport) return;
-
-      const direction = e.deltaY > 0 ? 1 : -1;
-      if (!isFirefox) {
-        driftKickRef.current += direction * 0.014;
-        driftKickRef.current = Math.max(
-          -0.03,
-          Math.min(0.03, driftKickRef.current),
-        );
-      }
-
-      // Trigger one pulse per wheel "step", not per raw wheel event packet.
-      wheelAccumRef.current += Math.abs(e.deltaY);
-      const stepThreshold = 44;
-      if (wheelAccumRef.current >= stepThreshold) {
-        wheelAccumRef.current = 0;
-        tryPulse();
-      }
-    };
-
-    const onStepInput = () => {
-      if (!shouldPulseInViewport()) return;
-      tryPulse();
-    };
-
-    window.addEventListener("wheel", onWheel, { passive: true });
-    window.addEventListener("projects-step-input", onStepInput);
-    return () => {
-      window.removeEventListener("wheel", onWheel);
-      window.removeEventListener("projects-step-input", onStepInput);
-    };
-  }, [isFirefox]);
+  const isFirst = activeIndex === 0;
+  const isLast = activeIndex === projects.length - 1;
 
   return (
-    <section
-      id="work"
-      ref={sectionRef}
-      className="section-shell projects-monopo relative"
-      style={{ ["--projects-steps" as any]: steps } as CSSProperties}
-    >
+    <section id="work" className="section-shell projects-monopo relative">
       <div
         className="absolute inset-0 pointer-events-none"
         style={{
@@ -311,7 +73,7 @@ export default function Projects() {
       />
 
       <div className="section-inner projects-inner relative z-10">
-        <div ref={stageRef} className="projects-stage">
+        <div className="projects-stage">
           <div className="projects-header">
             <div className="flex items-center gap-3 mb-5">
               <span className="section-label">Selected Work</span>
@@ -336,11 +98,11 @@ export default function Projects() {
 
           <div className="projects-layout">
             <div className="projects-rail">
-              {projects.map((p, idx) => (
+              {projects.map((project, idx) => (
                 <button
-                  key={p.id}
+                  key={project.id}
                   onClick={() => goTo(idx)}
-                  aria-label={`Go to ${p.title}`}
+                  aria-label={`Go to ${project.title}`}
                   className={`projects-rail-dot ${idx === activeIndex ? "is-active" : ""}`}
                 />
               ))}
@@ -351,8 +113,8 @@ export default function Projects() {
               <p className="projects-category">{active.category}</p>
               <p className="projects-description">{activeDescription}</p>
               <div className="projects-tagline">
-                {active.tags.map((t) => (
-                  <span key={t}>{t}</span>
+                {active.tags.map((tag) => (
+                  <span key={tag}>{tag}</span>
                 ))}
               </div>
               {active.link ? (
@@ -368,35 +130,40 @@ export default function Projects() {
             </div>
 
             <div className="projects-visual-wrap">
-              <div
-                ref={visualRef}
-                className="projects-visual-scroll"
-                style={{ transform: "translateY(36px)" }}
-              >
-                <div
-                  ref={trackRef}
-                  className="projects-visual-track"
-                  style={{ transform: "translate3d(0, 0, 0)" }}
+              <div className="projects-visual-scroll">
+                <article className="projects-visual-item">
+                  <img
+                    src={active.image}
+                    alt={`${active.title} preview`}
+                    loading="lazy"
+                  />
+                </article>
+              </div>
+
+              <div className="projects-image-controls">
+                <button
+                  type="button"
+                  className="projects-image-control-btn"
+                  onClick={() => goTo(activeIndex - 1)}
+                  disabled={isFirst}
+                  aria-label="Previous project"
                 >
-                  {projects.map((project) => (
-                    <article key={project.id} className="projects-visual-item">
-                      <img
-                        src={project.image}
-                        alt={`${project.title} preview`}
-                        loading="lazy"
-                      />
-                    </article>
-                  ))}
-                </div>
+                  {"\u2190"}
+                </button>
+                <button
+                  type="button"
+                  className="projects-image-control-btn"
+                  onClick={() => goTo(activeIndex + 1)}
+                  disabled={isLast}
+                  aria-label="Next project"
+                >
+                  {"\u2192"}
+                </button>
               </div>
             </div>
           </div>
 
           <div className="projects-bottom">
-            <div className="projects-counter">
-              {String(activeIndex + 1).padStart(2, "0")} /{" "}
-              {String(projects.length).padStart(2, "0")}
-            </div>
             <a
               href="https://github.com/808StaN?tab=repositories"
               target="_blank"
