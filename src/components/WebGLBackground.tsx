@@ -187,6 +187,12 @@ export default function WebGLBackground({ className = '' }: Props) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const glRef = useRef<WebGLRenderingContext | null>(null);
   const programRef = useRef<WebGLProgram | null>(null);
+  const uniformsRef = useRef<{
+    resolution: WebGLUniformLocation | null;
+    time: WebGLUniformLocation | null;
+    mouse: WebGLUniformLocation | null;
+    mouseEase: WebGLUniformLocation | null;
+  } | null>(null);
   const rafRef = useRef<number>(0);
   const startTimeRef = useRef<number>(Date.now());
 
@@ -248,6 +254,12 @@ export default function WebGLBackground({ className = '' }: Props) {
     gl.vertexAttribPointer(posLoc, 2, gl.FLOAT, false, 0, 0);
 
     gl.useProgram(program);
+    uniformsRef.current = {
+      resolution: gl.getUniformLocation(program, 'u_resolution'),
+      time: gl.getUniformLocation(program, 'u_time'),
+      mouse: gl.getUniformLocation(program, 'u_mouse'),
+      mouseEase: gl.getUniformLocation(program, 'u_mouse_ease'),
+    };
   }, []);
 
   const resize = useCallback(() => {
@@ -269,9 +281,8 @@ export default function WebGLBackground({ className = '' }: Props) {
   const render = useCallback(() => {
     const gl = glRef.current;
     const program = programRef.current;
-    if (!gl || !program) return;
-
-    resize();
+    const uniforms = uniformsRef.current;
+    if (!gl || !program || !uniforms) return;
 
     const elapsed = (Date.now() - startTimeRef.current) / 1000;
 
@@ -281,20 +292,15 @@ export default function WebGLBackground({ className = '' }: Props) {
     mouseRef.current.y += (mouseTargetRef.current.y - mouseRef.current.y) * ease;
     mouseEaseRef.current += (mouseEaseTargetRef.current - mouseEaseRef.current) * 0.04;
 
-    // Set uniforms
-    const res = gl.getUniformLocation(program, 'u_resolution');
-    const time = gl.getUniformLocation(program, 'u_time');
-    const mouse = gl.getUniformLocation(program, 'u_mouse');
-    const mouseEase = gl.getUniformLocation(program, 'u_mouse_ease');
-
-    gl.uniform2f(res, gl.canvas.width, gl.canvas.height);
-    gl.uniform1f(time, elapsed);
-    gl.uniform2f(mouse, mouseRef.current.x, 1.0 - mouseRef.current.y);
-    gl.uniform1f(mouseEase, mouseEaseRef.current);
+    // Set uniforms (cached locations)
+    gl.uniform2f(uniforms.resolution, gl.canvas.width, gl.canvas.height);
+    gl.uniform1f(uniforms.time, elapsed);
+    gl.uniform2f(uniforms.mouse, mouseRef.current.x, 1.0 - mouseRef.current.y);
+    gl.uniform1f(uniforms.mouseEase, mouseEaseRef.current);
 
     gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
     rafRef.current = requestAnimationFrame(render);
-  }, [resize]);
+  }, []);
 
   useEffect(() => {
     initWebGL();
@@ -303,10 +309,12 @@ export default function WebGLBackground({ className = '' }: Props) {
 
     const ro = new ResizeObserver(resize);
     if (canvasRef.current) ro.observe(canvasRef.current);
+    window.addEventListener('resize', resize, { passive: true });
 
     return () => {
       cancelAnimationFrame(rafRef.current);
       ro.disconnect();
+      window.removeEventListener('resize', resize);
     };
   }, [initWebGL, resize, render]);
 
