@@ -1,4 +1,4 @@
-import { useRef, useEffect, useCallback } from 'react';
+﻿import { useRef, useEffect, useCallback } from 'react';
 
 const VERTEX_SHADER = `
   attribute vec2 position;
@@ -15,7 +15,7 @@ const FRAGMENT_SHADER = `
   uniform vec2  u_mouse;
   uniform float u_mouse_ease;
 
-  // ─── Noise helpers ───────────────────────────────────────────────
+  // â”€â”€â”€ Noise helpers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   vec3 mod289(vec3 x) { return x - floor(x * (1.0/289.0)) * 289.0; }
   vec4 mod289(vec4 x) { return x - floor(x * (1.0/289.0)) * 289.0; }
   vec4 permute(vec4 x) { return mod289(((x*34.0)+1.0)*x); }
@@ -64,7 +64,7 @@ const FRAGMENT_SHADER = `
     return 42.0 * dot(m*m, vec4(dot(p0,x0), dot(p1,x1), dot(p2,x2), dot(p3,x3)));
   }
 
-  // ─── FBM (fractal brownian motion) ───────────────────────────────
+  // â”€â”€â”€ FBM (fractal brownian motion) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   float fbm(vec3 p, int octaves) {
     float value = 0.0;
     float amplitude = 0.5;
@@ -78,7 +78,7 @@ const FRAGMENT_SHADER = `
     return value;
   }
 
-  // ─── Color palette ────────────────────────────────────────────────
+  // â”€â”€â”€ Color palette â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   // deep black, navy, electric blue, purple, warm orange/amber
   vec3 palette(float t, vec2 mouse) {
     // Base colors (all deep/dark)
@@ -126,23 +126,23 @@ const FRAGMENT_SHADER = `
     // correct for aspect
     vec2 p = (uv - 0.5) * vec2(aspect, 1.0) * viewScale;
 
-    // ── Mouse displacement ─────────────────────────────────────────
+    // â”€â”€ Mouse displacement â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     vec2 mouse = u_mouse;                               // 0..1
     vec2 mouseP = (mouse - 0.5) * vec2(aspect, 1.0) * viewScale;   // aspect-corrected
     float mouseDist = length(p - mouseP);
     float mouseInfluence = exp(-mouseDist * mouseDist * 2.2) * u_mouse_ease;
 
-    // ── Slow auto rotation of the whole field ─────────────────────
+    // â”€â”€ Slow auto rotation of the whole field â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     float angle = u_time * 0.09;
     float cosA = cos(angle), sinA = sin(angle);
     vec2 rotP = vec2(cosA * p.x - sinA * p.y,
                      sinA * p.x + cosA * p.y);
 
-    // ── Mouse warp ────────────────────────────────────────────────
+    // â”€â”€ Mouse warp â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     vec2 warp = (mouseP - p) * mouseInfluence * 0.45;
     rotP += warp;
 
-    // ── FBM layers ────────────────────────────────────────────────
+    // â”€â”€ FBM layers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     vec3 q = vec3(rotP * 1.2, u_time * 0.065);
     float f1 = fbm(q, 5);
     float f2 = fbm(vec3(rotP * 0.8 + vec2(f1 * 0.9, f1 * 0.4), u_time * 0.045 + 3.7), 4);
@@ -156,22 +156,18 @@ const FRAGMENT_SHADER = `
     field += mouseInfluence * 0.18;
     field = clamp(field, 0.0, 1.0);
 
-    // ── Vignette ─────────────────────────────────────────────────
+    // â”€â”€ Vignette â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     float vignette = 1.0 - smoothstep(0.35, 1.1, length(p) * 0.85);
     field *= (0.55 + 0.45 * vignette);
 
-    // ── Color ─────────────────────────────────────────────────────
+    // â”€â”€ Color â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     vec3 color = palette(field, mouse);
 
-    // ── Inner glow around mouse ───────────────────────────────────
+    // â”€â”€ Inner glow around mouse â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     vec3 glowColor = vec3(0.55, 0.75, 1.0);
     color = mix(color, glowColor * 0.9, mouseInfluence * 0.28);
 
-    // ── Subtle grain (baked into shader) ─────────────────────────
-    float grain = snoise(vec3(gl_FragCoord.xy * 0.8, u_time * 12.0)) * 0.018;
-    color += grain;
-
-    // ── Gamma & tone ─────────────────────────────────────────────
+    // â”€â”€ Gamma & tone â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     color = pow(max(color, vec3(0.0)), vec3(0.9));
     color = clamp(color, 0.0, 1.0);
 
