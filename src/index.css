@@ -770,6 +770,126 @@ body {
   background-clip: text;
 }
 
+.mobile-menu-backdrop {
+  background:
+    radial-gradient(
+      120% 90% at 18% 4%,
+      rgba(114, 155, 255, 0.25) 0%,
+      transparent 58%
+    ),
+    radial-gradient(
+      110% 80% at 82% 96%,
+      rgba(172, 118, 255, 0.2) 0%,
+      transparent 62%
+    ),
+    linear-gradient(
+      155deg,
+      rgba(10, 18, 54, 0.9) 0%,
+      rgba(24, 28, 84, 0.9) 48%,
+      rgba(37, 22, 90, 0.9) 100%
+    );
+  backdrop-filter: blur(22px) saturate(128%);
+  -webkit-backdrop-filter: blur(22px) saturate(128%);
+}
+
+@media (max-width: 1200px) {
+  :root {
+    --page-gutter: clamp(18px, 3.8vw, 40px);
+    --section-space-y: clamp(48px, 8vw, 96px);
+  }
+
+  .projects-layout {
+    grid-template-columns: 28px minmax(0, 1fr);
+    align-items: start;
+    gap: 18px 24px;
+  }
+
+  .projects-rail {
+    grid-row: 1 / span 2;
+    align-self: start;
+    margin-top: 6px;
+  }
+
+  .projects-meta {
+    max-width: none;
+  }
+
+  .projects-title {
+    font-size: clamp(1.7rem, 5.2vw, 3.1rem);
+  }
+
+  .projects-description {
+    max-width: 64ch;
+  }
+
+  .projects-visual-wrap {
+    margin-top: 6px;
+  }
+
+  .projects-visual-scroll {
+    max-height: min(58vh, 620px);
+  }
+}
+
+@media (max-width: 980px) {
+  .hero-inner {
+    min-height: 100svh;
+    padding-top: 88px;
+    padding-bottom: 28px;
+  }
+
+  .projects-layout {
+    grid-template-columns: 1fr;
+    gap: 14px;
+  }
+
+  .projects-rail {
+    flex-direction: row;
+    justify-content: flex-start;
+    gap: 8px;
+    order: 3;
+    margin-top: 2px;
+  }
+
+  .projects-rail-dot {
+    width: 10px;
+    height: 2px;
+  }
+
+  .projects-rail-dot.is-active {
+    width: 28px;
+    height: 2px;
+  }
+
+  .projects-meta {
+    order: 1;
+  }
+
+  .projects-visual-wrap {
+    order: 2;
+    margin-top: 2px;
+  }
+
+  .projects-visual-scroll {
+    max-height: none;
+  }
+
+  .projects-image-controls {
+    grid-template-columns: auto 1fr;
+    gap: 10px;
+  }
+
+  .projects-image-step-controls {
+    grid-column: 1;
+    justify-content: flex-start;
+  }
+
+  .projects-discover-inline {
+    grid-column: 2;
+    justify-self: end;
+  }
+}
+
 @media (max-width: 767px) {
   :root {
     --page-gutter: clamp(16px, 5.2vw, 24px);
@@ -838,6 +958,31 @@ body {
   .projects-discover-inline {
     grid-column: 1;
     justify-self: center;
+  }
+}
+
+@media (max-width: 480px) {
+  .section-label {
+    letter-spacing: 0.12em;
+  }
+
+  .hero-headline {
+    line-height: 0.92;
+  }
+
+  .projects-description {
+    font-size: 0.88rem;
+    line-height: 1.5;
+  }
+
+  .projects-repo-btn,
+  .projects-discover-btn {
+    font-size: 0.74rem;
+    padding: 8px 13px;
+  }
+
+  .about-certs-shell {
+    padding: 16px;
   }
 }
 
