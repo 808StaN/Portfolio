@@ -115,12 +115,13 @@ export default function Nav() {
     <>
       <motion.header
         className="fixed top-0 left-0 right-0 z-50"
+        style={{ top: 0, left: 0, right: 0 }}
         initial={{ y: -80, opacity: 0 }}
         animate={{ y: topVisible ? 0 : -80, opacity: topVisible ? 1 : 0 }}
         transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
       >
         <nav
-          className={`h-16 ${scrolled ? 'nav-blur' : ''}`}
+          className={`relative h-16 ${scrolled ? 'nav-blur' : ''}`}
           style={
             scrolled
               ? undefined
@@ -135,9 +136,9 @@ export default function Nav() {
             className="hero-inner h-full flex items-center justify-between"
             style={{ width: 'min(1600px, calc(100% - (var(--page-gutter) * 1.2)))' }}
           >
-            <div className="w-[84px]" aria-hidden="true" />
+            <div className="hidden md:block w-[84px]" aria-hidden="true" />
 
-            <div className="hidden md:flex items-center gap-8">
+            <div className="hidden lg:flex items-center gap-8">
               {links.map(link => (
                 <button
                   key={link.href}
@@ -159,7 +160,7 @@ export default function Nav() {
               ))}
             </div>
 
-            <div className="hidden md:flex items-center gap-4">
+            <div className="hidden lg:flex items-center gap-4">
               <a
                 href="https://github.com/808StaN"
                 target="_blank"
@@ -175,7 +176,7 @@ export default function Nav() {
             </div>
 
             <button
-              className="md:hidden flex flex-col gap-1.5 p-2 cursor-pointer bg-transparent border-none"
+              className="lg:hidden absolute top-2.5 right-2.5 flex flex-col gap-1.5 p-2 cursor-pointer bg-transparent border-none z-50"
               onClick={() => setMenuOpen(v => !v)}
               aria-label="Toggle menu"
               aria-expanded={menuOpen}
@@ -203,7 +204,7 @@ export default function Nav() {
       <AnimatePresence>
         {docked && (
           <motion.aside
-            className="hidden md:flex flex-col items-start gap-7 fixed top-1/2 -translate-y-1/2 left-[max(14px,calc(var(--page-gutter)*0.55))] z-50"
+            className="hidden 2xl:flex flex-col items-start gap-7 fixed top-1/2 -translate-y-1/2 left-[max(14px,calc(var(--page-gutter)*0.55))] z-50"
             aria-label="Section navigation"
             initial={{ opacity: 0, y: "-52vh", scale: 0.96 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
@@ -248,8 +249,7 @@ export default function Nav() {
       <AnimatePresence>
         {menuOpen && (
           <motion.div
-            className="fixed inset-0 z-40 flex flex-col justify-center items-center"
-            style={{ background: 'rgba(5,5,8,0.97)', backdropFilter: 'blur(24px)' }}
+            className="mobile-menu-backdrop fixed inset-0 z-40 flex flex-col justify-center items-center"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
