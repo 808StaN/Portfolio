@@ -14,11 +14,6 @@ const certificates = [
     issuer: 'Codecademy',
     href: 'https://www.codecademy.com/profiles/DawidStanisz/certificates/ffd0f42cce1a44e9a0108b365047a0a6',
   },
-  {
-    title: 'Build Web Apps with ASP.NET Skill Path',
-    issuer: 'Codecademy',
-    href: 'https://www.codecademy.com/profiles/DawidStanisz/certificates/5ec9a3897d4c940011f50142',
-  },
 ];
 
 export default function About() {
