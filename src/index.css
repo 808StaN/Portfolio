@@ -491,7 +491,10 @@ body {
   overflow: hidden;
   aspect-ratio: 16 / 9;
   width: 100%;
-  max-height: min(64vh, 700px);
+  max-width: min(100%, calc(min(64vh, 700px) * (16 / 9)));
+  margin-inline: auto;
+  display: grid;
+  place-items: center;
 }
 
 .projects-visual-stack {
@@ -534,6 +537,7 @@ body {
   width: 100%;
   height: 100%;
   object-fit: cover;
+  object-position: center;
   display: block;
 }
 
