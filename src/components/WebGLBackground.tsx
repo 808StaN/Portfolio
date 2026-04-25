@@ -183,6 +183,7 @@ export default function WebGLBackground({ className = '' }: Props) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const glRef = useRef<WebGLRenderingContext | null>(null);
   const programRef = useRef<WebGLProgram | null>(null);
+  const bufferRef = useRef<WebGLBuffer | null>(null);
   const uniformsRef = useRef<{
     resolution: WebGLUniformLocation | null;
     time: WebGLUniformLocation | null;
@@ -190,13 +191,46 @@ export default function WebGLBackground({ className = '' }: Props) {
     mouseEase: WebGLUniformLocation | null;
   } | null>(null);
   const rafRef = useRef<number>(0);
-  const startTimeRef = useRef<number>(Date.now());
+  const startTimeRef = useRef<number | null>(null);
+  const dprRef = useRef<number>(1);
+  const fpsWindowRef = useRef({
+    lastNow: 0,
+    elapsedMs: 0,
+    frames: 0,
+  });
 
   // Smoothed mouse
   const mouseRef = useRef({ x: 0.5, y: 0.5 });
   const mouseTargetRef = useRef({ x: 0.5, y: 0.5 });
   const mouseEaseRef = useRef(0);
   const mouseEaseTargetRef = useRef(0);
+
+  const disposeWebGL = useCallback(() => {
+    const gl = glRef.current;
+    if (!gl) {
+      uniformsRef.current = null;
+      programRef.current = null;
+      bufferRef.current = null;
+      startTimeRef.current = null;
+      return;
+    }
+
+    if (programRef.current) {
+      gl.useProgram(null);
+      gl.deleteProgram(programRef.current);
+      programRef.current = null;
+    }
+
+    if (bufferRef.current) {
+      gl.bindBuffer(gl.ARRAY_BUFFER, null);
+      gl.deleteBuffer(bufferRef.current);
+      bufferRef.current = null;
+    }
+
+    uniformsRef.current = null;
+    glRef.current = null;
+    startTimeRef.current = null;
+  }, []);
 
   const initWebGL = useCallback(() => {
     const canvas = canvasRef.current;
@@ -211,37 +245,61 @@ export default function WebGLBackground({ className = '' }: Props) {
 
     glRef.current = gl;
 
+    const compileShader = (type: number, source: string) => {
+      const shader = gl.createShader(type);
+      if (!shader) return null;
+      gl.shaderSource(shader, source);
+      gl.compileShader(shader);
+      if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {
+        console.error('Shader compile error:', gl.getShaderInfoLog(shader));
+        gl.deleteShader(shader);
+        return null;
+      }
+      return shader;
+    };
+
     // Compile shaders
-    const vert = gl.createShader(gl.VERTEX_SHADER)!;
-    gl.shaderSource(vert, VERTEX_SHADER);
-    gl.compileShader(vert);
-    if (!gl.getShaderParameter(vert, gl.COMPILE_STATUS)) {
-      console.error('Vertex shader error:', gl.getShaderInfoLog(vert));
+    const vert = compileShader(gl.VERTEX_SHADER, VERTEX_SHADER);
+    const frag = compileShader(gl.FRAGMENT_SHADER, FRAGMENT_SHADER);
+    if (!vert || !frag) {
+      if (vert) gl.deleteShader(vert);
+      if (frag) gl.deleteShader(frag);
       return;
     }
 
-    const frag = gl.createShader(gl.FRAGMENT_SHADER)!;
-    gl.shaderSource(frag, FRAGMENT_SHADER);
-    gl.compileShader(frag);
-    if (!gl.getShaderParameter(frag, gl.COMPILE_STATUS)) {
-      console.error('Fragment shader error:', gl.getShaderInfoLog(frag));
+    const program = gl.createProgram();
+    if (!program) {
+      gl.deleteShader(vert);
+      gl.deleteShader(frag);
       return;
     }
-
-    const program = gl.createProgram()!;
     gl.attachShader(program, vert);
     gl.attachShader(program, frag);
     gl.linkProgram(program);
     if (!gl.getProgramParameter(program, gl.LINK_STATUS)) {
       console.error('Program link error:', gl.getProgramInfoLog(program));
+      gl.deleteShader(vert);
+      gl.deleteShader(frag);
+      gl.deleteProgram(program);
       return;
     }
+
+    gl.detachShader(program, vert);
+    gl.detachShader(program, frag);
+    gl.deleteShader(vert);
+    gl.deleteShader(frag);
 
     programRef.current = program;
 
     // Full-screen quad
     const vertices = new Float32Array([-1, -1, 1, -1, -1, 1, 1, 1]);
     const buf = gl.createBuffer();
+    if (!buf) {
+      gl.deleteProgram(program);
+      programRef.current = null;
+      return;
+    }
+    bufferRef.current = buf;
     gl.bindBuffer(gl.ARRAY_BUFFER, buf);
     gl.bufferData(gl.ARRAY_BUFFER, vertices, gl.STATIC_DRAW);
 
@@ -256,6 +314,7 @@ export default function WebGLBackground({ className = '' }: Props) {
       mouse: gl.getUniformLocation(program, 'u_mouse'),
       mouseEase: gl.getUniformLocation(program, 'u_mouse_ease'),
     };
+    startTimeRef.current = null;
   }, []);
 
   const resize = useCallback(() => {
@@ -263,7 +322,10 @@ export default function WebGLBackground({ className = '' }: Props) {
     const gl = glRef.current;
     if (!canvas || !gl) return;
 
-    const dpr = Math.min(window.devicePixelRatio, 2);
+    const maxDpr = Math.min(window.devicePixelRatio || 1, 2);
+    if (dprRef.current < 1) dprRef.current = 1;
+    if (dprRef.current > maxDpr) dprRef.current = maxDpr;
+    const dpr = dprRef.current;
     const w = canvas.clientWidth * dpr;
     const h = canvas.clientHeight * dpr;
 
@@ -272,15 +334,53 @@ export default function WebGLBackground({ className = '' }: Props) {
       canvas.height = h;
       gl.viewport(0, 0, w, h);
     }
+
+    const program = programRef.current;
+    const uniforms = uniformsRef.current;
+    if (program && uniforms?.resolution) {
+      gl.useProgram(program);
+      gl.uniform2f(uniforms.resolution, canvas.width, canvas.height);
+    }
   }, []);
 
-  const render = useCallback(() => {
+  const render = useCallback((now: number) => {
     const gl = glRef.current;
     const program = programRef.current;
     const uniforms = uniformsRef.current;
     if (!gl || !program || !uniforms) return;
 
-    const elapsed = (Date.now() - startTimeRef.current) / 1000;
+    if (startTimeRef.current === null) {
+      startTimeRef.current = now;
+    }
+    const elapsed = (now - startTimeRef.current) / 1000;
+
+    const fpsWindow = fpsWindowRef.current;
+    if (fpsWindow.lastNow > 0) {
+      const deltaMs = Math.min(250, now - fpsWindow.lastNow);
+      fpsWindow.elapsedMs += deltaMs;
+      fpsWindow.frames += 1;
+      if (fpsWindow.elapsedMs >= 1000) {
+        const fps = (fpsWindow.frames * 1000) / fpsWindow.elapsedMs;
+        const maxDpr = Math.min(window.devicePixelRatio || 1, 2);
+        let nextDpr = dprRef.current;
+
+        if (fps < 50 && dprRef.current > 1) {
+          nextDpr = Math.max(1, dprRef.current - 0.25);
+        } else if (fps > 57 && dprRef.current < maxDpr) {
+          nextDpr = Math.min(maxDpr, dprRef.current + 0.25);
+        }
+
+        nextDpr = Math.round(nextDpr * 100) / 100;
+        if (Math.abs(nextDpr - dprRef.current) >= 0.01) {
+          dprRef.current = nextDpr;
+          resize();
+        }
+
+        fpsWindow.elapsedMs = 0;
+        fpsWindow.frames = 0;
+      }
+    }
+    fpsWindow.lastNow = now;
 
     // Smooth mouse interpolation
     const ease = 0.055;
@@ -289,7 +389,6 @@ export default function WebGLBackground({ className = '' }: Props) {
     mouseEaseRef.current += (mouseEaseTargetRef.current - mouseEaseRef.current) * 0.04;
 
     // Set uniforms (cached locations)
-    gl.uniform2f(uniforms.resolution, gl.canvas.width, gl.canvas.height);
     gl.uniform1f(uniforms.time, elapsed);
     gl.uniform2f(uniforms.mouse, mouseRef.current.x, 1.0 - mouseRef.current.y);
     gl.uniform1f(uniforms.mouseEase, mouseEaseRef.current);
@@ -300,6 +399,8 @@ export default function WebGLBackground({ className = '' }: Props) {
 
   useEffect(() => {
     initWebGL();
+    dprRef.current = Math.min(window.devicePixelRatio || 1, 2);
+    fpsWindowRef.current = { lastNow: 0, elapsedMs: 0, frames: 0 };
     resize();
     rafRef.current = requestAnimationFrame(render);
 
@@ -311,8 +412,9 @@ export default function WebGLBackground({ className = '' }: Props) {
       cancelAnimationFrame(rafRef.current);
       ro.disconnect();
       window.removeEventListener('resize', resize);
+      disposeWebGL();
     };
-  }, [initWebGL, resize, render]);
+  }, [disposeWebGL, initWebGL, resize, render]);
 
   // Mouse events
   useEffect(() => {
