@@ -1,5 +1,5 @@
 import otakuVersusImage from "../assets/projects/OtakuVersus.jpg";
-import openStudioImage from "../assets/projects/OpenStudio.png";
+import openStudioImage from "../assets/projects/OpenStudio.jpg";
 import instaFetchImage from "../assets/projects/InstaFetch.jpg";
 import storeManagerImage from "../assets/projects/StoreManager.jpg";
 
