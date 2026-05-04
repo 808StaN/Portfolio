@@ -166,40 +166,43 @@ export default function Projects() {
             </div>
 
             <div className="projects-visual-wrap">
-              <div className="projects-visual-scroll">
-                <div className="projects-visual-stack">
-                  {transition ? (
-                    <>
-                      <article
-                        key={`out-${transition.from}-${transition.to}-${transition.dir}`}
-                        className={`projects-visual-item projects-visual-layer ${transition.dir === 1 ? "projects-slide-out-left" : "projects-slide-out-right"}`}
-                      >
+              {/* Animated gradient border wrapper */}
+              <div className="projects-visual-border">
+                <div className="projects-visual-scroll">
+                  <div className="projects-visual-stack">
+                    {transition ? (
+                      <>
+                        <article
+                          key={`out-${transition.from}-${transition.to}-${transition.dir}`}
+                          className={`projects-visual-item projects-visual-layer ${transition.dir === 1 ? "projects-slide-out-left" : "projects-slide-out-right"}`}
+                        >
+                          <img
+                            src={projects[transition.from].image}
+                            alt={`${projects[transition.from].title} preview`}
+                            loading="lazy"
+                          />
+                        </article>
+                        <article
+                          key={`in-${transition.from}-${transition.to}-${transition.dir}`}
+                          className={`projects-visual-item projects-visual-layer ${transition.dir === 1 ? "projects-slide-in-right" : "projects-slide-in-left"}`}
+                        >
+                          <img
+                            src={projects[transition.to].image}
+                            alt={`${projects[transition.to].title} preview`}
+                            loading="lazy"
+                          />
+                        </article>
+                      </>
+                    ) : (
+                      <article className="projects-visual-item projects-visual-layer">
                         <img
-                          src={projects[transition.from].image}
-                          alt={`${projects[transition.from].title} preview`}
+                          src={active.image}
+                          alt={`${active.title} preview`}
                           loading="lazy"
                         />
                       </article>
-                      <article
-                        key={`in-${transition.from}-${transition.to}-${transition.dir}`}
-                        className={`projects-visual-item projects-visual-layer ${transition.dir === 1 ? "projects-slide-in-right" : "projects-slide-in-left"}`}
-                      >
-                        <img
-                          src={projects[transition.to].image}
-                          alt={`${projects[transition.to].title} preview`}
-                          loading="lazy"
-                        />
-                      </article>
-                    </>
-                  ) : (
-                    <article className="projects-visual-item projects-visual-layer">
-                      <img
-                        src={active.image}
-                        alt={`${active.title} preview`}
-                        loading="lazy"
-                      />
-                    </article>
-                  )}
+                    )}
+                  </div>
                 </div>
               </div>
 
