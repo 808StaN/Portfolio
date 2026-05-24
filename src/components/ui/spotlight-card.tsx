@@ -34,7 +34,7 @@ const beforeAfterStyles = `
     position: absolute;
     inset: calc(var(--border-size) * -1);
     border: var(--border-size) solid transparent;
-    border-radius: calc(var(--radius) * 1px);
+    border-radius: calc(var(--radius, 14) * 1px);
     background-attachment: fixed;
     background-size: calc(100% + (2 * var(--border-size))) calc(100% + (2 * var(--border-size)));
     background-repeat: no-repeat;
@@ -71,7 +71,7 @@ const beforeAfterStyles = `
     inset: 0;
     will-change: filter;
     opacity: var(--outer, 1);
-    border-radius: calc(var(--radius) * 1px);
+    border-radius: calc(var(--radius, 14) * 1px);
     border-width: calc(var(--border-size) * 20);
     filter: blur(calc(var(--border-size) * 10));
     background: none;
@@ -138,14 +138,8 @@ export function GlowCard({
     const baseStyles: GlowCardStyle = {
       "--base": base,
       "--spread": spread,
-      "--radius": "14",
-      "--border": "3",
-      "--backdrop": "hsl(0 0% 60% / 0.12)",
-      "--backup-border": "var(--backdrop)",
-      "--size": "200",
-      "--outer": "1",
-      "--border-size": "calc(var(--border, 2) * 1px)",
-      "--spotlight-size": "calc(var(--size, 150) * 1px)",
+      "--border-size": "calc(var(--border, 3) * 1px)",
+      "--spotlight-size": "calc(var(--size, 200) * 1px)",
       "--hue": "calc(var(--base) + (var(--xp, 0) * var(--spread, 0)))",
       backgroundImage: `radial-gradient(
         var(--spotlight-size) var(--spotlight-size) at
@@ -153,11 +147,11 @@ export function GlowCard({
         calc(var(--y, 0) * 1px),
         hsl(var(--hue, 210) calc(var(--saturation, 100) * 1%) calc(var(--lightness, 70) * 1%) / var(--bg-spot-opacity, 0.1)), transparent
       )`,
-      backgroundColor: "var(--backdrop, transparent)",
+      backgroundColor: "var(--backdrop, hsl(0 0% 60% / 0.12))",
       backgroundSize: "calc(100% + (2 * var(--border-size))) calc(100% + (2 * var(--border-size)))",
       backgroundPosition: "50% 50%",
       backgroundAttachment: "fixed",
-      border: "var(--border-size) solid var(--backup-border)",
+      border: "var(--border-size) solid var(--backup-border, var(--backdrop, hsl(0 0% 60% / 0.12)))",
       position: "relative",
       touchAction: "none",
     };

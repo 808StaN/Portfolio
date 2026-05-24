@@ -474,12 +474,13 @@ body {
 
 .projects-visual-border {
   position: relative;
-  padding: 6px;
-  border-radius: 14px;
+  display: block;
+  padding: 0;
+  border-radius: 10px;
   width: 100%;
   max-width: min(100%, calc(min(64vh, 700px) * (16 / 9)));
   margin-inline: auto;
-  --border: 3;
+  --border: 5;
   --radius: 14;
   --size: 260;
   --backdrop: rgba(255, 255, 255, 0.05);
@@ -489,6 +490,8 @@ body {
   --border-light-opacity: 0.78;
   overflow: visible;
   isolation: isolate;
+  gap: 0;
+  line-height: 0;
 }
 
 .projects-visual-scroll {
@@ -514,6 +517,7 @@ body {
   place-items: center;
   position: relative;
   z-index: 1;
+  line-height: normal;
 }
 
 .projects-visual-stack {
