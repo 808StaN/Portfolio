@@ -1,8 +1,23 @@
 import { useEffect, useRef, useState } from "react";
+import { GlowCard } from "@/components/ui/spotlight-card";
 import { projects } from "../data/projects";
 
 function slashTitle(title: string) {
   return title.split(" ").join(" / ");
+}
+
+function getGlowColor(accent: string): "blue" | "purple" | "green" | "red" | "orange" {
+  switch (accent.toLowerCase()) {
+    case "#14b8a6":
+    case "#10b981":
+      return "green";
+    case "#f97316":
+      return "orange";
+    case "#4f8ef7":
+      return "blue";
+    default:
+      return "purple";
+  }
 }
 
 export default function Projects() {
@@ -166,8 +181,11 @@ export default function Projects() {
             </div>
 
             <div className="projects-visual-wrap">
-              {/* Animated gradient border wrapper */}
-              <div className="projects-visual-border">
+              <GlowCard
+                customSize
+                glowColor={getGlowColor(active.accent)}
+                className="projects-visual-border"
+              >
                 <div className="projects-visual-scroll">
                   <div className="projects-visual-stack">
                     {transition ? (
@@ -204,7 +222,7 @@ export default function Projects() {
                     )}
                   </div>
                 </div>
-              </div>
+              </GlowCard>
 
               <div className="projects-image-controls">
                 <div className="projects-image-step-controls">

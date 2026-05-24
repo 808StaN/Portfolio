@@ -472,62 +472,24 @@ body {
   margin-top: 0;
 }
 
-/* ─── Animated gradient border ─────────────────────────────── */
-@property --angle {
-  syntax: "<angle>";
-  initial-value: 0deg;
-  inherits: false;
-}
-
-@keyframes borderSpin {
-  from { --angle: 0deg; }
-  to   { --angle: 360deg; }
-}
-
 .projects-visual-border {
   position: relative;
   padding: 6px;
-  border-radius: 10px;
+  border-radius: 14px;
   width: 100%;
   max-width: min(100%, calc(min(64vh, 700px) * (16 / 9)));
   margin-inline: auto;
+  --border: 3;
+  --radius: 14;
+  --size: 260;
+  --backdrop: rgba(255, 255, 255, 0.05);
+  --backup-border: rgba(255, 255, 255, 0.14);
+  --bg-spot-opacity: 0.11;
+  --border-spot-opacity: 0.94;
+  --border-light-opacity: 0.78;
+  overflow: visible;
+  isolation: isolate;
 }
-
-.projects-visual-border::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  border-radius: 10px;
-  background-image: conic-gradient(
-    from var(--angle),
-    transparent 70%,
-    #4f8ef7,
-    #14b8a6,
-    #a78bfa
-  );
-  animation: borderSpin 8s linear infinite;
-  z-index: 0;
-  opacity: 1;
-}
-
-.projects-visual-border::before {
-  content: "";
-  position: absolute;
-  inset: -3px;
-  border-radius: 14px;
-  background-image: conic-gradient(
-    from var(--angle),
-    transparent 70%,
-    #4f8ef7,
-    #14b8a6,
-    #a78bfa
-  );
-  animation: borderSpin 8s linear infinite;
-  filter: blur(12px);
-  opacity: 0.5;
-  z-index: 0;
-}
-/* ────────────────────────────────────────────────────────────── */
 
 .projects-visual-scroll {
   position: relative;
