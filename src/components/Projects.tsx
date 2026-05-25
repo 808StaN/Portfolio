@@ -1,8 +1,24 @@
 import { useEffect, useRef, useState } from "react";
+import { GlowCard } from "@/components/ui/spotlight-card";
 import { projects } from "../data/projects";
 
 function slashTitle(title: string) {
   return title.split(" ").join(" / ");
+}
+
+function getGlowColor(accent: string): "blue" | "purple" | "green" | "red" | "orange" {
+  switch (accent.toLowerCase()) {
+    case "#14b8a6":
+    case "#10b981":
+      return "green";
+    case "#f97316":
+    case "#c89b3c":
+      return "orange";
+    case "#4f8ef7":
+      return "blue";
+    default:
+      return "purple";
+  }
 }
 
 export default function Projects() {
@@ -19,7 +35,9 @@ export default function Projects() {
   const queuedTargetRef = useRef<number | null>(null);
 
   const active = projects[activeIndex];
-  const activeDescription = repoDescriptions[active.id] ?? active.description;
+  const activeDescription =
+    repoDescriptions[active.id] ??
+    (active.link?.includes("github.com") ? active.description : active.longDescription);
 
   useEffect(() => {
     const controller = new AbortController();
@@ -160,14 +178,17 @@ export default function Projects() {
                   rel="noopener noreferrer"
                   className="projects-repo-btn"
                 >
-                  View repository
+                  {active.linkLabel ?? "View repository"}
                 </a>
               ) : null}
             </div>
 
             <div className="projects-visual-wrap">
-              {/* Animated gradient border wrapper */}
-              <div className="projects-visual-border">
+              <GlowCard
+                customSize
+                glowColor={getGlowColor(active.accent)}
+                className="projects-visual-border"
+              >
                 <div className="projects-visual-scroll">
                   <div className="projects-visual-stack">
                     {transition ? (
@@ -204,7 +225,7 @@ export default function Projects() {
                     )}
                   </div>
                 </div>
-              </div>
+              </GlowCard>
 
               <div className="projects-image-controls">
                 <div className="projects-image-step-controls">

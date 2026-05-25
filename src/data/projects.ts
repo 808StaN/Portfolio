@@ -1,3 +1,4 @@
+import riftPickImage from "../assets/projects/RiftPick.jpg";
 import otakuVersusImage from "../assets/projects/OtakuVersus.jpg";
 import openStudioImage from "../assets/projects/OpenStudio.jpg";
 import instaFetchImage from "../assets/projects/InstaFetch.jpg";
@@ -15,11 +16,37 @@ export interface Project {
   year: string;
   status: 'live' | 'case-study' | 'experimental';
   link?: string;
+  linkLabel?: string;
   accent: string;
   index: string;
 }
 
 export const projects: Project[] = [
+  {
+    id: 'riftpick',
+    title: 'RiftPick',
+    description:
+      'RiftPick is a fantasy platform for League of Legends esports fans. Users can collect player cards by opening packs and crafting, build matchday squads, earn points based on real LEC player performances, and compete on a leaderboard.',
+    longDescription:
+      'RiftPick is a fantasy platform for League of Legends esports fans. Users can collect player cards by opening packs and crafting, build matchday squads, earn points based on real LEC player performances, and compete on a leaderboard.',
+    image: riftPickImage,
+    secondaryImage: riftPickImage,
+    category: 'Web Application',
+    tags: [
+      'Next.js',
+      'TypeScript',
+      'Tailwind CSS',
+      'Clerk',
+      'Prisma',
+      'Neon PostgreSQL',
+    ],
+    year: '2026',
+    status: 'live',
+    link: 'https://riftpick.com',
+    linkLabel: 'View App',
+    accent: '#c89b3c',
+    index: '01',
+  },
   {
     id: 'openstudio',
     title: 'OpenStudio',
@@ -35,7 +62,7 @@ export const projects: Project[] = [
     status: 'live',
     link: 'https://github.com/808StaN/OpenStudio',
     accent: '#14b8a6',
-    index: '01',
+    index: '02',
   },
   {
     id: 'otakuversus',
@@ -52,7 +79,7 @@ export const projects: Project[] = [
     status: 'live',
     link: 'https://github.com/808StaN/OtakuVersus',
     accent: '#4f8ef7',
-    index: '02',
+    index: '03',
   },
   {
     id: 'instafetch',
@@ -69,7 +96,7 @@ export const projects: Project[] = [
     status: 'live',
     link: 'https://github.com/808StaN/InstaFetch',
     accent: '#f97316',
-    index: '03',
+    index: '04',
   },
   {
     id: 'storemanager',
@@ -86,6 +113,6 @@ export const projects: Project[] = [
     status: 'case-study',
     link: 'https://github.com/808StaN/StoreManager',
     accent: '#10b981',
-    index: '04',
+    index: '05',
   },
 ];
