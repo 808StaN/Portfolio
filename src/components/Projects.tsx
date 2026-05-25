@@ -6,21 +6,6 @@ function slashTitle(title: string) {
   return title.split(" ").join(" / ");
 }
 
-function getGlowColor(accent: string): "blue" | "purple" | "green" | "red" | "orange" {
-  switch (accent.toLowerCase()) {
-    case "#14b8a6":
-    case "#10b981":
-      return "green";
-    case "#f97316":
-    case "#c89b3c":
-      return "orange";
-    case "#4f8ef7":
-      return "blue";
-    default:
-      return "purple";
-  }
-}
-
 export default function Projects() {
   const [activeIndex, setActiveIndex] = useState(0);
   const [repoDescriptions, setRepoDescriptions] = useState<Record<string, string>>(
@@ -186,7 +171,7 @@ export default function Projects() {
             <div className="projects-visual-wrap">
               <GlowCard
                 customSize
-                glowColor={getGlowColor(active.accent)}
+                glowColor="projects"
                 className="projects-visual-border"
               >
                 <div className="projects-visual-scroll">
