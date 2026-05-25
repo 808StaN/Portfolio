@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef } from "react";
 
 export default function GrainOverlay() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -7,11 +7,11 @@ export default function GrainOverlay() {
     const canvas = canvasRef.current;
     if (!canvas) return;
 
-    const ctx = canvas.getContext('2d', { alpha: true });
+    const ctx = canvas.getContext("2d", { alpha: true });
     if (!ctx) return;
 
-    const noiseCanvas = document.createElement('canvas');
-    const noiseCtx = noiseCanvas.getContext('2d', { alpha: true });
+    const noiseCanvas = document.createElement("canvas");
+    const noiseCtx = noiseCanvas.getContext("2d", { alpha: true });
     if (!noiseCtx) return;
 
     const drawStaticNoise = () => {
@@ -23,7 +23,6 @@ export default function GrainOverlay() {
       canvas.style.width = `${width}px`;
       canvas.style.height = `${height}px`;
 
-      // Slightly larger grain by rendering low-res noise and scaling up.
       const noiseWidth = Math.max(64, Math.floor(width / 2));
       const noiseHeight = Math.max(64, Math.floor(height / 2));
       noiseCanvas.width = noiseWidth;
@@ -47,10 +46,10 @@ export default function GrainOverlay() {
     };
 
     drawStaticNoise();
-    window.addEventListener('resize', drawStaticNoise);
+    window.addEventListener("resize", drawStaticNoise);
 
     return () => {
-      window.removeEventListener('resize', drawStaticNoise);
+      window.removeEventListener("resize", drawStaticNoise);
     };
   }, []);
 
@@ -58,12 +57,12 @@ export default function GrainOverlay() {
     <canvas
       ref={canvasRef}
       aria-hidden="true"
+      className="app-grain-layer"
       style={{
-        position: 'fixed',
+        position: "fixed",
         inset: 0,
-        zIndex: 2,
-        pointerEvents: 'none',
-        mixBlendMode: 'soft-light',
+        pointerEvents: "none",
+        mixBlendMode: "soft-light",
         opacity: 0.20,
       }}
     />
