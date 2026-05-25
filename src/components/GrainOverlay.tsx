@@ -64,7 +64,7 @@ export default function GrainOverlay() {
         zIndex: 2,
         pointerEvents: 'none',
         mixBlendMode: 'soft-light',
-        opacity: 0.22,
+        opacity: 0.20,
       }}
     />
   );

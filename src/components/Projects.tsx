@@ -12,6 +12,7 @@ function getGlowColor(accent: string): "blue" | "purple" | "green" | "red" | "or
     case "#10b981":
       return "green";
     case "#f97316":
+    case "#c89b3c":
       return "orange";
     case "#4f8ef7":
       return "blue";
@@ -34,7 +35,9 @@ export default function Projects() {
   const queuedTargetRef = useRef<number | null>(null);
 
   const active = projects[activeIndex];
-  const activeDescription = repoDescriptions[active.id] ?? active.description;
+  const activeDescription =
+    repoDescriptions[active.id] ??
+    (active.link?.includes("github.com") ? active.description : active.longDescription);
 
   useEffect(() => {
     const controller = new AbortController();
@@ -175,7 +178,7 @@ export default function Projects() {
                   rel="noopener noreferrer"
                   className="projects-repo-btn"
                 >
-                  View repository
+                  {active.linkLabel ?? "View repository"}
                 </a>
               ) : null}
             </div>
