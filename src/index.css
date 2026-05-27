@@ -304,7 +304,8 @@ body {
   display: grid;
   /* kolumna 3 (galeria) musi mieć więcej fr — max-width samo nie powiększy przy width: 100% */
   grid-template-columns: 34px minmax(200px, 0.46fr) minmax(0, 2.15fr);
-  gap: clamp(18px, 2.5vw, 44px);
+  column-gap: 0;
+  row-gap: clamp(18px, 2.5vw, 44px);
   align-items: center;
   /* miejsce na przyciski pod galerią (position: absolute) */
   padding-bottom: clamp(84px, 9vh, 100px);
@@ -335,6 +336,7 @@ body {
   position: relative;
   z-index: 2;
   max-width: 460px;
+  padding-left: clamp(12px, 1.2vw, 18px);
 }
 
 .projects-kicker {
@@ -486,6 +488,7 @@ body {
   align-self: center;
   width: 100%;
   margin-top: 0;
+  padding-left: clamp(28px, 2.8vw, 44px);
 }
 
 .projects-visual-border {
@@ -899,7 +902,8 @@ body {
   .projects-layout {
     grid-template-columns: 28px minmax(0, 1fr);
     align-items: start;
-    gap: 18px 24px;
+    column-gap: 0;
+    row-gap: 18px;
   }
 
   .projects-rail {
@@ -912,6 +916,7 @@ body {
     grid-column: 2;
     grid-row: 1;
     max-width: none;
+    padding-left: clamp(10px, 1.1vw, 16px);
   }
 
   .projects-title {
@@ -926,6 +931,7 @@ body {
     grid-column: 2;
     grid-row: 2;
     margin-top: 6px;
+    padding-left: 0;
   }
 
   .projects-visual-border {
