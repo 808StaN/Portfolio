@@ -1,6 +1,9 @@
 import { useEffect, useRef, useState } from "react";
+import { motion, useInView } from "framer-motion";
 import { GlowCard } from "@/components/ui/spotlight-card";
 import { featuredProjects, getProjectImages } from "../data/projects";
+
+const easeOut = [0.16, 1, 0.3, 1] as const;
 
 function slashTitle(title: string) {
   return title.split(" ").join(" / ");
@@ -57,6 +60,8 @@ export default function Projects() {
   const imageTransitionTimerRef = useRef<number | null>(null);
   const queuedTargetRef = useRef<number | null>(null);
   const queuedImageRef = useRef<number | null>(null);
+  const revealRef = useRef<HTMLDivElement>(null);
+  const inView = useInView(revealRef, { once: true, margin: "-80px" });
 
   const active = featuredProjects[activeIndex];
   const activeImages = getProjectImages(active);
@@ -260,32 +265,45 @@ export default function Projects() {
         }}
       />
 
-      <div className="section-inner projects-inner relative z-10">
+      <div className="section-inner projects-inner relative z-10" ref={revealRef}>
         <div className="projects-stage">
           <div className="projects-header">
-            <div className="flex items-center gap-3 mb-5">
+            <motion.div
+              className="flex items-center gap-3 mb-5"
+              initial={{ opacity: 0, x: -20 }}
+              animate={inView ? { opacity: 1, x: 0 } : {}}
+              transition={{ duration: 0.6, ease: easeOut }}
+            >
               <span className="section-label">Selected Work</span>
               <div
                 className="flex-1 h-px"
                 style={{ background: "rgba(255,255,255,0.07)" }}
               />
               <span className="section-label">{featuredProjects.length} projects</span>
-            </div>
+            </motion.div>
 
-            <h2
+            <motion.h2
               className="section-title text-white/90 max-w-[13ch]"
               style={{ fontSize: "clamp(1.95rem, 3.7vw, 3.95rem)" }}
+              initial={{ opacity: 0, y: 30 }}
+              animate={inView ? { opacity: 1, y: 0 } : {}}
+              transition={{ duration: 0.8, delay: 0.1, ease: easeOut }}
             >
               Things I have
               <br />
               <span style={{ color: "rgba(255,255,255,0.58)" }}>
                 built and shipped.
               </span>
-            </h2>
+            </motion.h2>
           </div>
 
           <div className="projects-layout">
-            <div className="projects-rail">
+            <motion.div
+              className="projects-rail"
+              initial={{ opacity: 0, y: 16 }}
+              animate={inView ? { opacity: 1, y: 0 } : {}}
+              transition={{ duration: 0.7, delay: 0.18, ease: easeOut }}
+            >
               {featuredProjects.map((project, idx) => (
                 <button
                   key={project.id}
@@ -294,9 +312,14 @@ export default function Projects() {
                   className={`projects-rail-dot ${idx === activeIndex ? "is-active" : ""}`}
                 />
               ))}
-            </div>
+            </motion.div>
 
-            <div className="projects-meta">
+            <motion.div
+              className="projects-meta"
+              initial={{ opacity: 0, y: 24 }}
+              animate={inView ? { opacity: 1, y: 0 } : {}}
+              transition={{ duration: 0.8, delay: 0.22, ease: easeOut }}
+            >
               <h2 className="projects-title">{slashTitle(active.title)}</h2>
               <p className="projects-category">{active.category}</p>
               <p className="projects-description">{activeDescription}</p>
@@ -315,9 +338,14 @@ export default function Projects() {
                   {active.linkLabel ?? "View repository"}
                 </a>
               ) : null}
-            </div>
+            </motion.div>
 
-            <div className="projects-visual-wrap">
+            <motion.div
+              className="projects-visual-wrap"
+              initial={{ opacity: 0, y: 32 }}
+              animate={inView ? { opacity: 1, y: 0 } : {}}
+              transition={{ duration: 0.85, delay: 0.28, ease: easeOut }}
+            >
               <GlowCard
                 customSize
                 glowColor="projects"
@@ -380,7 +408,7 @@ export default function Projects() {
                   Discover all my projects
                 </a>
               </div>
-            </div>
+            </motion.div>
           </div>
         </div>
       </div>
