@@ -23,6 +23,8 @@
   --scrollbar-track: rgba(6, 8, 15, 0.62);
   --scrollbar-thumb: rgba(131, 157, 255, 0.72);
   --scrollbar-thumb-hover: rgba(171, 192, 255, 0.9);
+  /* wysokość galerii projektów (szerokość = wartość × 16/9) */
+  --projects-gallery-height: min(64vh, 700px);
 }
 
 html {
@@ -300,7 +302,8 @@ body {
 
 .projects-layout {
   display: grid;
-  grid-template-columns: 34px minmax(220px, 0.68fr) minmax(0, 1.5fr);
+  /* kolumna 3 (galeria) musi mieć więcej fr — max-width samo nie powiększy przy width: 100% */
+  grid-template-columns: 34px minmax(200px, 0.46fr) minmax(0, 2.15fr);
   gap: clamp(18px, 2.5vw, 44px);
   align-items: center;
   /* miejsce na przyciski pod galerią (position: absolute) */
@@ -490,8 +493,8 @@ body {
   display: block;
   padding: 0;
   border-radius: 20px;
-  width: 100%;
-  max-width: min(100%, calc(min(64vh, 700px) * (16 / 9)));
+  width: min(100%, calc(var(--projects-gallery-height) * 16 / 9));
+  max-width: 100%;
   margin-inline: auto;
   --border: 5;
   --radius: 20;
@@ -890,6 +893,7 @@ body {
   :root {
     --page-gutter: clamp(18px, 3.8vw, 40px);
     --section-space-y: clamp(48px, 8vw, 96px);
+    --projects-gallery-height: min(70vh, 760px);
   }
 
   .projects-layout {
@@ -905,6 +909,8 @@ body {
   }
 
   .projects-meta {
+    grid-column: 2;
+    grid-row: 1;
     max-width: none;
   }
 
@@ -917,11 +923,13 @@ body {
   }
 
   .projects-visual-wrap {
+    grid-column: 2;
+    grid-row: 2;
     margin-top: 6px;
   }
 
-  .projects-visual-scroll {
-    max-height: min(58vh, 620px);
+  .projects-visual-border {
+    width: min(100%, calc(var(--projects-gallery-height) * 16 / 9));
   }
 }
 
