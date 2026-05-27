@@ -16,7 +16,11 @@
   --color-accent-teal: #14b8a6;
   --color-accent-orange: #f97316;
   --scroll-progress: 0;
+  /* boczny navbar (Nav.tsx) — bez zmian przy szerszej treści */
   --page-gutter: clamp(20px, 4vw, 64px);
+  /* marginesy i szerokość głównej zawartości sekcji */
+  --content-gutter: clamp(14px, 2vw, 36px);
+  --content-max-width: 1520px;
   --section-space-y: clamp(58px, 9vw, 120px);
   --font-sans: 'Inter', system-ui, sans-serif;
   --font-display: 'Syne', system-ui, sans-serif;
@@ -229,19 +233,19 @@ body {
 }
 
 .section-inner {
-  width: min(1320px, calc(100% - (var(--page-gutter) * 2)));
+  width: min(var(--content-max-width), calc(100% - (var(--content-gutter) * 2)));
   margin-inline: auto;
 }
 
 .marquee-shell {
-  width: min(1320px, calc(100% - (var(--page-gutter) * 2)));
+  width: min(var(--content-max-width), calc(100% - (var(--content-gutter) * 2)));
   margin-inline: auto;
   border-top: 1px solid rgba(173, 199, 255, 0.18);
   border-bottom: 1px solid rgba(173, 199, 255, 0.18);
 }
 
 .hero-inner {
-  width: min(1320px, calc(100% - (var(--page-gutter) * 2)));
+  width: min(var(--content-max-width), calc(100% - (var(--content-gutter) * 2)));
   margin-inline: auto;
 }
 
@@ -894,7 +898,7 @@ body {
 
 @media (max-width: 1200px) {
   :root {
-    --page-gutter: clamp(18px, 3.8vw, 40px);
+    --content-gutter: clamp(12px, 2.4vw, 28px);
     --section-space-y: clamp(48px, 8vw, 96px);
     --projects-gallery-height: min(70vh, 760px);
   }
@@ -1008,7 +1012,7 @@ body {
 
 @media (max-width: 767px) {
   :root {
-    --page-gutter: clamp(16px, 5.2vw, 24px);
+    --content-gutter: clamp(12px, 4.5vw, 20px);
   }
 
   .projects-monopo {
