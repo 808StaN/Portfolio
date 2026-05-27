@@ -11,11 +11,6 @@ import WebGLBackground from "./components/WebGLBackground";
 import GrainOverlay from "./components/GrainOverlay";
 
 export default function App() {
-  // Smooth scroll polyfill / locking during load
-  useEffect(() => {
-    document.documentElement.style.scrollBehavior = "smooth";
-  }, []);
-
   useEffect(() => {
     const root = document.documentElement;
     let rafId = 0;
