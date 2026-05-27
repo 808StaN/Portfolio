@@ -10,6 +10,8 @@ export interface Project {
   description: string;
   longDescription: string;
   image: string;
+  /** Dodatkowe zdjęcia w galerii (pierwsze = `image`, jeśli nie podane). */
+  images?: string[];
   secondaryImage?: string;
   category: string;
   tags: string[];
@@ -19,6 +21,16 @@ export interface Project {
   linkLabel?: string;
   accent: string;
   index: string;
+}
+
+export function getProjectImages(project: Project): string[] {
+  if (project.images?.length) {
+    return project.images;
+  }
+  if (project.secondaryImage && project.secondaryImage !== project.image) {
+    return [project.image, project.secondaryImage];
+  }
+  return [project.image];
 }
 
 export const projects: Project[] = [

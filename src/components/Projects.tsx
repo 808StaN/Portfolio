@@ -1,28 +1,75 @@
 import { useEffect, useRef, useState } from "react";
 import { GlowCard } from "@/components/ui/spotlight-card";
-import { projects } from "../data/projects";
+import { getProjectImages, projects } from "../data/projects";
 
 function slashTitle(title: string) {
   return title.split(" ").join(" / ");
 }
 
+type SlideDir = 1 | -1;
+
+function ProjectArrow({
+  direction,
+}: {
+  direction: "up" | "down" | "left" | "right";
+}) {
+  const rotation =
+    direction === "left"
+      ? ""
+      : direction === "right"
+        ? "rotate(180deg)"
+        : direction === "up"
+          ? "rotate(90deg)"
+          : "rotate(-90deg)";
+
+  return (
+    <svg
+      className="projects-arrow-svg"
+      width="20"
+      height="20"
+      viewBox="0 0 18 16"
+      fill="none"
+      aria-hidden="true"
+      style={{ transform: rotation }}
+    >
+      <polyline points="10.5 3.5 5.5 8 10.5 12.5" />
+    </svg>
+  );
+}
+
 export default function Projects() {
   const [activeIndex, setActiveIndex] = useState(0);
+  const [activeImageIndex, setActiveImageIndex] = useState(0);
   const [repoDescriptions, setRepoDescriptions] = useState<Record<string, string>>(
     {},
   );
   const [transition, setTransition] = useState<{
     from: number;
     to: number;
-    dir: 1 | -1;
+    dir: SlideDir;
+  } | null>(null);
+  const [imageTransition, setImageTransition] = useState<{
+    from: number;
+    to: number;
+    dir: SlideDir;
   } | null>(null);
   const transitionTimerRef = useRef<number | null>(null);
+  const imageTransitionTimerRef = useRef<number | null>(null);
   const queuedTargetRef = useRef<number | null>(null);
+  const queuedImageRef = useRef<number | null>(null);
 
   const active = projects[activeIndex];
+  const activeImages = getProjectImages(active);
+  const currentImage = activeImages[activeImageIndex] ?? active.image;
   const activeDescription =
     repoDescriptions[active.id] ??
     (active.link?.includes("github.com") ? active.description : active.longDescription);
+
+  const isFirstProject = activeIndex === 0;
+  const isLastProject = activeIndex === projects.length - 1;
+  const isFirstImage = activeImageIndex === 0;
+  const isLastImage = activeImageIndex >= activeImages.length - 1;
+  const hasMultipleImages = activeImages.length > 1;
 
   useEffect(() => {
     const controller = new AbortController();
@@ -70,14 +117,33 @@ export default function Projects() {
       if (transitionTimerRef.current) {
         window.clearTimeout(transitionTimerRef.current);
       }
+      if (imageTransitionTimerRef.current) {
+        window.clearTimeout(imageTransitionTimerRef.current);
+      }
       queuedTargetRef.current = null;
+      queuedImageRef.current = null;
     };
   }, []);
 
+  useEffect(() => {
+    setActiveImageIndex(0);
+    setImageTransition(null);
+    queuedImageRef.current = null;
+  }, [activeIndex]);
+
+  useEffect(() => {
+    if (activeImageIndex > activeImages.length - 1) {
+      setActiveImageIndex(Math.max(0, activeImages.length - 1));
+    }
+  }, [activeImageIndex, activeImages.length]);
+
   const runTransition = (from: number, to: number) => {
-    const dir: 1 | -1 = to > from ? 1 : -1;
+    const dir: SlideDir = to > from ? 1 : -1;
+    setImageTransition(null);
+    queuedImageRef.current = null;
     setTransition({ from, to, dir });
     setActiveIndex(to);
+    setActiveImageIndex(0);
     transitionTimerRef.current = window.setTimeout(() => {
       setTransition(null);
       transitionTimerRef.current = null;
@@ -85,6 +151,21 @@ export default function Projects() {
       queuedTargetRef.current = null;
       if (queued !== null && queued !== to) {
         runTransition(to, queued);
+      }
+    }, 520);
+  };
+
+  const runImageTransition = (from: number, to: number) => {
+    const dir: SlideDir = to > from ? 1 : -1;
+    setImageTransition({ from, to, dir });
+    setActiveImageIndex(to);
+    imageTransitionTimerRef.current = window.setTimeout(() => {
+      setImageTransition(null);
+      imageTransitionTimerRef.current = null;
+      const queued = queuedImageRef.current;
+      queuedImageRef.current = null;
+      if (queued !== null && queued !== to) {
+        runImageTransition(to, queued);
       }
     }, 520);
   };
@@ -99,8 +180,76 @@ export default function Projects() {
     runTransition(activeIndex, clamped);
   };
 
-  const isFirst = activeIndex === 0;
-  const isLast = activeIndex === projects.length - 1;
+  const goToImage = (idx: number) => {
+    const clamped = Math.max(0, Math.min(activeImages.length - 1, idx));
+    if (clamped === activeImageIndex && !imageTransition) return;
+    if (imageTransition) {
+      queuedImageRef.current = clamped;
+      return;
+    }
+    if (transition) return;
+    runImageTransition(activeImageIndex, clamped);
+  };
+
+  const renderGalleryImage = (src: string, alt: string) => (
+    <img src={src} alt={alt} loading="lazy" />
+  );
+
+  const renderGallery = () => {
+    const altBase = `${active.title} preview`;
+
+    if (transition) {
+      const fromProject = projects[transition.from];
+      const toProject = projects[transition.to];
+      const fromImage = getProjectImages(fromProject)[0] ?? fromProject.image;
+      const toImage = getProjectImages(toProject)[0] ?? toProject.image;
+
+      return (
+        <>
+          <article
+            key={`out-${transition.from}-${transition.to}-${transition.dir}`}
+            className={`projects-visual-item projects-visual-layer ${transition.dir === 1 ? "projects-slide-out-left" : "projects-slide-out-right"}`}
+          >
+            {renderGalleryImage(fromImage, `${fromProject.title} preview`)}
+          </article>
+          <article
+            key={`in-${transition.from}-${transition.to}-${transition.dir}`}
+            className={`projects-visual-item projects-visual-layer ${transition.dir === 1 ? "projects-slide-in-right" : "projects-slide-in-left"}`}
+          >
+            {renderGalleryImage(toImage, `${toProject.title} preview`)}
+          </article>
+        </>
+      );
+    }
+
+    if (imageTransition) {
+      const fromSrc = activeImages[imageTransition.from] ?? currentImage;
+      const toSrc = activeImages[imageTransition.to] ?? currentImage;
+
+      return (
+        <>
+          <article
+            key={`img-out-${imageTransition.from}-${imageTransition.to}-${imageTransition.dir}`}
+            className={`projects-visual-item projects-visual-layer ${imageTransition.dir === 1 ? "projects-slide-out-up" : "projects-slide-out-down"}`}
+          >
+            {renderGalleryImage(fromSrc, altBase)}
+          </article>
+          <article
+            key={`img-in-${imageTransition.from}-${imageTransition.to}-${imageTransition.dir}`}
+            className={`projects-visual-item projects-visual-layer ${imageTransition.dir === 1 ? "projects-slide-in-down" : "projects-slide-in-up"}`}
+          >
+            {renderGalleryImage(toSrc, altBase)}
+          </article>
+        </>
+      );
+    }
+
+    return (
+      <article className="projects-visual-item projects-visual-layer">
+        {renderGalleryImage(currentImage, altBase)}
+      </article>
+    );
+  };
 
   return (
     <section id="work" className="section-shell projects-monopo relative">
@@ -175,81 +324,51 @@ export default function Projects() {
                 className="projects-visual-border"
               >
                 <div className="projects-visual-scroll">
-                  <div className="projects-visual-stack">
-                    {transition ? (
-                      <>
-                        <article
-                          key={`out-${transition.from}-${transition.to}-${transition.dir}`}
-                          className={`projects-visual-item projects-visual-layer ${transition.dir === 1 ? "projects-slide-out-left" : "projects-slide-out-right"}`}
-                        >
-                          <img
-                            src={projects[transition.from].image}
-                            alt={`${projects[transition.from].title} preview`}
-                            loading="lazy"
-                          />
-                        </article>
-                        <article
-                          key={`in-${transition.from}-${transition.to}-${transition.dir}`}
-                          className={`projects-visual-item projects-visual-layer ${transition.dir === 1 ? "projects-slide-in-right" : "projects-slide-in-left"}`}
-                        >
-                          <img
-                            src={projects[transition.to].image}
-                            alt={`${projects[transition.to].title} preview`}
-                            loading="lazy"
-                          />
-                        </article>
-                      </>
-                    ) : (
-                      <article className="projects-visual-item projects-visual-layer">
-                        <img
-                          src={active.image}
-                          alt={`${active.title} preview`}
-                          loading="lazy"
-                        />
-                      </article>
-                    )}
-                  </div>
+                  <div className="projects-visual-stack">{renderGallery()}</div>
                 </div>
               </GlowCard>
 
               <div className="projects-image-controls">
-                <div className="projects-image-step-controls">
+                <div className="projects-image-nav" aria-label="Gallery navigation">
                   <button
                     type="button"
                     className="projects-image-control-btn"
-                    onClick={() => goTo(activeIndex - 1)}
-                    disabled={isFirst}
-                    aria-label="Previous project"
+                    onClick={() => goToImage(activeImageIndex - 1)}
+                    disabled={!hasMultipleImages || isFirstImage || !!transition}
+                    aria-label="Previous image"
                   >
-                    <svg
-                      className="projects-arrow-svg"
-                      width="20"
-                      height="20"
-                      viewBox="0 0 18 16"
-                      fill="none"
-                      aria-hidden="true"
-                    >
-                      <polyline points="10.5 3.5 5.5 8 10.5 12.5" />
-                    </svg>
+                    <ProjectArrow direction="up" />
                   </button>
-                  <button
-                    type="button"
-                    className="projects-image-control-btn"
-                    onClick={() => goTo(activeIndex + 1)}
-                    disabled={isLast}
-                    aria-label="Next project"
-                  >
-                    <svg
-                      className="projects-arrow-svg"
-                      width="20"
-                      height="20"
-                      viewBox="0 0 14 16"
-                      fill="none"
-                      aria-hidden="true"
+
+                  <div className="projects-image-nav-row">
+                    <button
+                      type="button"
+                      className="projects-image-control-btn"
+                      onClick={() => goTo(activeIndex - 1)}
+                      disabled={isFirstProject || !!imageTransition}
+                      aria-label="Previous project"
                     >
-                      <polyline points="5.5 3.5 10.5 8 5.5 12.5" />
-                    </svg>
-                  </button>
+                      <ProjectArrow direction="left" />
+                    </button>
+                    <button
+                      type="button"
+                      className="projects-image-control-btn"
+                      onClick={() => goToImage(activeImageIndex + 1)}
+                      disabled={!hasMultipleImages || isLastImage || !!transition}
+                      aria-label="Next image"
+                    >
+                      <ProjectArrow direction="down" />
+                    </button>
+                    <button
+                      type="button"
+                      className="projects-image-control-btn"
+                      onClick={() => goTo(activeIndex + 1)}
+                      disabled={isLastProject || !!imageTransition}
+                      aria-label="Next project"
+                    >
+                      <ProjectArrow direction="right" />
+                    </button>
+                  </div>
                 </div>
 
                 <a
