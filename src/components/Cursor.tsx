@@ -31,7 +31,9 @@ export default function Cursor() {
       const interactive = target.closest(
         'a, button, [role="link"], [tabindex]',
       );
-      setIsHovering(!!interactive);
+      const isDisabled =
+        interactive instanceof HTMLButtonElement && interactive.disabled;
+      setIsHovering(!!interactive && !isDisabled);
 
       const isText = target.closest(
         "p, h1, h2, h3, h4, h5, h6, span, li, blockquote, label, a, button",

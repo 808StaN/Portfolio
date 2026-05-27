@@ -1,6 +1,12 @@
 import riftPickImage from "../assets/projects/RiftPick.jpg";
+import riftPickImage2 from "../assets/projects/riftpick2.jpg";
+import riftPickImage3 from "../assets/projects/RiftPick3.jpg";
 import otakuVersusImage from "../assets/projects/OtakuVersus.jpg";
+import otakuVersusImage2 from "../assets/projects/OtakuVersus2.jpg";
+import otakuVersusImage3 from "../assets/projects/OtakuVersus3.jpg";
 import openStudioImage from "../assets/projects/OpenStudio.jpg";
+import openStudioImage2 from "../assets/projects/openstudio2.jpg";
+import openStudioImage3 from "../assets/projects/openstudio3.jpg";
 import instaFetchImage from "../assets/projects/InstaFetch.jpg";
 import storeManagerImage from "../assets/projects/StoreManager.jpg";
 
@@ -42,7 +48,7 @@ export const projects: Project[] = [
     longDescription:
       'RiftPick is a fantasy platform for League of Legends esports fans. Users can collect player cards by opening packs and crafting, build matchday squads, earn points based on real LEC player performances, and compete on a leaderboard.',
     image: riftPickImage,
-    secondaryImage: riftPickImage,
+    images: [riftPickImage, riftPickImage2, riftPickImage3],
     category: 'Web Application',
     tags: [
       'Next.js',
@@ -67,7 +73,7 @@ export const projects: Project[] = [
     longDescription:
       'Music production workflow with track controls, timeline editing, and cross-platform desktop deployment.',
     image: openStudioImage,
-    secondaryImage: openStudioImage,
+    images: [openStudioImage, openStudioImage2, openStudioImage3],
     category: 'Desktop + Web Tool',
     tags: ['React 19', 'JavaScript', 'Web Audio API', 'Electron', 'Vite'],
     year: '2026',
@@ -84,7 +90,7 @@ export const projects: Project[] = [
     longDescription:
       'Players identify anime titles from scenes, compete for points, and climb rankings in online matches.',
     image: otakuVersusImage,
-    secondaryImage: otakuVersusImage,
+    images: [otakuVersusImage, otakuVersusImage2, otakuVersusImage3],
     category: 'Web Application',
     tags: ['React 19', 'TypeScript', 'Node.js', 'Express', 'Prisma', 'PostgreSQL', 'Tailwind CSS'],
     year: '2026',
