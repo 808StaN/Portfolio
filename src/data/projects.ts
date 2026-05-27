@@ -27,6 +27,8 @@ export interface Project {
   linkLabel?: string;
   accent: string;
   index: string;
+  /** false = ukryty w galerii portfolio (dane zostają w pliku). */
+  featured?: boolean;
 }
 
 export function getProjectImages(project: Project): string[] {
@@ -115,6 +117,7 @@ export const projects: Project[] = [
     link: 'https://github.com/808StaN/InstaFetch',
     accent: '#f97316',
     index: '04',
+    featured: false,
   },
   {
     id: 'storemanager',
@@ -132,5 +135,8 @@ export const projects: Project[] = [
     link: 'https://github.com/808StaN/StoreManager',
     accent: '#10b981',
     index: '05',
+    featured: false,
   },
 ];
+
+export const featuredProjects = projects.filter((project) => project.featured !== false);

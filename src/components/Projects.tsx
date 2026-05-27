@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { GlowCard } from "@/components/ui/spotlight-card";
-import { getProjectImages, projects } from "../data/projects";
+import { featuredProjects, getProjectImages } from "../data/projects";
 
 function slashTitle(title: string) {
   return title.split(" ").join(" / ");
@@ -58,7 +58,7 @@ export default function Projects() {
   const queuedTargetRef = useRef<number | null>(null);
   const queuedImageRef = useRef<number | null>(null);
 
-  const active = projects[activeIndex];
+  const active = featuredProjects[activeIndex];
   const activeImages = getProjectImages(active);
   const currentImage = activeImages[activeImageIndex] ?? active.image;
   const activeDescription =
@@ -66,7 +66,7 @@ export default function Projects() {
     (active.link?.includes("github.com") ? active.description : active.longDescription);
 
   const isFirstProject = activeIndex === 0;
-  const isLastProject = activeIndex === projects.length - 1;
+  const isLastProject = activeIndex === featuredProjects.length - 1;
   const isFirstImage = activeImageIndex === 0;
   const isLastImage = activeImageIndex >= activeImages.length - 1;
   const hasMultipleImages = activeImages.length > 1;
@@ -83,7 +83,7 @@ export default function Projects() {
 
     const loadDescriptions = async () => {
       const entries = await Promise.all(
-        projects.map(async (project) => {
+        featuredProjects.map(async (project) => {
           const repoPath = readRepoPath(project.link);
           if (!repoPath) return [project.id, ""] as const;
           try {
@@ -171,7 +171,7 @@ export default function Projects() {
   };
 
   const goTo = (idx: number) => {
-    const clamped = Math.max(0, Math.min(projects.length - 1, idx));
+    const clamped = Math.max(0, Math.min(featuredProjects.length - 1, idx));
     if (clamped === activeIndex && !transition) return;
     if (transition) {
       queuedTargetRef.current = clamped;
@@ -199,8 +199,8 @@ export default function Projects() {
     const altBase = `${active.title} preview`;
 
     if (transition) {
-      const fromProject = projects[transition.from];
-      const toProject = projects[transition.to];
+      const fromProject = featuredProjects[transition.from];
+      const toProject = featuredProjects[transition.to];
       const fromImage = getProjectImages(fromProject)[0] ?? fromProject.image;
       const toImage = getProjectImages(toProject)[0] ?? toProject.image;
 
@@ -269,7 +269,7 @@ export default function Projects() {
                 className="flex-1 h-px"
                 style={{ background: "rgba(255,255,255,0.07)" }}
               />
-              <span className="section-label">{projects.length} projects</span>
+              <span className="section-label">{featuredProjects.length} projects</span>
             </div>
 
             <h2
@@ -286,7 +286,7 @@ export default function Projects() {
 
           <div className="projects-layout">
             <div className="projects-rail">
-              {projects.map((project, idx) => (
+              {featuredProjects.map((project, idx) => (
                 <button
                   key={project.id}
                   onClick={() => goTo(idx)}

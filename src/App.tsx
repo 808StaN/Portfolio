@@ -408,18 +408,6 @@ export default function App() {
       }, lockMs);
     };
 
-    const onWheel = (e: WheelEvent) => {
-      const deltaPx =
-        e.deltaMode === 1
-          ? e.deltaY * 16
-          : e.deltaMode === 2
-            ? e.deltaY * window.innerHeight
-            : e.deltaY;
-      if (Math.abs(deltaPx) < 4) return;
-      const direction = deltaPx > 0 ? 1 : -1;
-      stepByDirection(direction as 1 | -1, () => e.preventDefault());
-    };
-
     const onKeyDown = (e: KeyboardEvent) => {
       if (e.repeat) return;
       if (e.altKey || e.ctrlKey || e.metaKey || e.shiftKey) return;
@@ -443,10 +431,8 @@ export default function App() {
       }
     };
 
-    window.addEventListener("wheel", onWheel, { passive: false });
     window.addEventListener("keydown", onKeyDown, { passive: false });
     return () => {
-      window.removeEventListener("wheel", onWheel);
       window.removeEventListener("keydown", onKeyDown);
       publishVirtualSection(null);
       if (cancelWorkStepAnim) cancelWorkStepAnim();
