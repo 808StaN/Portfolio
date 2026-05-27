@@ -236,7 +236,7 @@ export default function Projects() {
           </article>
           <article
             key={`img-in-${imageTransition.from}-${imageTransition.to}-${imageTransition.dir}`}
-            className={`projects-visual-item projects-visual-layer ${imageTransition.dir === 1 ? "projects-slide-in-down" : "projects-slide-in-up"}`}
+            className={`projects-visual-item projects-visual-layer ${imageTransition.dir === 1 ? "projects-slide-in-up" : "projects-slide-in-down"}`}
           >
             {renderGalleryImage(toSrc, altBase)}
           </article>
