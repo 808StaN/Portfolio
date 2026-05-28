@@ -3,35 +3,72 @@ import { motion, useInView } from 'framer-motion';
 
 const easeOut = [0.16, 1, 0.3, 1] as const;
 
+
 const categories = [
   {
-    label: 'Frontend',
+    label: 'Languages',
     color: '#4f8ef7',
-    skills: ['React', 'Next.js', 'TypeScript', 'JavaScript', 'HTML', 'CSS', 'Vite', 'React Router', 'Tailwind CSS', 'TanStack Query', 'Redux Toolkit'],
+    skills: ['TypeScript', 'JavaScript', 'C#', 'HTML5', 'CSS', 'SQL', 'T-SQL'],
   },
   {
-    label: 'Backend',
+    label: 'Frameworks / Libraries',
     color: '#14b8a6',
-    skills: ['Node.js', 'TypeScript', 'Express', 'Prisma ORM', 'JWT Auth'],
+    skills: [
+      'React',
+      'Next.js',
+      'Node.js',
+      'Express',
+      'Redux Toolkit',
+      'Electron',
+      'Prisma',
+      'Shaders.js',
+      'Tailwind CSS',
+      'Vitest',
+      'TanStack Query',
+    ],
   },
   {
-    label: 'Databases and Data Access',
+    label: 'Databases',
     color: '#06b6d4',
-    skills: ['PostgreSQL', 'SQL Server', 'Azure SQL', 'ADO.NET'],
+    skills: ['PostgreSQL', 'SQL Server'],
   },
   {
-    label: 'Desktop',
+    label: 'Tools & Platforms',
     color: '#f97316',
-    skills: ['Electron', 'C# 12', '.NET 8', 'Windows Forms (MDI)'],
+    skills: [
+      'Git',
+      'GitHub',
+      'Vercel',
+      'Railway',
+      'Clerk',
+      'Neon',
+      'Render',
+      'Supabase',
+      'Azure SQL',
+      'Vite',
+    ],
   },
 ];
+
+const SKILLS_PER_ROW = 5;
+
+function chunkSkills(skills: string[], size = SKILLS_PER_ROW) {
+  const rows: string[][] = [];
+  for (let i = 0; i < skills.length; i += size) {
+    rows.push(skills.slice(i, i + size));
+  }
+  return rows;
+}
+
+const topRowCategories = categories.slice(0, 3);
+const bottomRowCategories = categories.slice(3);
 
 function CategoryBlock({
   cat,
   index,
   inView,
 }: {
-  cat: typeof categories[0];
+  cat: (typeof categories)[0];
   index: number;
   inView: boolean;
 }) {
@@ -52,11 +89,15 @@ function CategoryBlock({
         </span>
       </div>
 
-      <div className="flex flex-wrap gap-2">
-        {cat.skills.map(skill => (
-          <span key={skill} className="skill-pill" style={{ fontFamily: 'var(--font-sans)' }}>
-            {skill}
-          </span>
+      <div className="stack-skill-lines">
+        {chunkSkills(cat.skills).map((row, rowIdx) => (
+          <div key={`${cat.label}-row-${rowIdx}`} className="stack-skill-line">
+            {row.map(skill => (
+              <span key={skill} className="skill-pill" style={{ fontFamily: 'var(--font-sans)' }}>
+                {skill}
+              </span>
+            ))}
+          </div>
         ))}
       </div>
     </motion.div>
@@ -106,10 +147,22 @@ export default function Stack() {
           </motion.h2>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-9 md:gap-10" style={{ marginTop: '10px' }}>
-          {categories.map((cat, i) => (
-            <CategoryBlock key={cat.label} cat={cat} index={i} inView={inView} />
-          ))}
+        <div className="stack-categories" style={{ marginTop: '10px' }}>
+          <div className="stack-categories-row stack-categories-row--top">
+            {topRowCategories.map((cat, i) => (
+              <CategoryBlock key={cat.label} cat={cat} index={i} inView={inView} />
+            ))}
+          </div>
+          <div className="stack-categories-row stack-categories-row--bottom">
+            {bottomRowCategories.map((cat, i) => (
+              <CategoryBlock
+                key={cat.label}
+                cat={cat}
+                index={topRowCategories.length + i}
+                inView={inView}
+              />
+            ))}
+          </div>
         </div>
       </div>
     </section>
