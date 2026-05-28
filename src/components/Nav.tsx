@@ -18,15 +18,25 @@ export default function Nav() {
   const [topVisible, setTopVisible] = useState(true);
 
   const getSectionTargetTop = (section: HTMLElement) => {
-    const maxScrollTop = Math.max(0, document.documentElement.scrollHeight - window.innerHeight);
-    return Math.min(section.offsetTop, maxScrollTop);
+    const maxScrollTop = Math.max(
+      0,
+      document.documentElement.scrollHeight - window.innerHeight,
+    );
+    const top = window.scrollY + section.getBoundingClientRect().top;
+    return Math.min(Math.max(0, top), maxScrollTop);
+  };
+
+  const getHomeScrollEnd = () => {
+    const home = document.getElementById('home');
+    return home
+      ? Math.max(120, home.offsetHeight - 96)
+      : Math.max(120, window.innerHeight - 96);
   };
 
   useEffect(() => {
     const onScroll = () => {
       const y = window.scrollY;
-      const home = document.getElementById('home');
-      const homeEnd = home ? Math.max(120, home.offsetHeight - 96) : Math.max(120, window.innerHeight - 96);
+      const homeEnd = getHomeScrollEnd();
 
       const isDocked = y >= homeEnd;
       setScrolled(isDocked && y > 40);
@@ -64,12 +74,26 @@ export default function Nav() {
 
       const tops = sections.map(getSectionTargetTop);
       const y = window.scrollY + 2;
-      let candidateIdx = 0;
+
+      if (window.scrollY < getHomeScrollEnd()) {
+        virtualActiveRef.current = null;
+        setActiveSection('');
+        return;
+      }
+
+      let candidateIdx = -1;
       tops.forEach((top, idx) => {
         if (top <= y) {
           candidateIdx = idx;
         }
       });
+
+      if (candidateIdx === -1) {
+        virtualActiveRef.current = null;
+        setActiveSection('');
+        return;
+      }
+
       const [groupStart, groupEnd] = getCollapsedGroupRange(tops, candidateIdx);
 
       let resolvedIdx = groupStart !== groupEnd ? groupStart : candidateIdx;
