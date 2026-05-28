@@ -7,7 +7,7 @@ const categories = [
   {
     label: 'Frontend',
     color: '#4f8ef7',
-    skills: ['React', 'TypeScript', 'JavaScript', 'HTML', 'CSS', 'Vite', 'React Router', 'Tailwind CSS', 'TanStack Query', 'Redux Toolkit'],
+    skills: ['React', 'Next.js', 'TypeScript', 'JavaScript', 'HTML', 'CSS', 'Vite', 'React Router', 'Tailwind CSS', 'TanStack Query', 'Redux Toolkit'],
   },
   {
     label: 'Backend',

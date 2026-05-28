@@ -66,21 +66,21 @@ export default function About() {
               transition={{ duration: 0.8, delay: 0.2, ease: easeOut }}
             >
               <p className="text-sm md:text-base leading-[1.75]" style={{ color: 'rgba(255,255,255,0.56)', fontFamily: 'var(--font-sans)' }}>
-                Hi, I&apos;m Dawid, a full-stack developer based in Poland, specializing in React and Node.js.
+                Hi, I&apos;m Dawid, a full-stack developer based in Poland, specializing in React, Next.js, and Node.js.
               </p>
               <p className="text-sm md:text-base leading-[1.75]" style={{ color: 'rgba(255,255,255,0.5)', fontFamily: 'var(--font-sans)' }}>
-                I mainly build web applications and websites with React, focusing on performance, clean architecture,
-                and practical backend integration using Node.js. Alongside that, I develop smaller JavaScript
-                projects, including browser extensions, simple tools, and occasional game modifications. I&apos;ve also
-                worked a bit with C#, building desktop applications.
+                I tend to build things I&apos;m genuinely passionate about. That&apos;s led me to ship products across
+                different domains - a live fantasy esports platform (RiftPick), a browser-based music production tool
+                (OpenStudio), and a real-time quiz game (OtakuVersus). I focus on performance, clean architecture, and
+                practical backend integration across every project.
               </p>
               <p className="text-sm md:text-base leading-[1.75]" style={{ color: 'rgba(255,255,255,0.45)', fontFamily: 'var(--font-sans)' }}>
-                I&apos;m currently studying at WSIiZ in Rzeszów while actively developing my skills through projects
-                like OpenStudio and OtakuVersus, combining strong frontend execution with real-world backend logic.
+                I&apos;m currently studying at WSIiZ in Rzeszów while actively developing my skills through my projects,
+                combining strong frontend execution with real-world backend logic.
               </p>
               <p className="text-sm md:text-base leading-[1.75]" style={{ color: 'rgba(255,255,255,0.42)', fontFamily: 'var(--font-sans)' }}>
-                I&apos;m open to relocation and looking for opportunities where I can grow as a developer and build
-                meaningful products.
+                I&apos;m open to relocation and looking for opportunities where I can grow as a developer, contribute
+                to a strong team, and build products that matter.
               </p>
             </motion.div>
 
