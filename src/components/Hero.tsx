@@ -47,7 +47,7 @@ export default function Hero() {
             transition={{ duration: 0.8, delay: 0.1, ease: easeOut }}
           >
             <span className="w-6 h-px bg-white/40" />
-            <span className="section-label">Full-Stack Developer - React / Node.js</span>
+            <span className="section-label">Full-Stack Developer - Dawid Stanisz</span>
           </motion.div>
 
           {/* Main headline */}
@@ -105,7 +105,7 @@ export default function Hero() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.9, delay: 0.7, ease: easeOut }}
             >
-React + Node.js Developer focused on building web apps and desktop tools. I care about speed, clean UX, and practical delivery from concept to release.            </motion.p>
+React, Next.js and Node.js Developer focused on building web apps and desktop tools. I care about speed, clean UX, and practical delivery from concept to release.            </motion.p>
           </div>
         </div>
 
