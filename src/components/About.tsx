@@ -79,8 +79,7 @@ export default function About() {
                 combining strong frontend execution with real-world backend logic.
               </p>
               <p className="text-sm md:text-base leading-[1.75]" style={{ color: 'rgba(255,255,255,0.42)', fontFamily: 'var(--font-sans)' }}>
-                I&apos;m open to relocation and looking for opportunities where I can grow as a developer, contribute
-                to a strong team, and build products that matter.
+                I&apos;m open to relocation and looking for opportunities where I can grow as a developer and build meaningful products.
               </p>
             </motion.div>
 
