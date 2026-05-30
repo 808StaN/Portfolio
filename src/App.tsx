@@ -9,8 +9,11 @@ import Footer from "./components/Footer";
 import Cursor from "./components/Cursor";
 import WebGLBackground from "./components/WebGLBackground";
 import GrainOverlay from "./components/GrainOverlay";
+import { scrollToY, useLenis } from "./components/LenisScroll";
 
 export default function App() {
+  const lenis = useLenis();
+
   useEffect(() => {
     const root = document.documentElement;
     let rafId = 0;
@@ -19,8 +22,10 @@ export default function App() {
       `hsla(${h.toFixed(1)} ${s.toFixed(1)}% ${l.toFixed(1)}% / ${a.toFixed(3)})`;
 
     const updateScrollProgress = () => {
-      const scrollable = root.scrollHeight - window.innerHeight;
-      const progressRaw = scrollable > 0 ? window.scrollY / scrollable : 0;
+      const scrollable =
+        lenis?.limit ?? Math.max(0, root.scrollHeight - window.innerHeight);
+      const scroll = lenis?.scroll ?? window.scrollY;
+      const progressRaw = scrollable > 0 ? scroll / scrollable : 0;
       const progress = Math.max(0, Math.min(1, progressRaw));
       root.style.setProperty("--scroll-progress", progress.toFixed(4));
       const trackHue = lerp(228, 296, progress);
@@ -63,11 +68,17 @@ export default function App() {
     };
 
     updateScrollProgress();
-    window.addEventListener("scroll", onScrollOrResize, { passive: true });
+    const unsubscribeLenis = lenis?.on("scroll", updateScrollProgress);
+    if (!lenis) {
+      window.addEventListener("scroll", onScrollOrResize, { passive: true });
+    }
     window.addEventListener("resize", onScrollOrResize);
 
     return () => {
-      window.removeEventListener("scroll", onScrollOrResize);
+      unsubscribeLenis?.();
+      if (!lenis) {
+        window.removeEventListener("scroll", onScrollOrResize);
+      }
       window.removeEventListener("resize", onScrollOrResize);
       if (rafId) cancelAnimationFrame(rafId);
       root.style.removeProperty("--scroll-progress");
@@ -75,15 +86,15 @@ export default function App() {
       root.style.removeProperty("--scrollbar-thumb");
       root.style.removeProperty("--scrollbar-thumb-hover");
     };
-  }, []);
+  }, [lenis]);
 
   useEffect(() => {
+    const getScrollY = () => lenis?.scroll ?? window.scrollY;
+
     let lock = false;
     const lockMs = 720;
     let workStepLockUntil = 0;
     const workStepLockMs = 420;
-    const isFirefox = /firefox/i.test(navigator.userAgent);
-    let cancelWorkStepAnim: (() => void) | null = null;
     let virtualSectionIndex: number | null = null;
     let virtualSectionId: string | null = null;
     const SECTION_TOP_EPS = 1;
@@ -143,7 +154,7 @@ export default function App() {
     };
 
     const resolveCurrentIndex = (sections: HTMLElement[], tops: number[]) => {
-      const y = window.scrollY + 2;
+      const y = getScrollY() + 2;
       let candidateIdx = 0;
       tops.forEach((top, idx) => {
         if (top <= y) {
@@ -187,7 +198,7 @@ export default function App() {
           inWorkBounds: false,
           startY: 0,
           endY: 0,
-          y: window.scrollY,
+          y: getScrollY(),
           steps: 1,
           totalScrollable: 1,
           progress: 0,
@@ -201,7 +212,7 @@ export default function App() {
           inWorkBounds: false,
           startY: 0,
           endY: 0,
-          y: window.scrollY,
+          y: getScrollY(),
           steps: 1,
           totalScrollable: 1,
           progress: 0,
@@ -220,21 +231,21 @@ export default function App() {
           inWorkBounds: true,
           startY: 0,
           endY: 0,
-          y: window.scrollY,
+          y: getScrollY(),
           steps,
           totalScrollable: 1,
           progress: 0,
         };
       }
 
-      const sectionTopDoc = window.scrollY + rect.top;
+      const sectionTopDoc = getScrollY() + rect.top;
       const stagePaddingTop =
         Number.parseFloat(getComputedStyle(stage).paddingTop || "0") || 0;
       const startY = sectionTopDoc + stagePaddingTop;
       const endY = sectionTopDoc + section.offsetHeight - window.innerHeight;
       const totalScrollable = Math.max(1, endY - startY);
       const scrolled = Math.min(
-        Math.max(window.scrollY - startY, 0),
+        Math.max(getScrollY() - startY, 0),
         totalScrollable,
       );
       const rawIndexProgress = (scrolled / totalScrollable) * steps;
@@ -243,46 +254,23 @@ export default function App() {
         inWorkBounds: true,
         startY,
         endY,
-        y: window.scrollY,
+        y: getScrollY(),
         steps,
         totalScrollable,
         progress: Math.max(0, Math.min(steps, rawIndexProgress)),
       };
     };
 
-    const animateScrollTo = (
+    const scrollToTarget = (
       targetY: number,
-      durationMs: number,
+      durationSec: number,
       onDone: () => void,
     ) => {
-      const startY = window.scrollY;
-      const delta = targetY - startY;
-      if (Math.abs(delta) < 0.5) {
-        window.scrollTo({ top: targetY, behavior: "auto" });
-        onDone();
-        return () => {};
-      }
-
-      const startAt = performance.now();
-      let rafId = 0;
-      const easeOutCubic = (t: number) => 1 - Math.pow(1 - t, 3);
-
-      const tick = (now: number) => {
-        const t = Math.min(1, (now - startAt) / durationMs);
-        const nextY = startY + delta * easeOutCubic(t);
-        window.scrollTo({ top: nextY, behavior: "auto" });
-        if (t < 1) {
-          rafId = requestAnimationFrame(tick);
-          return;
-        }
-        window.scrollTo({ top: targetY, behavior: "auto" });
-        onDone();
-      };
-
-      rafId = requestAnimationFrame(tick);
-      return () => {
-        if (rafId) cancelAnimationFrame(rafId);
-      };
+      scrollToY(targetY, lenis, {
+        duration: durationSec,
+        lock: true,
+        onComplete: onDone,
+      });
     };
 
     const stepByDirection = (
@@ -328,18 +316,9 @@ export default function App() {
             workState.startY +
             (nextStep / workState.steps) * workState.totalScrollable;
           lock = true;
-          if (isFirefox) {
-            if (cancelWorkStepAnim) cancelWorkStepAnim();
-            cancelWorkStepAnim = animateScrollTo(targetY, 520, () => {
-              lock = false;
-              cancelWorkStepAnim = null;
-            });
-          } else {
-            window.scrollTo({ top: targetY, behavior: "smooth" });
-            window.setTimeout(() => {
-              lock = false;
-            }, 520);
-          }
+          scrollToTarget(targetY, 0.72, () => {
+            lock = false;
+          });
           return;
         }
 
@@ -364,10 +343,9 @@ export default function App() {
           }
           setVirtualSectionIndex(null, sections);
           lock = true;
-          window.scrollTo({ top: targetTop, behavior: "smooth" });
-          window.setTimeout(() => {
+          scrollToTarget(targetTop, lockMs / 1000, () => {
             lock = false;
-          }, lockMs);
+          });
         }
         return;
       }
@@ -397,10 +375,9 @@ export default function App() {
 
       setVirtualSectionIndex(null, sections);
       lock = true;
-      window.scrollTo({ top: nextTop, behavior: "smooth" });
-      window.setTimeout(() => {
+      scrollToTarget(nextTop, lockMs / 1000, () => {
         lock = false;
-      }, lockMs);
+      });
     };
 
     const onKeyDown = (e: KeyboardEvent) => {
@@ -430,9 +407,8 @@ export default function App() {
     return () => {
       window.removeEventListener("keydown", onKeyDown);
       publishVirtualSection(null);
-      if (cancelWorkStepAnim) cancelWorkStepAnim();
     };
-  }, []);
+  }, [lenis]);
 
   return (
     <div

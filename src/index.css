@@ -31,6 +31,15 @@
   --projects-gallery-height: min(64vh, 700px);
 }
 
+html.lenis,
+html.lenis body {
+  height: auto;
+}
+
+html.lenis body {
+  overflow: hidden;
+}
+
 html {
   scroll-behavior: auto;
   background-color: var(--color-bg);

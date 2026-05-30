@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { scrollToY, useLenis } from './LenisScroll';
 
 const links = [
   { label: 'Projects', href: '#work' },
@@ -9,6 +10,7 @@ const links = [
 ];
 
 export default function Nav() {
+  const lenis = useLenis();
   const [scrolled, setScrolled] = useState(false);
   const [docked, setDocked] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
@@ -73,9 +75,10 @@ export default function Nav() {
       if (sections.length === 0) return;
 
       const tops = sections.map(getSectionTargetTop);
-      const y = window.scrollY + 2;
+      const scrollY = lenis?.scroll ?? window.scrollY;
+      const y = scrollY + 2;
 
-      if (window.scrollY < getHomeScrollEnd()) {
+      if (scrollY < getHomeScrollEnd()) {
         virtualActiveRef.current = null;
         setActiveSection('');
         return;
@@ -117,22 +120,28 @@ export default function Nav() {
     };
 
     updateActiveSection();
-    window.addEventListener('scroll', updateActiveSection, { passive: true });
+    const unsubscribeLenis = lenis?.on('scroll', updateActiveSection);
+    if (!lenis) {
+      window.addEventListener('scroll', updateActiveSection, { passive: true });
+    }
     window.addEventListener('resize', updateActiveSection);
     window.addEventListener('virtual-section-change', onVirtualSectionChange);
     return () => {
-      window.removeEventListener('scroll', updateActiveSection);
+      unsubscribeLenis?.();
+      if (!lenis) {
+        window.removeEventListener('scroll', updateActiveSection);
+      }
       window.removeEventListener('resize', updateActiveSection);
       window.removeEventListener('virtual-section-change', onVirtualSectionChange);
     };
-  }, []);
+  }, [lenis]);
 
   const handleLink = (href: string) => {
     setMenuOpen(false);
     virtualActiveRef.current = null;
     const el = document.querySelector(href) as HTMLElement | null;
     if (!el) return;
-    window.scrollTo({ top: getSectionTargetTop(el), behavior: 'smooth' });
+    scrollToY(getSectionTargetTop(el), lenis, { duration: 1.15 });
   };
 
   return (
