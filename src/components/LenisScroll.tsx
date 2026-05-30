@@ -57,7 +57,7 @@ export default function LenisScroll({ children }: { children: ReactNode }) {
       autoRaf: true,
       lerp: 0.085,
       smoothWheel: true,
-      wheelMultiplier: 0.92,
+      wheelMultiplier: 1,
       touchMultiplier: 1.15,
       anchors: true,
     });

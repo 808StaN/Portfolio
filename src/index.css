@@ -36,10 +36,6 @@ html.lenis body {
   height: auto;
 }
 
-html.lenis body {
-  overflow: hidden;
-}
-
 html {
   scroll-behavior: auto;
   background-color: var(--color-bg);
