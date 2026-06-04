@@ -69,10 +69,6 @@ body {
   z-index: -4;
   pointer-events: none;
   opacity: 1;
-  filter:
-    hue-rotate(calc(var(--scroll-progress) * 46deg))
-    saturate(calc(1.02 + (var(--scroll-progress) * 0.14)))
-    brightness(calc(1 - (var(--scroll-progress) * 0.06)));
 }
 
 .global-webgl-layer .webgl-preview,
@@ -84,26 +80,9 @@ body {
 
 .app-ambient {
   position: fixed;
-  inset: -16vh -12vw -8vh;
+  inset: 0;
   z-index: -3;
   pointer-events: none;
-  background:
-    radial-gradient(
-      130% 74% at calc(12% + (var(--scroll-progress) * 42%)) calc(-12% + (var(--scroll-progress) * 12%)),
-      rgba(128, 173, 255, calc(0.18 - (var(--scroll-progress) * 0.08))) 0%,
-      transparent 68%
-    ),
-    radial-gradient(
-      86% 70% at calc(84% - (var(--scroll-progress) * 52%)) calc(96% - (var(--scroll-progress) * 22%)),
-      rgba(26, 195, 176, calc(0.01 + (var(--scroll-progress) * 0.13))) 0%,
-      transparent 73%
-    ),
-    radial-gradient(
-      80% 68% at calc(58% + (var(--scroll-progress) * 10%)) calc(44% + (var(--scroll-progress) * 16%)),
-      rgba(249, 115, 22, calc(0.01 + (var(--scroll-progress) * 0.09))) 0%,
-      transparent 76%
-    );
-  filter: saturate(calc(1.04 + (var(--scroll-progress) * 0.16)));
 }
 
 .app-vignette {
