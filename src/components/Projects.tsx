@@ -207,7 +207,6 @@ export default function Projects() {
           const isLastImage = activeImageIndex >= images.length - 1;
           const hasMultipleImages = images.length > 1;
           const reversed = index % 2 === 1;
-          const showHeader = index === 0;
           const showDiscover = index === featuredProjects.length - 1;
 
           return (
@@ -229,39 +228,37 @@ export default function Projects() {
                 />
 
                 <div className="section-tilt-container section-inner projects-inner projects-project-inner relative z-10">
-                  {showHeader ? (
-                    <div className="projects-header">
-                      <motion.div
-                        className="flex items-center gap-3 mb-5"
-                        initial={{ opacity: 0, x: -20 }}
-                        animate={inView ? { opacity: 1, x: 0 } : {}}
-                        transition={{ duration: 0.6, ease: easeOut }}
-                      >
-                        <span className="section-label">Selected Work</span>
-                        <div
-                          className="flex-1 h-px"
-                          style={{ background: "rgba(255,255,255,0.07)" }}
-                        />
-                        <span className="section-label">
-                          {featuredProjects.length} projects
-                        </span>
-                      </motion.div>
+                  <div className="projects-header">
+                    <motion.div
+                      className="flex items-center gap-3 mb-5"
+                      initial={{ opacity: 0, x: -20 }}
+                      animate={inView ? { opacity: 1, x: 0 } : {}}
+                      transition={{ duration: 0.6, ease: easeOut }}
+                    >
+                      <span className="section-label">Selected Work</span>
+                      <div
+                        className="flex-1 h-px"
+                        style={{ background: "rgba(255,255,255,0.07)" }}
+                      />
+                      <span className="section-label">
+                        {featuredProjects.length} projects
+                      </span>
+                    </motion.div>
 
-                      <motion.h2
-                        className="section-title text-white/90 max-w-[13ch]"
-                        style={{ fontSize: "clamp(1.95rem, 3.7vw, 3.95rem)" }}
-                        initial={{ opacity: 0, y: 30 }}
-                        animate={inView ? { opacity: 1, y: 0 } : {}}
-                        transition={{ duration: 0.8, delay: 0.1, ease: easeOut }}
-                      >
-                        Things I have
-                        <br />
-                        <span style={{ color: "rgba(255,255,255,0.58)" }}>
-                          built and shipped.
-                        </span>
-                      </motion.h2>
-                    </div>
-                  ) : null}
+                    <motion.h2
+                      className="section-title text-white/90 max-w-[13ch]"
+                      style={{ fontSize: "clamp(1.95rem, 3.7vw, 3.95rem)" }}
+                      initial={{ opacity: 0, y: 30 }}
+                      animate={inView ? { opacity: 1, y: 0 } : {}}
+                      transition={{ duration: 0.8, delay: 0.1, ease: easeOut }}
+                    >
+                      Things I have
+                      <br />
+                      <span style={{ color: "rgba(255,255,255,0.58)" }}>
+                        built and shipped.
+                      </span>
+                    </motion.h2>
+                  </div>
 
                   <div className={`projects-layout ${reversed ? "is-reversed" : ""}`}>
                     <motion.div
@@ -270,7 +267,7 @@ export default function Projects() {
                       animate={inView ? { opacity: 1, y: 0 } : {}}
                       transition={{
                         duration: 0.8,
-                        delay: showHeader ? 0.22 : 0.08,
+                        delay: 0.22,
                         ease: easeOut,
                       }}
                     >
@@ -302,7 +299,7 @@ export default function Projects() {
                       animate={inView ? { opacity: 1, y: 0 } : {}}
                       transition={{
                         duration: 0.85,
-                        delay: showHeader ? 0.28 : 0.14,
+                        delay: 0.28,
                         ease: easeOut,
                       }}
                     >
