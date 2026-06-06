@@ -207,7 +207,6 @@ export default function Projects() {
           const isLastImage = activeImageIndex >= images.length - 1;
           const hasMultipleImages = images.length > 1;
           const reversed = index % 2 === 1;
-          const showDiscover = index === featuredProjects.length - 1;
 
           return (
             <article
@@ -241,7 +240,7 @@ export default function Projects() {
                         style={{ background: "rgba(255,255,255,0.07)" }}
                       />
                       <span className="section-label">
-                        {featuredProjects.length} projects
+                        {index + 1} out of {featuredProjects.length}
                       </span>
                     </motion.div>
 
@@ -339,21 +338,10 @@ export default function Projects() {
                               !hasMultipleImages || isLastImage || !!activeTransition
                             }
                             aria-label={`Next ${project.title} image`}
-                          >
-                            <ProjectArrow direction="right" />
-                          </button>
-                        </div>
-
-                        {showDiscover ? (
-                          <a
-                            href="https://github.com/808StaN?tab=repositories"
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="projects-discover-btn projects-discover-inline"
-                          >
-                            Discover all my projects
-                          </a>
-                        ) : null}
+                        >
+                          <ProjectArrow direction="right" />
+                        </button>
+                      </div>
                       </div>
                     </motion.div>
                   </div>
