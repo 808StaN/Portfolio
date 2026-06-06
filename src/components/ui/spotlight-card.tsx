@@ -21,6 +21,8 @@ const glowColorMap = {
   projects: { base: 200, spread: 100 },
 };
 
+const clamp01 = (value: number) => Math.max(0, Math.min(1, value));
+
 const sizeMap = {
   sm: "w-48 h-64",
   md: "w-64 h-80",
@@ -36,7 +38,6 @@ const beforeAfterStyles = `
     inset: calc(var(--border-size) * -1);
     border: var(--border-size) solid transparent;
     border-radius: calc(var(--radius, 14) * 1px);
-    background-attachment: fixed;
     background-size: calc(100% + (2 * var(--border-size))) calc(100% + (2 * var(--border-size)));
     background-repeat: no-repeat;
     background-position: 50% 50%;
@@ -115,10 +116,20 @@ export function GlowCard({
       const { clientX: x, clientY: y } = e;
 
       if (cardRef.current) {
-        cardRef.current.style.setProperty("--x", x.toFixed(2));
-        cardRef.current.style.setProperty("--xp", (x / window.innerWidth).toFixed(2));
-        cardRef.current.style.setProperty("--y", y.toFixed(2));
-        cardRef.current.style.setProperty("--yp", (y / window.innerHeight).toFixed(2));
+        const rect = cardRef.current.getBoundingClientRect();
+        const localX = x - rect.left;
+        const localY = y - rect.top;
+
+        cardRef.current.style.setProperty("--x", localX.toFixed(2));
+        cardRef.current.style.setProperty(
+          "--xp",
+          clamp01(localX / Math.max(1, rect.width)).toFixed(2),
+        );
+        cardRef.current.style.setProperty("--y", localY.toFixed(2));
+        cardRef.current.style.setProperty(
+          "--yp",
+          clamp01(localY / Math.max(1, rect.height)).toFixed(2),
+        );
       }
     };
 
@@ -151,7 +162,6 @@ export function GlowCard({
       backgroundColor: "var(--backdrop, hsl(0 0% 60% / 0.12))",
       backgroundSize: "calc(100% + (2 * var(--border-size))) calc(100% + (2 * var(--border-size)))",
       backgroundPosition: "50% 50%",
-      backgroundAttachment: "fixed",
       border: "var(--border-size) solid var(--backup-border, var(--backdrop, hsl(0 0% 60% / 0.12)))",
       position: "relative",
       touchAction: "none",
