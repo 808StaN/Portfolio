@@ -358,7 +358,7 @@ body {
   column-gap: clamp(28px, 4vw, 64px);
   row-gap: clamp(18px, 2.5vw, 44px);
   align-items: center;
-  padding-bottom: clamp(84px, 9vh, 100px);
+  padding-bottom: 0;
 }
 
 .projects-layout.is-reversed {
@@ -715,22 +715,14 @@ body {
 }
 
 .projects-image-controls {
-  position: absolute;
-  top: calc(100% + 12px);
-  left: auto;
-  right: 0;
+  position: static;
   width: min(100%, calc(var(--projects-gallery-height) * 16 / 9));
-  margin-top: 0;
+  margin-top: 12px;
   display: grid;
   grid-template-columns: auto 1fr;
   align-items: end;
   gap: 12px;
   z-index: 2;
-}
-
-.projects-layout.is-reversed .projects-image-controls {
-  left: 0;
-  right: auto;
 }
 
 .projects-image-nav {
