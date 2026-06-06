@@ -7,6 +7,15 @@ gsap.registerPlugin(ScrollTrigger);
 
 const incomingAngles = [11.5, 9.5, 7.5, 5, 3.5, 2, 1, 0.3, 0];
 
+const isTallerThanViewport = (section: HTMLElement) =>
+  section.offsetHeight > window.innerHeight + 2;
+
+const getOverlapStart = (section: HTMLElement) =>
+  isTallerThanViewport(section) ? "top top" : "bottom bottom";
+
+const getOverlapEnd = (section: HTMLElement) =>
+  isTallerThanViewport(section) ? "+=100%" : "bottom top";
+
 export default function SectionTiltDirector() {
   const lenis = useLenis();
 
@@ -42,16 +51,16 @@ export default function SectionTiltDirector() {
           ease: "none",
           scrollTrigger: {
             trigger: section,
-            start: "bottom bottom",
-            end: "bottom top",
+            start: () => getOverlapStart(section),
+            end: () => getOverlapEnd(section),
             scrub: true,
           },
         });
 
         ScrollTrigger.create({
           trigger: section,
-          start: "bottom bottom",
-          end: "bottom top",
+          start: () => getOverlapStart(section),
+          end: () => getOverlapEnd(section),
           pin: true,
           pinSpacing: false,
         });
