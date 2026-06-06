@@ -109,7 +109,7 @@ export default function Stack() {
   const inView = useInView(ref, { once: true, margin: '-80px' });
 
   return (
-    <section id="stack" className="section-shell relative overflow-hidden">
+    <section id="stack" className="section-tilt-section section-shell relative overflow-hidden" data-section-tilt>
       <div
         className="absolute pointer-events-none"
         style={{
@@ -122,7 +122,7 @@ export default function Stack() {
         }}
       />
 
-      <div className="section-inner relative" ref={ref}>
+      <div className="section-tilt-container section-inner relative" ref={ref}>
         <motion.div
           className="flex items-center gap-3 mb-14"
           initial={{ opacity: 0, x: -20 }}

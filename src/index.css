@@ -216,6 +216,18 @@ body {
   z-index: 1;
 }
 
+.section-tilt-section {
+  min-height: 100svh;
+  overflow: hidden;
+  transform-style: preserve-3d;
+}
+
+.section-tilt-container {
+  transform-origin: bottom left;
+  will-change: transform;
+  backface-visibility: hidden;
+}
+
 .section-inner {
   width: min(var(--content-max-width), calc(100% - (var(--content-gutter) * 2)));
   margin-inline: auto;

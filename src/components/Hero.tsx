@@ -33,11 +33,12 @@ export default function Hero() {
   return (
     <section
       id="home"
-      className="relative w-full min-h-screen flex flex-col justify-center overflow-hidden"
+      className="section-tilt-section relative w-full min-h-screen flex flex-col justify-center overflow-hidden"
+      data-section-tilt
       aria-label="Hero"
     >
       {/* Content */}
-      <div className="hero-inner relative z-10 flex flex-col justify-between min-h-screen pt-24 md:pt-28 pb-12 md:pb-14">
+      <div className="section-tilt-container hero-inner relative z-10 flex flex-col justify-between min-h-screen pt-24 md:pt-28 pb-12 md:pb-14">
         <div className="flex-1 flex flex-col justify-end pb-6 md:pb-10">
           {/* Eyebrow */}
           <motion.div

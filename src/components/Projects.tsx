@@ -257,7 +257,7 @@ export default function Projects() {
   };
 
   return (
-    <section id="work" className="section-shell projects-monopo relative">
+    <section id="work" className="section-tilt-section section-shell projects-monopo relative" data-section-tilt>
       <div
         className="absolute inset-0 pointer-events-none"
         style={{
@@ -265,7 +265,7 @@ export default function Projects() {
         }}
       />
 
-      <div className="section-inner projects-inner relative z-10" ref={revealRef}>
+      <div className="section-tilt-container section-inner projects-inner relative z-10" ref={revealRef}>
         <div className="projects-stage">
           <div className="projects-header">
             <motion.div

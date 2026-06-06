@@ -9,6 +9,7 @@ import Footer from "./components/Footer";
 import Cursor from "./components/Cursor";
 import WebGLBackground from "./components/WebGLBackground";
 import GrainOverlay from "./components/GrainOverlay";
+import SectionTiltDirector from "./components/SectionTiltDirector";
 import { scrollToY, useLenis } from "./components/LenisScroll";
 
 export default function App() {
@@ -429,6 +430,7 @@ export default function App() {
 
       {/* Navigation */}
       <Nav />
+      <SectionTiltDirector />
 
       {/* Main content */}
       <main className="pb-10 md:pb-16">
