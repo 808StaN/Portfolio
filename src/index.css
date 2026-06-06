@@ -259,6 +259,14 @@ body {
 
 .section-tilt-container {
   backface-visibility: hidden;
+}
+
+/* Interaktywne elementy wewnątrz sekcji muszą być klikalne,
+   ale sam pusty kontener nie może blokować klików na widocznych
+   elementach poprzedniej sekcji podczas overlapu. */
+.section-tilt-container a,
+.section-tilt-container button,
+.section-tilt-container [data-glow] {
   pointer-events: auto;
 }
 
