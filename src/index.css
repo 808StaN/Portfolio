@@ -259,6 +259,7 @@ body {
 
 .section-tilt-container {
   backface-visibility: hidden;
+  pointer-events: none;
 }
 
 /* Interaktywne elementy wewnątrz sekcji muszą być klikalne,
