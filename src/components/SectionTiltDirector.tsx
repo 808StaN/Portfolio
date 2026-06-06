@@ -32,16 +32,11 @@ export default function SectionTiltDirector() {
         );
         if (!incomingPanel) return;
 
-        gsap.set(incomingPanel, { rotation: incomingAngles[0], yPercent: 8 });
+        gsap.set(incomingPanel, { rotation: incomingAngles[0] });
 
         gsap.to(incomingPanel, {
-          keyframes: incomingAngles.slice(1).map((rotation, angleIndex) => ({
+          keyframes: incomingAngles.slice(1).map((rotation) => ({
             rotation,
-            yPercent: gsap.utils.interpolate(
-              8,
-              0,
-              (angleIndex + 1) / (incomingAngles.length - 1),
-            ),
             ease: "none",
           })),
           ease: "none",
