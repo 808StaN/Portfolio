@@ -220,6 +220,7 @@ body {
   position: relative;
   min-height: 100svh;
   overflow: visible;
+  pointer-events: none;
 }
 
 .section-shell.section-tilt-section {
@@ -234,6 +235,7 @@ body {
   transform-origin: bottom left;
   will-change: transform;
   backface-visibility: hidden;
+  pointer-events: none;
 }
 
 .section-shell.section-tilt-section > .section-tilt-panel {
@@ -257,6 +259,7 @@ body {
 
 .section-tilt-container {
   backface-visibility: hidden;
+  pointer-events: auto;
 }
 
 .section-inner {

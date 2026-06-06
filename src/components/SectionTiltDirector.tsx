@@ -16,10 +16,6 @@ const getOverlapStart = (section: HTMLElement) =>
 const getOverlapEnd = (section: HTMLElement) =>
   isTallerThanViewport(section) ? "+=100%" : "bottom top";
 
-const syncIncomingPointerEvents = (section: HTMLElement, progress: number) => {
-  section.style.pointerEvents = progress < 0.6 ? "none" : "auto";
-};
-
 export default function SectionTiltDirector() {
   const lenis = useLenis();
 
@@ -40,7 +36,6 @@ export default function SectionTiltDirector() {
       });
 
       sections.slice(0, -1).forEach((section, index) => {
-        const incomingSection = sections[index + 1];
         const incomingPanel = sections[index + 1].querySelector<HTMLElement>(
           ":scope > .section-tilt-panel",
         );
@@ -59,15 +54,6 @@ export default function SectionTiltDirector() {
             start: () => getOverlapStart(section),
             end: () => getOverlapEnd(section),
             scrub: true,
-            onUpdate: (self) => {
-              syncIncomingPointerEvents(incomingSection, self.progress);
-            },
-            onLeave: () => {
-              incomingSection.style.pointerEvents = "auto";
-            },
-            onLeaveBack: () => {
-              incomingSection.style.pointerEvents = "auto";
-            },
           },
         });
 
@@ -86,9 +72,6 @@ export default function SectionTiltDirector() {
 
     return () => {
       unsubscribeLenis?.();
-      sections.forEach((section) => {
-        section.style.removeProperty("pointer-events");
-      });
       ctx.revert();
     };
   }, [lenis]);
