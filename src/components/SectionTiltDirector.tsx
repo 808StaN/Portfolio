@@ -5,6 +5,8 @@ import { useLenis } from "./LenisScroll";
 
 gsap.registerPlugin(ScrollTrigger);
 
+const incomingAngles = [11.5, 9.5, 7.5, 5, 3.5, 2, 1, 0.3, 0];
+
 export default function SectionTiltDirector() {
   const lenis = useLenis();
 
@@ -30,23 +32,26 @@ export default function SectionTiltDirector() {
         );
         if (!incomingPanel) return;
 
-        const rotation = index % 2 === 0 ? -4 : 4;
+        gsap.set(incomingPanel, { rotation: incomingAngles[0], yPercent: 8 });
 
-        gsap.fromTo(
-          incomingPanel,
-          { rotation, yPercent: 8 },
-          {
-            rotation: 0,
-            yPercent: 0,
+        gsap.to(incomingPanel, {
+          keyframes: incomingAngles.slice(1).map((rotation, angleIndex) => ({
+            rotation,
+            yPercent: gsap.utils.interpolate(
+              8,
+              0,
+              (angleIndex + 1) / (incomingAngles.length - 1),
+            ),
             ease: "none",
-            scrollTrigger: {
-              trigger: section,
-              start: "bottom bottom",
-              end: "bottom top",
-              scrub: true,
-            },
+          })),
+          ease: "none",
+          scrollTrigger: {
+            trigger: section,
+            start: "bottom bottom",
+            end: "bottom top",
+            scrub: true,
           },
-        );
+        });
 
         ScrollTrigger.create({
           trigger: section,
