@@ -259,18 +259,19 @@ export default function Projects() {
 
   return (
     <section id="work" className="section-tilt-section section-shell projects-monopo relative" data-section-tilt>
-      <div className="section-shader-layer" aria-hidden="true">
-        <SectionShaderBackground color="#4655D9" />
-      </div>
+      <div className="section-tilt-panel">
+        <div className="section-shader-layer" aria-hidden="true">
+          <SectionShaderBackground color="#4655D9" />
+        </div>
 
-      <div
-        className="absolute inset-0 pointer-events-none"
-        style={{
-          background: `radial-gradient(120% 92% at 50% 60%, ${active.accent}2e 0%, rgba(10,16,38,0.2) 45%, transparent 75%)`,
-        }}
-      />
+        <div
+          className="absolute inset-0 pointer-events-none"
+          style={{
+            background: `radial-gradient(120% 92% at 50% 60%, ${active.accent}2e 0%, rgba(10,16,38,0.2) 45%, transparent 75%)`,
+          }}
+        />
 
-      <div className="section-tilt-container section-inner projects-inner relative z-10" ref={revealRef}>
+        <div className="section-tilt-container section-inner projects-inner relative z-10" ref={revealRef}>
         <div className="projects-stage">
           <div className="projects-header">
             <motion.div
@@ -415,6 +416,7 @@ export default function Projects() {
               </div>
             </motion.div>
           </div>
+        </div>
         </div>
       </div>
     </section>

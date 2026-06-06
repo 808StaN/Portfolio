@@ -38,12 +38,13 @@ export default function Hero() {
       data-section-tilt
       aria-label="Hero"
     >
-      <div className="section-shader-layer" aria-hidden="true">
-        <SectionShaderBackground color="#5B8CFF" />
-      </div>
+      <div className="section-tilt-panel">
+        <div className="section-shader-layer" aria-hidden="true">
+          <SectionShaderBackground color="#5B8CFF" />
+        </div>
 
-      {/* Content */}
-      <div className="section-tilt-container hero-inner relative z-10 flex flex-col justify-between min-h-screen pt-24 md:pt-28 pb-12 md:pb-14">
+        {/* Content */}
+        <div className="section-tilt-container hero-inner relative z-10 flex flex-col justify-between min-h-screen pt-24 md:pt-28 pb-12 md:pb-14">
         <div className="flex-1 flex flex-col justify-end pb-6 md:pb-10">
           {/* Eyebrow */}
           <motion.div
@@ -142,6 +143,7 @@ React, Next.js and Node.js Developer focused on building web apps and desktop to
             </div>
           </div>
         </motion.div>
+        </div>
       </div>
     </section>
   );

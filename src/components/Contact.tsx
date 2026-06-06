@@ -49,19 +49,20 @@ export default function Contact() {
 
   return (
     <section id="contact" className="section-tilt-section section-shell relative overflow-hidden" data-section-tilt>
-      <div className="section-shader-layer" aria-hidden="true">
-        <SectionShaderBackground color="#1F5F87" />
-      </div>
+      <div className="section-tilt-panel">
+        <div className="section-shader-layer" aria-hidden="true">
+          <SectionShaderBackground color="#1F5F87" />
+        </div>
 
-      <div
-        className="absolute inset-0 pointer-events-none"
-        style={{
-          background:
-            'radial-gradient(ellipse 60% 60% at 50% 100%, rgba(20,184,166,0.08) 0%, transparent 72%)',
-        }}
-      />
+        <div
+          className="absolute inset-0 pointer-events-none"
+          style={{
+            background:
+              'radial-gradient(ellipse 60% 60% at 50% 100%, rgba(20,184,166,0.08) 0%, transparent 72%)',
+          }}
+        />
 
-      <div className="section-tilt-container section-inner relative" ref={ref}>
+        <div className="section-tilt-container section-inner relative" ref={ref}>
         <motion.div
           className="flex items-center gap-3 mb-14"
           initial={{ opacity: 0, x: -20 }}
@@ -141,6 +142,7 @@ export default function Contact() {
               </div>
             </motion.div>
           </div>
+        </div>
         </div>
       </div>
     </section>

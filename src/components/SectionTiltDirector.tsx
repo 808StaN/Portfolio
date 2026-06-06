@@ -21,20 +21,23 @@ export default function SectionTiltDirector() {
 
     const ctx = gsap.context(() => {
       sections.forEach((section, index) => {
-        const content = section.querySelector<HTMLElement>(
-          ":scope > .section-tilt-container",
-        );
-        if (!content) return;
-
-        const rotation = index % 2 === 0 ? -2.2 : 2.2;
-        const isLast = index === sections.length - 1;
-
         gsap.set(section, { zIndex: index + 1 });
+      });
+
+      sections.slice(0, -1).forEach((section, index) => {
+        const incomingPanel = sections[index + 1].querySelector<HTMLElement>(
+          ":scope > .section-tilt-panel",
+        );
+        if (!incomingPanel) return;
+
+        const rotation = index % 2 === 0 ? -4 : 4;
+
         gsap.fromTo(
-          content,
-          { rotation },
+          incomingPanel,
+          { rotation, yPercent: 8 },
           {
             rotation: 0,
+            yPercent: 0,
             ease: "none",
             scrollTrigger: {
               trigger: section,
@@ -45,15 +48,13 @@ export default function SectionTiltDirector() {
           },
         );
 
-        if (!isLast) {
-          ScrollTrigger.create({
-            trigger: section,
-            start: "bottom bottom",
-            end: "bottom top",
-            pin: true,
-            pinSpacing: false,
-          });
-        }
+        ScrollTrigger.create({
+          trigger: section,
+          start: "bottom bottom",
+          end: "bottom top",
+          pin: true,
+          pinSpacing: false,
+        });
       });
     });
 

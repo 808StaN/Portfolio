@@ -111,23 +111,24 @@ export default function Stack() {
 
   return (
     <section id="stack" className="section-tilt-section section-shell relative overflow-hidden" data-section-tilt>
-      <div className="section-shader-layer" aria-hidden="true">
-        <SectionShaderBackground color="#287CA8" />
-      </div>
+      <div className="section-tilt-panel">
+        <div className="section-shader-layer" aria-hidden="true">
+          <SectionShaderBackground color="#287CA8" />
+        </div>
 
-      <div
-        className="absolute pointer-events-none"
-        style={{
-          right: '-10%',
-          top: '12%',
-          width: '52%',
-          height: '66%',
-          background: 'radial-gradient(circle, rgba(249,115,22,0.055) 0%, transparent 72%)',
-          filter: 'blur(75px)',
-        }}
-      />
+        <div
+          className="absolute pointer-events-none"
+          style={{
+            right: '-10%',
+            top: '12%',
+            width: '52%',
+            height: '66%',
+            background: 'radial-gradient(circle, rgba(249,115,22,0.055) 0%, transparent 72%)',
+            filter: 'blur(75px)',
+          }}
+        />
 
-      <div className="section-tilt-container section-inner relative" ref={ref}>
+        <div className="section-tilt-container section-inner relative" ref={ref}>
         <motion.div
           className="flex items-center gap-3 mb-14"
           initial={{ opacity: 0, x: -20 }}
@@ -168,6 +169,7 @@ export default function Stack() {
               />
             ))}
           </div>
+        </div>
         </div>
       </div>
     </section>

@@ -23,23 +23,24 @@ export default function About() {
 
   return (
     <section id="about" className="section-tilt-section section-shell relative overflow-hidden" data-section-tilt>
-      <div className="section-shader-layer" aria-hidden="true">
-        <SectionShaderBackground color="#6D4FD6" />
-      </div>
+      <div className="section-tilt-panel">
+        <div className="section-shader-layer" aria-hidden="true">
+          <SectionShaderBackground color="#6D4FD6" />
+        </div>
 
-      <div
-        className="absolute pointer-events-none"
-        style={{
-          left: '-18%',
-          top: '18%',
-          width: '58%',
-          height: '58%',
-          background: 'radial-gradient(circle, rgba(79,142,247,0.07) 0%, transparent 72%)',
-          filter: 'blur(60px)',
-        }}
-      />
+        <div
+          className="absolute pointer-events-none"
+          style={{
+            left: '-18%',
+            top: '18%',
+            width: '58%',
+            height: '58%',
+            background: 'radial-gradient(circle, rgba(79,142,247,0.07) 0%, transparent 72%)',
+            filter: 'blur(60px)',
+          }}
+        />
 
-      <div className="section-tilt-container section-inner relative" ref={ref}>
+        <div className="section-tilt-container section-inner relative" ref={ref}>
         <motion.div
           className="flex items-center gap-3 mb-14"
           initial={{ opacity: 0, x: -20 }}
@@ -136,6 +137,7 @@ export default function About() {
               </div>
             </motion.div>
           </div>
+        </div>
         </div>
       </div>
     </section>
