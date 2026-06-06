@@ -451,6 +451,8 @@ body {
 }
 
 .projects-repo-btn {
+  position: relative;
+  z-index: 50;
   display: inline-flex;
   align-items: center;
   margin-top: 16px;
@@ -729,13 +731,13 @@ body {
 }
 
 .projects-image-controls {
-  position: static;
+  position: relative;
+  z-index: 50;
   width: min(100%, calc(var(--projects-gallery-height) * 16 / 9));
   margin-top: 12px;
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: 2;
 }
 
 .projects-image-nav {
