@@ -720,18 +720,17 @@ body {
   position: static;
   width: min(100%, calc(var(--projects-gallery-height) * 16 / 9));
   margin-top: 12px;
-  display: grid;
-  grid-template-columns: auto 1fr;
-  align-items: end;
-  gap: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   z-index: 2;
 }
 
 .projects-image-nav {
-  grid-column: 1;
   display: flex;
   flex-direction: row;
   align-items: center;
+  justify-content: center;
   gap: 6px;
 }
 
@@ -744,7 +743,7 @@ body {
 
 .projects-image-control-btn {
   border: 1px solid rgba(255, 255, 255, 0.3);
-  border-radius: 12px;
+  border-radius: 9999px;
   width: 40px;
   height: 40px;
   display: inline-flex;
@@ -1064,8 +1063,7 @@ body {
     position: static;
     width: 100%;
     margin-top: 12px;
-    grid-template-columns: auto 1fr;
-    align-items: end;
+    justify-content: center;
     gap: 10px;
   }
 
@@ -1074,7 +1072,7 @@ body {
   }
 
   .projects-image-nav {
-    justify-content: flex-start;
+    justify-content: center;
   }
 
   .projects-discover-inline {
@@ -1127,8 +1125,7 @@ body {
     position: static;
     width: 100%;
     margin-top: 12px;
-    grid-template-columns: 1fr;
-    justify-items: center;
+    justify-content: center;
     gap: 10px;
   }
 
