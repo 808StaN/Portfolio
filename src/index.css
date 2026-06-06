@@ -222,6 +222,20 @@ body {
   transform-style: preserve-3d;
 }
 
+.section-shader-layer {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+}
+
+.section-shader-layer .shader-preview,
+.section-shader-layer .shader-preview canvas {
+  display: block;
+  width: 100% !important;
+  height: 100% !important;
+}
+
 .section-tilt-container {
   transform-origin: bottom left;
   will-change: transform;

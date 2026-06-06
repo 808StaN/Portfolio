@@ -7,7 +7,6 @@ import Stack from "./components/Stack";
 import Contact from "./components/Contact";
 import Footer from "./components/Footer";
 import Cursor from "./components/Cursor";
-import WebGLBackground from "./components/WebGLBackground";
 import GrainOverlay from "./components/GrainOverlay";
 import SectionTiltDirector from "./components/SectionTiltDirector";
 import { scrollToY, useLenis } from "./components/LenisScroll";
@@ -416,9 +415,6 @@ export default function App() {
       className="app-shell relative min-h-screen"
       style={{ background: "var(--color-bg)", color: "var(--color-text)" }}
     >
-      <div className="global-webgl-layer" aria-hidden="true">
-        <WebGLBackground />
-      </div>
       <div className="app-ambient" aria-hidden="true" />
       <div className="app-vignette" aria-hidden="true" />
 
