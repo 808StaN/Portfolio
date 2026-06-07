@@ -1,61 +1,48 @@
-import riftPickAvifSrcSet from "../assets/projects/RiftPick.jpg?w=640;960;1360&format=avif&as=srcset";
-import riftPickWebpSrcSet from "../assets/projects/RiftPick.jpg?w=640;960;1360&format=webp&as=srcset";
-import riftPickFallback from "../assets/projects/RiftPick.jpg?w=1360&format=jpg";
-import riftPick2AvifSrcSet from "../assets/projects/riftpick2.jpg?w=640;960;1360&format=avif&as=srcset";
-import riftPick2WebpSrcSet from "../assets/projects/riftpick2.jpg?w=640;960;1360&format=webp&as=srcset";
-import riftPick2Fallback from "../assets/projects/riftpick2.jpg?w=1360&format=jpg";
-import riftPick3AvifSrcSet from "../assets/projects/RiftPick3.jpg?w=640;960;1360&format=avif&as=srcset";
-import riftPick3WebpSrcSet from "../assets/projects/RiftPick3.jpg?w=640;960;1360&format=webp&as=srcset";
-import riftPick3Fallback from "../assets/projects/RiftPick3.jpg?w=1360&format=jpg";
-import otakuVersusAvifSrcSet from "../assets/projects/OtakuVersus.jpg?w=640;960;1360&format=avif&as=srcset";
-import otakuVersusWebpSrcSet from "../assets/projects/OtakuVersus.jpg?w=640;960;1360&format=webp&as=srcset";
-import otakuVersusFallback from "../assets/projects/OtakuVersus.jpg?w=1360&format=jpg";
-import otakuVersus2AvifSrcSet from "../assets/projects/OtakuVersus2.jpg?w=640;960;1360&format=avif&as=srcset";
-import otakuVersus2WebpSrcSet from "../assets/projects/OtakuVersus2.jpg?w=640;960;1360&format=webp&as=srcset";
-import otakuVersus2Fallback from "../assets/projects/OtakuVersus2.jpg?w=1360&format=jpg";
-import otakuVersus3AvifSrcSet from "../assets/projects/OtakuVersus3.jpg?w=640;960;1360&format=avif&as=srcset";
-import otakuVersus3WebpSrcSet from "../assets/projects/OtakuVersus3.jpg?w=640;960;1360&format=webp&as=srcset";
-import otakuVersus3Fallback from "../assets/projects/OtakuVersus3.jpg?w=1360&format=jpg";
-import openStudioAvifSrcSet from "../assets/projects/OpenStudio.jpg?w=640;960;1360&format=avif&as=srcset";
-import openStudioWebpSrcSet from "../assets/projects/OpenStudio.jpg?w=640;960;1360&format=webp&as=srcset";
-import openStudioFallback from "../assets/projects/OpenStudio.jpg?w=1360&format=jpg";
-import openStudio2AvifSrcSet from "../assets/projects/openstudio2.jpg?w=640;960;1360&format=avif&as=srcset";
-import openStudio2WebpSrcSet from "../assets/projects/openstudio2.jpg?w=640;960;1360&format=webp&as=srcset";
-import openStudio2Fallback from "../assets/projects/openstudio2.jpg?w=1360&format=jpg";
-import openStudio3AvifSrcSet from "../assets/projects/openstudio3.jpg?w=640;960;1360&format=avif&as=srcset";
-import openStudio3WebpSrcSet from "../assets/projects/openstudio3.jpg?w=640;960;1360&format=webp&as=srcset";
-import openStudio3Fallback from "../assets/projects/openstudio3.jpg?w=1360&format=jpg";
-import instaFetchAvifSrcSet from "../assets/projects/InstaFetch.jpg?w=640;960;1360&format=avif&as=srcset";
-import instaFetchWebpSrcSet from "../assets/projects/InstaFetch.jpg?w=640;960;1360&format=webp&as=srcset";
-import instaFetchFallback from "../assets/projects/InstaFetch.jpg?w=1360&format=jpg";
-import storeManagerAvifSrcSet from "../assets/projects/StoreManager.jpg?w=640;960;1360&format=avif&as=srcset";
-import storeManagerWebpSrcSet from "../assets/projects/StoreManager.jpg?w=640;960;1360&format=webp&as=srcset";
-import storeManagerFallback from "../assets/projects/StoreManager.jpg?w=1360&format=jpg";
+import riftPick1100 from "../assets/projects/RiftPick.jpg?w=1100&format=jpg&quality=95";
+import riftPickOriginal from "../assets/projects/RiftPick.jpg";
+import riftPick21100 from "../assets/projects/riftpick2.jpg?w=1100&format=jpg&quality=95";
+import riftPick2Original from "../assets/projects/riftpick2.jpg";
+import riftPick31100 from "../assets/projects/RiftPick3.jpg?w=1100&format=jpg&quality=95";
+import riftPick3Original from "../assets/projects/RiftPick3.jpg";
+import otakuVersus1100 from "../assets/projects/OtakuVersus.jpg?w=1100&format=jpg&quality=95";
+import otakuVersusOriginal from "../assets/projects/OtakuVersus.jpg";
+import otakuVersus21100 from "../assets/projects/OtakuVersus2.jpg?w=1100&format=jpg&quality=95";
+import otakuVersus2Original from "../assets/projects/OtakuVersus2.jpg";
+import otakuVersus31100 from "../assets/projects/OtakuVersus3.jpg?w=1100&format=jpg&quality=95";
+import otakuVersus3Original from "../assets/projects/OtakuVersus3.jpg";
+import openStudio1100 from "../assets/projects/OpenStudio.jpg?w=1100&format=jpg&quality=95";
+import openStudioOriginal from "../assets/projects/OpenStudio.jpg";
+import openStudio21100 from "../assets/projects/openstudio2.jpg?w=1100&format=jpg&quality=95";
+import openStudio2Original from "../assets/projects/openstudio2.jpg";
+import openStudio31100 from "../assets/projects/openstudio3.jpg?w=1100&format=jpg&quality=95";
+import openStudio3Original from "../assets/projects/openstudio3.jpg";
+import instaFetch1100 from "../assets/projects/InstaFetch.jpg?w=1100&format=jpg&quality=95";
+import instaFetchOriginal from "../assets/projects/InstaFetch.jpg";
+import storeManager1100 from "../assets/projects/StoreManager.jpg?w=1100&format=jpg&quality=95";
+import storeManagerOriginal from "../assets/projects/StoreManager.jpg";
 import { sectionColors } from "../constants/sectionColors";
 
 export interface ProjectImage {
-  avifSrcSet: string;
-  webpSrcSet: string;
-  fallback: string;
+  src1100: string;
+  srcOriginal: string;
 }
 
 const projectImage = (
-  avifSrcSet: string,
-  webpSrcSet: string,
-  fallback: string,
-): ProjectImage => ({ avifSrcSet, webpSrcSet, fallback });
+  src1100: string,
+  srcOriginal: string,
+): ProjectImage => ({ src1100, srcOriginal });
 
-const riftPickImage = projectImage(riftPickAvifSrcSet, riftPickWebpSrcSet, riftPickFallback);
-const riftPickImage2 = projectImage(riftPick2AvifSrcSet, riftPick2WebpSrcSet, riftPick2Fallback);
-const riftPickImage3 = projectImage(riftPick3AvifSrcSet, riftPick3WebpSrcSet, riftPick3Fallback);
-const otakuVersusImage = projectImage(otakuVersusAvifSrcSet, otakuVersusWebpSrcSet, otakuVersusFallback);
-const otakuVersusImage2 = projectImage(otakuVersus2AvifSrcSet, otakuVersus2WebpSrcSet, otakuVersus2Fallback);
-const otakuVersusImage3 = projectImage(otakuVersus3AvifSrcSet, otakuVersus3WebpSrcSet, otakuVersus3Fallback);
-const openStudioImage = projectImage(openStudioAvifSrcSet, openStudioWebpSrcSet, openStudioFallback);
-const openStudioImage2 = projectImage(openStudio2AvifSrcSet, openStudio2WebpSrcSet, openStudio2Fallback);
-const openStudioImage3 = projectImage(openStudio3AvifSrcSet, openStudio3WebpSrcSet, openStudio3Fallback);
-const instaFetchImage = projectImage(instaFetchAvifSrcSet, instaFetchWebpSrcSet, instaFetchFallback);
-const storeManagerImage = projectImage(storeManagerAvifSrcSet, storeManagerWebpSrcSet, storeManagerFallback);
+const riftPickImage = projectImage(riftPick1100, riftPickOriginal);
+const riftPickImage2 = projectImage(riftPick21100, riftPick2Original);
+const riftPickImage3 = projectImage(riftPick31100, riftPick3Original);
+const otakuVersusImage = projectImage(otakuVersus1100, otakuVersusOriginal);
+const otakuVersusImage2 = projectImage(otakuVersus21100, otakuVersus2Original);
+const otakuVersusImage3 = projectImage(otakuVersus31100, otakuVersus3Original);
+const openStudioImage = projectImage(openStudio1100, openStudioOriginal);
+const openStudioImage2 = projectImage(openStudio21100, openStudio2Original);
+const openStudioImage3 = projectImage(openStudio31100, openStudio3Original);
+const instaFetchImage = projectImage(instaFetch1100, instaFetchOriginal);
+const storeManagerImage = projectImage(storeManager1100, storeManagerOriginal);
 
 export interface Project {
   id: string;

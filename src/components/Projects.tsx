@@ -10,6 +10,7 @@ import {
 import SectionShaderBackground from "./SectionShaderBackground";
 
 const easeOut = [0.16, 1, 0.3, 1] as const;
+const PROJECT_IMAGE_SIZES = "(max-width: 768px) calc(100vw - 32px), (max-width: 1200px) 70vw, 1100px";
 
 function slashTitle(title: string) {
   return title.split(" ").join(" / ");
@@ -50,10 +51,22 @@ export default function Projects() {
   const [imageTransitions, setImageTransitions] = useState<
     Record<string, ImageTransition | undefined>
   >({});
+  const [warmedProjectIds, setWarmedProjectIds] = useState<Set<string>>(
+    () => new Set(),
+  );
   const imageTransitionTimersRef = useRef<Record<string, number | undefined>>({});
   const queuedImagesRef = useRef<Record<string, number | undefined>>({});
   const revealRef = useRef<HTMLDivElement>(null);
   const inView = useInView(revealRef, { once: true, margin: "-80px" });
+
+  const warmProject = (projectId: string) => {
+    setWarmedProjectIds((current) => {
+      if (current.has(projectId)) return current;
+      const next = new Set(current);
+      next.add(projectId);
+      return next;
+    });
+  };
 
   useEffect(() => {
     const controller = new AbortController();
@@ -106,6 +119,28 @@ export default function Projects() {
     };
   }, []);
 
+  useEffect(() => {
+    const sections = Array.from(
+      document.querySelectorAll<HTMLElement>("[data-project-id]"),
+    );
+    if (!sections.length) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (!entry.isIntersecting) return;
+          const projectId = (entry.target as HTMLElement).dataset.projectId;
+          if (projectId) warmProject(projectId);
+          observer.unobserve(entry.target);
+        });
+      },
+      { rootMargin: "700px 0px" },
+    );
+
+    sections.forEach((section) => observer.observe(section));
+    return () => observer.disconnect();
+  }, []);
+
   const getActiveImageIndex = (project: Project) => {
     const images = getProjectImages(project);
     const requestedIndex = activeImageIndexes[project.id] ?? 0;
@@ -143,6 +178,7 @@ export default function Projects() {
   };
 
   const goToImage = (project: Project, idx: number) => {
+    warmProject(project.id);
     const images = getProjectImages(project);
     const currentIndex = getActiveImageIndex(project);
     const clamped = Math.max(0, Math.min(images.length - 1, idx));
@@ -157,55 +193,65 @@ export default function Projects() {
     runImageTransition(project, currentIndex, clamped);
   };
 
-  const renderGalleryImage = (image: ProjectImage, alt: string) => (
-    <picture>
-      <source
-        type="image/avif"
-        srcSet={image.avifSrcSet}
-        sizes="(max-width: 768px) calc(100vw - 32px), (max-width: 1200px) 70vw, 1360px"
-      />
-      <source
-        type="image/webp"
-        srcSet={image.webpSrcSet}
-        sizes="(max-width: 768px) calc(100vw - 32px), (max-width: 1200px) 70vw, 1360px"
-      />
-      <img src={image.fallback} alt={alt} loading="lazy" decoding="async" />
-    </picture>
+  const renderGalleryImage = (image: ProjectImage, alt: string, eager: boolean) => (
+    <img
+      src={image.src1100}
+      srcSet={`${image.src1100} 1100w, ${image.srcOriginal} 1920w`}
+      sizes={PROJECT_IMAGE_SIZES}
+      alt={alt}
+      loading={eager ? "eager" : "lazy"}
+      decoding="async"
+    />
   );
+
+  const getGalleryLayerClass = (
+    imageIndex: number,
+    activeImageIndex: number,
+    imageTransition?: ImageTransition,
+  ) => {
+    const classes = ["projects-visual-item", "projects-visual-layer"];
+
+    if (!imageTransition) {
+      classes.push(imageIndex === activeImageIndex ? "projects-visual-active" : "projects-visual-idle");
+      return classes.join(" ");
+    }
+
+    if (imageIndex === imageTransition.from) {
+      classes.push(
+        imageTransition.dir === 1 ? "projects-slide-out-left" : "projects-slide-out-right",
+      );
+    } else if (imageIndex === imageTransition.to) {
+      classes.push(
+        imageTransition.dir === 1 ? "projects-slide-in-right" : "projects-slide-in-left",
+      );
+    } else {
+      classes.push("projects-visual-idle");
+    }
+
+    return classes.join(" ");
+  };
 
   const renderGallery = (project: Project) => {
     const images = getProjectImages(project);
     const activeImageIndex = getActiveImageIndex(project);
-    const currentImage = images[activeImageIndex] ?? project.image;
     const imageTransition = imageTransitions[project.id];
     const altBase = `${project.title} preview`;
-
-    if (imageTransition) {
-      const fromSrc = images[imageTransition.from] ?? currentImage;
-      const toSrc = images[imageTransition.to] ?? currentImage;
-
-      return (
-        <>
-          <article
-            key={`img-out-${project.id}-${imageTransition.from}-${imageTransition.to}-${imageTransition.dir}`}
-            className={`projects-visual-item projects-visual-layer ${imageTransition.dir === 1 ? "projects-slide-out-left" : "projects-slide-out-right"}`}
-          >
-            {renderGalleryImage(fromSrc, altBase)}
-          </article>
-          <article
-            key={`img-in-${project.id}-${imageTransition.from}-${imageTransition.to}-${imageTransition.dir}`}
-            className={`projects-visual-item projects-visual-layer ${imageTransition.dir === 1 ? "projects-slide-in-right" : "projects-slide-in-left"}`}
-          >
-            {renderGalleryImage(toSrc, altBase)}
-          </article>
-        </>
-      );
-    }
+    const warmed = warmedProjectIds.has(project.id) || Boolean(imageTransition);
+    const visibleImages = warmed
+      ? images.map((image, imageIndex) => ({ image, imageIndex }))
+      : [{ image: images[activeImageIndex] ?? project.image, imageIndex: activeImageIndex }];
 
     return (
-      <article className="projects-visual-item projects-visual-layer">
-        {renderGalleryImage(currentImage, altBase)}
-      </article>
+      <>
+        {visibleImages.map(({ image, imageIndex }) => (
+          <article
+            key={`${project.id}-image-${imageIndex}`}
+            className={getGalleryLayerClass(imageIndex, activeImageIndex, imageTransition)}
+          >
+            {renderGalleryImage(image, `${altBase} ${imageIndex + 1}`, warmed)}
+          </article>
+        ))}
+      </>
     );
   };
 
@@ -227,6 +273,7 @@ export default function Projects() {
               className="section-tilt-section projects-project-section relative"
               data-section-tilt
               data-section-color={project.color}
+              data-project-id={project.id}
             >
               <div className="section-tilt-panel projects-project-panel">
                 <div className="section-shader-layer" aria-hidden="true">
