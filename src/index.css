@@ -288,9 +288,13 @@ html.custom-scrollbar-dragging * {
 .section-shell.section-tilt-section > .section-tilt-panel {
   display: flex;
   flex-direction: column;
-  justify-content: center;
-  padding-top: clamp(80px, 10vh, 100px);
+  justify-content: flex-start;
+  padding-top: clamp(120px, 14vh, 160px);
   padding-bottom: var(--section-space-y);
+}
+
+.section-shell .section-tilt-container {
+  margin-block: 0;
 }
 
 .section-shader-layer {
