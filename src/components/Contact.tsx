@@ -1,5 +1,7 @@
 import { useRef } from 'react';
 import { motion, useInView } from 'framer-motion';
+import SectionShaderBackground from './SectionShaderBackground';
+import { sectionColors } from '../constants/sectionColors';
 
 const easeOut = [0.16, 1, 0.3, 1] as const;
 
@@ -47,31 +49,18 @@ export default function Contact() {
   const inView = useInView(ref, { once: true, margin: '-80px' });
 
   return (
-    <section id="contact" className="section-shell relative overflow-hidden">
-      <div
-        className="absolute inset-0 pointer-events-none"
-        style={{
-          background:
-            'radial-gradient(ellipse 60% 60% at 50% 100%, rgba(20,184,166,0.08) 0%, transparent 72%)',
-        }}
-      />
+    <section id="contact" className="section-tilt-section section-shell relative overflow-hidden" data-section-tilt data-section-color={sectionColors.contact}>
+      <div className="section-tilt-panel">
+        <div className="section-shader-layer" aria-hidden="true">
+          <SectionShaderBackground color={sectionColors.contact} />
+        </div>
 
-      <div className="section-inner relative" ref={ref}>
-        <motion.div
-          className="flex items-center gap-3 mb-14"
-          initial={{ opacity: 0, x: -20 }}
-          animate={inView ? { opacity: 1, x: 0 } : {}}
-          transition={{ duration: 0.6, ease: easeOut }}
-        >
-          <span className="section-label">Contact</span>
-          <div className="flex-1 h-px" style={{ background: 'rgba(255,255,255,0.07)' }} />
-        </motion.div>
-
+        <div className="section-tilt-container section-inner contact-inner relative" ref={ref}>
         <div className="grid grid-cols-1 lg:grid-cols-[minmax(0,1.04fr)_minmax(0,0.96fr)] gap-14 lg:gap-24">
           <div>
             <motion.h2
-              className="section-title text-white/90 mb-7 max-w-[12ch]"
-              style={{ fontSize: 'clamp(2rem, 3.7vw, 3.9rem)' }}
+              className="section-title text-white/90 max-w-[12ch]"
+              style={{ fontSize: 'clamp(2rem, 3.7vw, 3.9rem)', marginBottom: 'clamp(1.75rem, 3.2vw, 2.6rem)' }}
               initial={{ opacity: 0, y: 30 }}
               animate={inView ? { opacity: 1, y: 0 } : {}}
               transition={{ duration: 0.8, delay: 0.1, ease: easeOut }}
@@ -136,6 +125,22 @@ export default function Contact() {
               </div>
             </motion.div>
           </div>
+        </div>
+
+        <div className="contact-footer">
+          <div className="divider mb-8" />
+          <div className="flex items-center justify-center">
+            <motion.p
+              className="text-[11px] text-center"
+              style={{ color: 'rgba(255,255,255,0.22)', fontFamily: 'var(--font-sans)' }}
+              initial={{ opacity: 0 }}
+              whileInView={{ opacity: 1 }}
+              viewport={{ once: true }}
+            >
+              Designed & developed by Dawid Stanisz (808StaN) - 2026
+            </motion.p>
+          </div>
+        </div>
         </div>
       </div>
     </section>

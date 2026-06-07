@@ -13,15 +13,24 @@ export default function Cursor() {
   useEffect(() => {
     if (window.matchMedia("(pointer: coarse)").matches) return;
 
-    const onMove = (e: MouseEvent) => {
-      pos.current = { x: e.clientX, y: e.clientY };
+    const updatePosition = (clientX: number, clientY: number) => {
+      pos.current = { x: clientX, y: clientY };
       if (!visible) setVisible(true);
+    };
+
+    const onMove = (e: MouseEvent) => {
+      updatePosition(e.clientX, e.clientY);
+    };
+
+    const onPointerMove = (e: PointerEvent) => {
+      updatePosition(e.clientX, e.clientY);
     };
 
     const onLeave = () => setVisible(false);
     const onEnter = () => setVisible(true);
 
     window.addEventListener("mousemove", onMove, { passive: true });
+    window.addEventListener("pointermove", onPointerMove, { passive: true });
     document.addEventListener("mouseleave", onLeave);
     document.addEventListener("mouseenter", onEnter);
 
@@ -29,7 +38,7 @@ export default function Cursor() {
       const target = e.target as Element;
 
       const interactive = target.closest(
-        'a, button, [role="link"], [tabindex]',
+        'a, button, [role="link"], [tabindex], .custom-scrollbar-track, .custom-scrollbar-thumb',
       );
       const isDisabled =
         interactive instanceof HTMLButtonElement && interactive.disabled;
@@ -60,6 +69,7 @@ export default function Cursor() {
 
     return () => {
       window.removeEventListener("mousemove", onMove);
+      window.removeEventListener("pointermove", onPointerMove);
       document.removeEventListener("mouseleave", onLeave);
       document.removeEventListener("mouseenter", onEnter);
       window.removeEventListener("mouseover", onOver);

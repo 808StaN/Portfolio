@@ -1,24 +1,58 @@
-import riftPickImage from "../assets/projects/RiftPick.jpg";
-import riftPickImage2 from "../assets/projects/riftpick2.jpg";
-import riftPickImage3 from "../assets/projects/RiftPick3.jpg";
-import otakuVersusImage from "../assets/projects/OtakuVersus.jpg";
-import otakuVersusImage2 from "../assets/projects/OtakuVersus2.jpg";
-import otakuVersusImage3 from "../assets/projects/OtakuVersus3.jpg";
-import openStudioImage from "../assets/projects/OpenStudio.jpg";
-import openStudioImage2 from "../assets/projects/openstudio2.jpg";
-import openStudioImage3 from "../assets/projects/openstudio3.jpg";
-import instaFetchImage from "../assets/projects/InstaFetch.jpg";
-import storeManagerImage from "../assets/projects/StoreManager.jpg";
+import riftPick1100 from "../assets/projects/RiftPick.jpg?w=1100&format=jpg&quality=95";
+import riftPickOriginal from "../assets/projects/RiftPick.jpg";
+import riftPick21100 from "../assets/projects/riftpick2.jpg?w=1100&format=jpg&quality=95";
+import riftPick2Original from "../assets/projects/riftpick2.jpg";
+import riftPick31100 from "../assets/projects/RiftPick3.jpg?w=1100&format=jpg&quality=95";
+import riftPick3Original from "../assets/projects/RiftPick3.jpg";
+import otakuVersus1100 from "../assets/projects/OtakuVersus.jpg?w=1100&format=jpg&quality=95";
+import otakuVersusOriginal from "../assets/projects/OtakuVersus.jpg";
+import otakuVersus21100 from "../assets/projects/OtakuVersus2.jpg?w=1100&format=jpg&quality=95";
+import otakuVersus2Original from "../assets/projects/OtakuVersus2.jpg";
+import otakuVersus31100 from "../assets/projects/OtakuVersus3.jpg?w=1100&format=jpg&quality=95";
+import otakuVersus3Original from "../assets/projects/OtakuVersus3.jpg";
+import openStudio1100 from "../assets/projects/OpenStudio.jpg?w=1100&format=jpg&quality=95";
+import openStudioOriginal from "../assets/projects/OpenStudio.jpg";
+import openStudio21100 from "../assets/projects/openstudio2.jpg?w=1100&format=jpg&quality=95";
+import openStudio2Original from "../assets/projects/openstudio2.jpg";
+import openStudio31100 from "../assets/projects/openstudio3.jpg?w=1100&format=jpg&quality=95";
+import openStudio3Original from "../assets/projects/openstudio3.jpg";
+import instaFetch1100 from "../assets/projects/InstaFetch.jpg?w=1100&format=jpg&quality=95";
+import instaFetchOriginal from "../assets/projects/InstaFetch.jpg";
+import storeManager1100 from "../assets/projects/StoreManager.jpg?w=1100&format=jpg&quality=95";
+import storeManagerOriginal from "../assets/projects/StoreManager.jpg";
+import { sectionColors } from "../constants/sectionColors";
+
+export interface ProjectImage {
+  src1100: string;
+  srcOriginal: string;
+}
+
+const projectImage = (
+  src1100: string,
+  srcOriginal: string,
+): ProjectImage => ({ src1100, srcOriginal });
+
+const riftPickImage = projectImage(riftPick1100, riftPickOriginal);
+const riftPickImage2 = projectImage(riftPick21100, riftPick2Original);
+const riftPickImage3 = projectImage(riftPick31100, riftPick3Original);
+const otakuVersusImage = projectImage(otakuVersus1100, otakuVersusOriginal);
+const otakuVersusImage2 = projectImage(otakuVersus21100, otakuVersus2Original);
+const otakuVersusImage3 = projectImage(otakuVersus31100, otakuVersus3Original);
+const openStudioImage = projectImage(openStudio1100, openStudioOriginal);
+const openStudioImage2 = projectImage(openStudio21100, openStudio2Original);
+const openStudioImage3 = projectImage(openStudio31100, openStudio3Original);
+const instaFetchImage = projectImage(instaFetch1100, instaFetchOriginal);
+const storeManagerImage = projectImage(storeManager1100, storeManagerOriginal);
 
 export interface Project {
   id: string;
   title: string;
   description: string;
   longDescription: string;
-  image: string;
+  image: ProjectImage;
   /** Dodatkowe zdjęcia w galerii (pierwsze = `image`, jeśli nie podane). */
-  images?: string[];
-  secondaryImage?: string;
+  images?: ProjectImage[];
+  secondaryImage?: ProjectImage;
   category: string;
   tags: string[];
   year: string;
@@ -26,12 +60,13 @@ export interface Project {
   link?: string;
   linkLabel?: string;
   accent: string;
+  color: string;
   index: string;
   /** false = ukryty w galerii portfolio (dane zostają w pliku). */
   featured?: boolean;
 }
 
-export function getProjectImages(project: Project): string[] {
+export function getProjectImages(project: Project): ProjectImage[] {
   if (project.images?.length) {
     return project.images;
   }
@@ -65,6 +100,7 @@ export const projects: Project[] = [
     link: 'https://riftpick.com',
     linkLabel: 'View App',
     accent: '#c89b3c',
+    color: sectionColors.projectRiftPick,
     index: '01',
   },
   {
@@ -82,6 +118,7 @@ export const projects: Project[] = [
     status: 'live',
     link: 'https://github.com/808StaN/OpenStudio',
     accent: '#14b8a6',
+    color: sectionColors.projectOpenStudio,
     index: '02',
   },
   {
@@ -99,6 +136,7 @@ export const projects: Project[] = [
     status: 'live',
     link: 'https://github.com/808StaN/OtakuVersus',
     accent: '#4f8ef7',
+    color: sectionColors.projectOtakuVersus,
     index: '03',
   },
   {
@@ -116,6 +154,7 @@ export const projects: Project[] = [
     status: 'live',
     link: 'https://github.com/808StaN/InstaFetch',
     accent: '#f97316',
+    color: sectionColors.work,
     index: '04',
     featured: false,
   },
@@ -134,6 +173,7 @@ export const projects: Project[] = [
     status: 'case-study',
     link: 'https://github.com/808StaN/StoreManager',
     accent: '#10b981',
+    color: sectionColors.work,
     index: '05',
     featured: false,
   },

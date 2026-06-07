@@ -1,5 +1,7 @@
 import { useRef } from 'react';
 import { motion, useInView } from 'framer-motion';
+import SectionShaderBackground from './SectionShaderBackground';
+import { sectionColors } from '../constants/sectionColors';
 
 const easeOut = [0.16, 1, 0.3, 1] as const;
 
@@ -21,30 +23,13 @@ export default function About() {
   const inView = useInView(ref, { once: true, margin: '-80px' });
 
   return (
-    <section id="about" className="section-shell relative overflow-hidden">
-      <div
-        className="absolute pointer-events-none"
-        style={{
-          left: '-18%',
-          top: '18%',
-          width: '58%',
-          height: '58%',
-          background: 'radial-gradient(circle, rgba(79,142,247,0.07) 0%, transparent 72%)',
-          filter: 'blur(60px)',
-        }}
-      />
+    <section id="about" className="section-tilt-section section-shell relative overflow-hidden" data-section-tilt data-section-color={sectionColors.about}>
+      <div className="section-tilt-panel">
+        <div className="section-shader-layer" aria-hidden="true">
+          <SectionShaderBackground color={sectionColors.about} />
+        </div>
 
-      <div className="section-inner relative" ref={ref}>
-        <motion.div
-          className="flex items-center gap-3 mb-14"
-          initial={{ opacity: 0, x: -20 }}
-          animate={inView ? { opacity: 1, x: 0 } : {}}
-          transition={{ duration: 0.6, ease: easeOut }}
-        >
-          <span className="section-label">About</span>
-          <div className="flex-1 h-px" style={{ background: 'rgba(255,255,255,0.07)' }} />
-        </motion.div>
-
+        <div className="section-tilt-container section-inner relative" ref={ref}>
         <div className="grid grid-cols-1 lg:grid-cols-[minmax(0,1.08fr)_minmax(0,0.92fr)] gap-12 lg:gap-16">
           <div>
             <motion.h2
@@ -97,7 +82,7 @@ export default function About() {
 
           <div className="flex flex-col gap-8">
             <motion.div
-              className="project-card about-certs-shell"
+              className="about-certs-shell"
               initial={{ opacity: 0, y: 30 }}
               animate={inView ? { opacity: 1, y: 0 } : {}}
               transition={{ duration: 0.8, delay: 0.25, ease: easeOut }}
@@ -131,6 +116,7 @@ export default function About() {
               </div>
             </motion.div>
           </div>
+        </div>
         </div>
       </div>
     </section>
