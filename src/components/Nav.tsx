@@ -43,7 +43,10 @@ export default function Nav() {
       const isDocked = y >= homeEnd;
       setScrolled(isDocked && y > 40);
       setDocked(isDocked);
-      setTopVisible(!isDocked && (y < lastY.current || y < 80));
+
+      const scrollingUp = y < lastY.current;
+      const atTop = y < 80;
+      setTopVisible(scrollingUp || atTop);
       lastY.current = y;
     };
     onScroll();
