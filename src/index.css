@@ -189,7 +189,26 @@ html.custom-scrollbar-dragging * {
 
 /* Nav */
 .nav-blur {
+  overflow: hidden;
   border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.nav-section-backdrop {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.nav-section-backdrop-base,
+.nav-section-backdrop-layer {
+  position: absolute;
+  inset: 0;
+}
+
+.nav-section-backdrop-base {
+  background: #5B8CFF;
 }
 
 .section-shell {

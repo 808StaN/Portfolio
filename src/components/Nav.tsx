@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { scrollToY, useLenis } from './LenisScroll';
+import NavSectionBackdrop from './NavSectionBackdrop';
 
 const links = [
   { label: 'Projects', href: '#work' },
@@ -134,8 +135,9 @@ export default function Nav() {
         transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
       >
         <nav className="relative h-16 nav-blur">
+          <NavSectionBackdrop />
           <div
-            className="hero-inner h-full flex items-center justify-between"
+            className="hero-inner relative z-10 h-full flex items-center justify-between"
             style={{ width: 'min(1600px, calc(100% - (var(--page-gutter) * 1.2)))' }}
           >
             <div className="hidden md:block w-[84px]" aria-hidden="true" />
