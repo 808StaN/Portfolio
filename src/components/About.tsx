@@ -82,7 +82,7 @@ export default function About() {
 
           <div className="flex flex-col gap-8">
             <motion.div
-              className="project-card about-certs-shell"
+              className="about-certs-shell"
               initial={{ opacity: 0, y: 30 }}
               animate={inView ? { opacity: 1, y: 0 } : {}}
               transition={{ duration: 0.8, delay: 0.25, ease: easeOut }}

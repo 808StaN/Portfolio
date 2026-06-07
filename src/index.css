@@ -535,8 +535,7 @@ html.custom-scrollbar-dragging * {
 }
 
 .about-certs-shell {
-  padding: clamp(18px, 2.2vw, 28px);
-  border-radius: 16px;
+  padding-top: clamp(4px, 0.7vw, 10px);
 }
 
 .about-certs-label {
@@ -551,18 +550,25 @@ html.custom-scrollbar-dragging * {
 
 .about-certs-list {
   display: grid;
-  gap: 10px;
+  gap: 12px;
 }
 
 .about-cert-item {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 14px;
-  border: 1px solid rgba(173, 199, 255, 0.16);
-  border-radius: 12px;
-  padding: 14px;
-  background: rgba(9, 16, 40, 0.36);
+  gap: clamp(14px, 2vw, 22px);
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  border-radius: 16px;
+  padding: clamp(15px, 2vw, 18px) clamp(16px, 2.3vw, 22px);
+  background: rgba(255, 255, 255, 0.035);
+  transition: border-color 0.2s ease, background 0.2s ease, transform 0.2s ease;
+}
+
+.about-cert-item:hover {
+  border-color: rgba(255, 255, 255, 0.28);
+  background: rgba(255, 255, 255, 0.055);
+  transform: translateY(-1px);
 }
 
 .about-cert-copy {
