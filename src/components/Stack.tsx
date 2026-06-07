@@ -52,6 +52,14 @@ const categories = [
   },
 ];
 
+function chunk<T>(arr: T[], size: number): T[][] {
+  const chunks: T[][] = [];
+  for (let i = 0; i < arr.length; i += size) {
+    chunks.push(arr.slice(i, i + size));
+  }
+  return chunks;
+}
+
 function CategoryBlock({
   cat,
   index,
@@ -63,7 +71,7 @@ function CategoryBlock({
 }) {
   return (
     <motion.div
-      className={`stack-category-card${cat.skills.length > 8 ? ' is-wide' : ''}`}
+      className="stack-category-card"
       initial={{ opacity: 0, y: 30 }}
       animate={inView ? { opacity: 1, y: 0 } : {}}
       transition={{ duration: 0.7, delay: 0.1 + index * 0.07, ease: easeOut }}
@@ -73,14 +81,17 @@ function CategoryBlock({
           <span className="stack-category-dot" style={{ background: cat.color, color: cat.color }} />
           <span className="stack-category-title">{cat.label}</span>
         </div>
-        <span className="stack-category-count">{cat.skills.length}</span>
       </div>
 
       <div className="stack-skills-cloud">
-        {cat.skills.map(skill => (
-          <span key={skill} className="skill-pill" style={{ fontFamily: 'var(--font-sans)' }}>
-            {skill}
-          </span>
+        {chunk(cat.skills, 5).map((row, rowIndex) => (
+          <div key={rowIndex} className="stack-skills-row">
+            {row.map(skill => (
+              <span key={skill} className="skill-pill" style={{ fontFamily: 'var(--font-sans)' }}>
+                {skill}
+              </span>
+            ))}
+          </div>
         ))}
       </div>
     </motion.div>
@@ -99,10 +110,10 @@ export default function Stack() {
         </div>
 
         <div className="section-tilt-container section-inner relative" ref={ref}>
-        <div className="mb-12 md:mb-14">
+        <div>
           <motion.h2
             className="section-title text-white/90 max-w-[12ch]"
-            style={{ fontSize: 'clamp(1.95rem, 3.6vw, 3.9rem)' }}
+            style={{ fontSize: 'clamp(1.95rem, 3.6vw, 3.9rem)', marginBottom: 'clamp(1.75rem, 3.2vw, 2.6rem)' }}
             initial={{ opacity: 0, y: 30 }}
             animate={inView ? { opacity: 1, y: 0 } : {}}
             transition={{ duration: 0.8, delay: 0.1, ease: easeOut }}

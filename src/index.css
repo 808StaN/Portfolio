@@ -907,18 +907,8 @@ html.custom-scrollbar-dragging * {
 
 .stack-categories {
   display: grid;
-  grid-template-columns: 1fr;
+  grid-template-columns: repeat(3, 1fr);
   gap: clamp(12px, 1.8vw, 18px);
-}
-
-@media (min-width: 1024px) {
-  .stack-categories {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-
-  .stack-category-card.is-wide {
-    grid-column: span 2;
-  }
 }
 
 .stack-category-card {
@@ -971,13 +961,13 @@ html.custom-scrollbar-dragging * {
   text-overflow: ellipsis;
 }
 
-.stack-category-count {
-  font-family: var(--font-sans);
-  font-size: 0.72rem;
-  color: rgba(255, 255, 255, 0.32);
+.stack-skills-cloud {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
 }
 
-.stack-skills-cloud {
+.stack-skills-row {
   display: flex;
   flex-wrap: wrap;
   gap: 8px;
@@ -1217,6 +1207,10 @@ html.custom-scrollbar-dragging * {
 }
 
 @media (max-width: 767px) {
+  .stack-categories {
+    grid-template-columns: 1fr;
+  }
+
   :root {
     --content-gutter: clamp(12px, 4.5vw, 20px);
   }
