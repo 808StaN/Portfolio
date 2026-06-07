@@ -905,64 +905,98 @@ html.custom-scrollbar-dragging * {
   color: rgba(255, 255, 255, 0.95);
 }
 
-/* Stack — układ jak w CV: 3 kategorie w pierwszym rzędzie, max 5 pilli na linię */
 .stack-categories {
-  display: flex;
-  flex-direction: column;
-  gap: clamp(28px, 4vw, 40px);
-}
-
-.stack-categories-row--top {
   display: grid;
   grid-template-columns: 1fr;
-  gap: clamp(24px, 3.5vw, 36px);
+  gap: clamp(12px, 1.8vw, 18px);
 }
 
 @media (min-width: 1024px) {
-  .stack-categories-row--top {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-    align-items: start;
+  .stack-categories {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .stack-category-card.is-wide {
+    grid-column: span 2;
   }
 }
 
-.stack-categories-row--bottom {
-  display: grid;
-  grid-template-columns: 1fr;
-}
-
-.stack-skill-lines {
+.stack-category-card {
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  border-radius: 16px;
+  padding: clamp(16px, 2vw, 22px);
+  background: rgba(255, 255, 255, 0.035);
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 16px;
+  transition: border-color 0.2s ease, background 0.2s ease, transform 0.2s ease;
 }
 
-.stack-skill-line {
-  display: grid;
-  grid-template-columns: repeat(5, max-content);
-  gap: 8px;
-  justify-content: start;
+.stack-category-card:hover {
+  border-color: rgba(255, 255, 255, 0.28);
+  background: rgba(255, 255, 255, 0.055);
+  transform: translateY(-1px);
 }
 
-.stack-skill-line .skill-pill {
+.stack-category-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.stack-category-title-wrap {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+
+.stack-category-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 999px;
+  flex: 0 0 auto;
+  box-shadow: 0 0 18px currentColor;
+}
+
+.stack-category-title {
+  font-family: var(--font-sans);
+  font-size: 0.72rem;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.52);
   white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
-/* Skill pill */
+.stack-category-count {
+  font-family: var(--font-sans);
+  font-size: 0.72rem;
+  color: rgba(255, 255, 255, 0.32);
+}
+
+.stack-skills-cloud {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
 .skill-pill {
-  background: rgba(17, 31, 70, 0.46);
-  border: 1px solid rgba(175, 201, 255, 0.18);
+  background: rgba(255, 255, 255, 0.055);
   border-radius: 100px;
-  padding: 5px 13px;
+  padding: 6px 12px;
   font-size: 0.76rem;
   font-weight: 400;
   letter-spacing: 0.01em;
-  color: rgba(255,255,255,0.62);
-  transition: background 0.3s ease, color 0.3s ease, border-color 0.3s ease;
+  color: rgba(255,255,255,0.64);
+  transition: background 0.2s ease, color 0.2s ease;
+  white-space: nowrap;
 }
 
 .skill-pill:hover {
-  background: rgba(79, 142, 247, 0.2);
-  border-color: rgba(179, 208, 255, 0.38);
+  background: rgba(255, 255, 255, 0.095);
   color: rgba(255,255,255,0.9);
 }
 
