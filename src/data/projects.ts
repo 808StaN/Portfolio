@@ -1,25 +1,71 @@
-import riftPickImage from "../assets/projects/RiftPick.jpg";
-import riftPickImage2 from "../assets/projects/riftpick2.jpg";
-import riftPickImage3 from "../assets/projects/RiftPick3.jpg";
-import otakuVersusImage from "../assets/projects/OtakuVersus.jpg";
-import otakuVersusImage2 from "../assets/projects/OtakuVersus2.jpg";
-import otakuVersusImage3 from "../assets/projects/OtakuVersus3.jpg";
-import openStudioImage from "../assets/projects/OpenStudio.jpg";
-import openStudioImage2 from "../assets/projects/openstudio2.jpg";
-import openStudioImage3 from "../assets/projects/openstudio3.jpg";
-import instaFetchImage from "../assets/projects/InstaFetch.jpg";
-import storeManagerImage from "../assets/projects/StoreManager.jpg";
+import riftPickAvifSrcSet from "../assets/projects/RiftPick.jpg?w=640;960;1360&format=avif&as=srcset";
+import riftPickWebpSrcSet from "../assets/projects/RiftPick.jpg?w=640;960;1360&format=webp&as=srcset";
+import riftPickFallback from "../assets/projects/RiftPick.jpg?w=1360&format=jpg";
+import riftPick2AvifSrcSet from "../assets/projects/riftpick2.jpg?w=640;960;1360&format=avif&as=srcset";
+import riftPick2WebpSrcSet from "../assets/projects/riftpick2.jpg?w=640;960;1360&format=webp&as=srcset";
+import riftPick2Fallback from "../assets/projects/riftpick2.jpg?w=1360&format=jpg";
+import riftPick3AvifSrcSet from "../assets/projects/RiftPick3.jpg?w=640;960;1360&format=avif&as=srcset";
+import riftPick3WebpSrcSet from "../assets/projects/RiftPick3.jpg?w=640;960;1360&format=webp&as=srcset";
+import riftPick3Fallback from "../assets/projects/RiftPick3.jpg?w=1360&format=jpg";
+import otakuVersusAvifSrcSet from "../assets/projects/OtakuVersus.jpg?w=640;960;1360&format=avif&as=srcset";
+import otakuVersusWebpSrcSet from "../assets/projects/OtakuVersus.jpg?w=640;960;1360&format=webp&as=srcset";
+import otakuVersusFallback from "../assets/projects/OtakuVersus.jpg?w=1360&format=jpg";
+import otakuVersus2AvifSrcSet from "../assets/projects/OtakuVersus2.jpg?w=640;960;1360&format=avif&as=srcset";
+import otakuVersus2WebpSrcSet from "../assets/projects/OtakuVersus2.jpg?w=640;960;1360&format=webp&as=srcset";
+import otakuVersus2Fallback from "../assets/projects/OtakuVersus2.jpg?w=1360&format=jpg";
+import otakuVersus3AvifSrcSet from "../assets/projects/OtakuVersus3.jpg?w=640;960;1360&format=avif&as=srcset";
+import otakuVersus3WebpSrcSet from "../assets/projects/OtakuVersus3.jpg?w=640;960;1360&format=webp&as=srcset";
+import otakuVersus3Fallback from "../assets/projects/OtakuVersus3.jpg?w=1360&format=jpg";
+import openStudioAvifSrcSet from "../assets/projects/OpenStudio.jpg?w=640;960;1360&format=avif&as=srcset";
+import openStudioWebpSrcSet from "../assets/projects/OpenStudio.jpg?w=640;960;1360&format=webp&as=srcset";
+import openStudioFallback from "../assets/projects/OpenStudio.jpg?w=1360&format=jpg";
+import openStudio2AvifSrcSet from "../assets/projects/openstudio2.jpg?w=640;960;1360&format=avif&as=srcset";
+import openStudio2WebpSrcSet from "../assets/projects/openstudio2.jpg?w=640;960;1360&format=webp&as=srcset";
+import openStudio2Fallback from "../assets/projects/openstudio2.jpg?w=1360&format=jpg";
+import openStudio3AvifSrcSet from "../assets/projects/openstudio3.jpg?w=640;960;1360&format=avif&as=srcset";
+import openStudio3WebpSrcSet from "../assets/projects/openstudio3.jpg?w=640;960;1360&format=webp&as=srcset";
+import openStudio3Fallback from "../assets/projects/openstudio3.jpg?w=1360&format=jpg";
+import instaFetchAvifSrcSet from "../assets/projects/InstaFetch.jpg?w=640;960;1360&format=avif&as=srcset";
+import instaFetchWebpSrcSet from "../assets/projects/InstaFetch.jpg?w=640;960;1360&format=webp&as=srcset";
+import instaFetchFallback from "../assets/projects/InstaFetch.jpg?w=1360&format=jpg";
+import storeManagerAvifSrcSet from "../assets/projects/StoreManager.jpg?w=640;960;1360&format=avif&as=srcset";
+import storeManagerWebpSrcSet from "../assets/projects/StoreManager.jpg?w=640;960;1360&format=webp&as=srcset";
+import storeManagerFallback from "../assets/projects/StoreManager.jpg?w=1360&format=jpg";
 import { sectionColors } from "../constants/sectionColors";
+
+export interface ProjectImage {
+  avifSrcSet: string;
+  webpSrcSet: string;
+  fallback: string;
+}
+
+const projectImage = (
+  avifSrcSet: string,
+  webpSrcSet: string,
+  fallback: string,
+): ProjectImage => ({ avifSrcSet, webpSrcSet, fallback });
+
+const riftPickImage = projectImage(riftPickAvifSrcSet, riftPickWebpSrcSet, riftPickFallback);
+const riftPickImage2 = projectImage(riftPick2AvifSrcSet, riftPick2WebpSrcSet, riftPick2Fallback);
+const riftPickImage3 = projectImage(riftPick3AvifSrcSet, riftPick3WebpSrcSet, riftPick3Fallback);
+const otakuVersusImage = projectImage(otakuVersusAvifSrcSet, otakuVersusWebpSrcSet, otakuVersusFallback);
+const otakuVersusImage2 = projectImage(otakuVersus2AvifSrcSet, otakuVersus2WebpSrcSet, otakuVersus2Fallback);
+const otakuVersusImage3 = projectImage(otakuVersus3AvifSrcSet, otakuVersus3WebpSrcSet, otakuVersus3Fallback);
+const openStudioImage = projectImage(openStudioAvifSrcSet, openStudioWebpSrcSet, openStudioFallback);
+const openStudioImage2 = projectImage(openStudio2AvifSrcSet, openStudio2WebpSrcSet, openStudio2Fallback);
+const openStudioImage3 = projectImage(openStudio3AvifSrcSet, openStudio3WebpSrcSet, openStudio3Fallback);
+const instaFetchImage = projectImage(instaFetchAvifSrcSet, instaFetchWebpSrcSet, instaFetchFallback);
+const storeManagerImage = projectImage(storeManagerAvifSrcSet, storeManagerWebpSrcSet, storeManagerFallback);
 
 export interface Project {
   id: string;
   title: string;
   description: string;
   longDescription: string;
-  image: string;
+  image: ProjectImage;
   /** Dodatkowe zdjęcia w galerii (pierwsze = `image`, jeśli nie podane). */
-  images?: string[];
-  secondaryImage?: string;
+  images?: ProjectImage[];
+  secondaryImage?: ProjectImage;
   category: string;
   tags: string[];
   year: string;
@@ -33,7 +79,7 @@ export interface Project {
   featured?: boolean;
 }
 
-export function getProjectImages(project: Project): string[] {
+export function getProjectImages(project: Project): ProjectImage[] {
   if (project.images?.length) {
     return project.images;
   }

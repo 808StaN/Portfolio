@@ -5,6 +5,7 @@ import {
   featuredProjects,
   getProjectImages,
   type Project,
+  type ProjectImage,
 } from "../data/projects";
 import SectionShaderBackground from "./SectionShaderBackground";
 
@@ -156,8 +157,20 @@ export default function Projects() {
     runImageTransition(project, currentIndex, clamped);
   };
 
-  const renderGalleryImage = (src: string, alt: string) => (
-    <img src={src} alt={alt} loading="lazy" />
+  const renderGalleryImage = (image: ProjectImage, alt: string) => (
+    <picture>
+      <source
+        type="image/avif"
+        srcSet={image.avifSrcSet}
+        sizes="(max-width: 768px) calc(100vw - 32px), (max-width: 1200px) 70vw, 1360px"
+      />
+      <source
+        type="image/webp"
+        srcSet={image.webpSrcSet}
+        sizes="(max-width: 768px) calc(100vw - 32px), (max-width: 1200px) 70vw, 1360px"
+      />
+      <img src={image.fallback} alt={alt} loading="lazy" decoding="async" />
+    </picture>
   );
 
   const renderGallery = (project: Project) => {

@@ -693,12 +693,16 @@ html.custom-scrollbar-dragging * {
   inset: 0;
 }
 
+.projects-visual-item picture,
 .projects-visual-item img {
   width: 100%;
   height: 100%;
+  display: block;
+}
+
+.projects-visual-item img {
   object-fit: cover;
   object-position: center;
-  display: block;
 }
 
 .projects-slide-out-left {
