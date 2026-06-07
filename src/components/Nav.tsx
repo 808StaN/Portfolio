@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { scrollToY, useLenis } from './LenisScroll';
 import NavSectionBackdrop from './NavSectionBackdrop';
@@ -14,7 +14,6 @@ export default function Nav() {
   const lenis = useLenis();
   const [menuOpen, setMenuOpen] = useState(false);
   const [activeSection, setActiveSection] = useState('');
-  const virtualActiveRef = useRef<string | null>(null);
 
   const getSectionTargetTop = (section: HTMLElement) => {
     const maxScrollTop = Math.max(
@@ -33,9 +32,7 @@ export default function Nav() {
   };
 
   useEffect(() => {
-    const ids = ['work', 'about', 'stack', 'contact'];
-    const navHeight = 64;
-    const triggerOffset = navHeight + 24; // 88px from top
+    const ids = links.map(link => link.href.slice(1));
 
     const updateActiveSection = () => {
       const sections = ids
@@ -46,64 +43,21 @@ export default function Nav() {
       const scrollY = lenis?.scroll ?? window.scrollY;
 
       if (scrollY < getHomeScrollEnd()) {
-        virtualActiveRef.current = null;
         setActiveSection('');
         return;
       }
 
-      // Find section with most visible area below the navbar trigger point
-      let activeIdx = -1;
-      let maxOverlap = 0;
+      const activationY = window.innerHeight * 0.5;
+      let nextActiveSection = '';
 
-      sections.forEach((section, idx) => {
+      sections.forEach(section => {
         const rect = section.getBoundingClientRect();
-        const overlap = Math.max(
-          0,
-          Math.min(rect.bottom, window.innerHeight) - Math.max(rect.top, triggerOffset),
-        );
-
-        if (overlap > maxOverlap) {
-          maxOverlap = overlap;
-          activeIdx = idx;
+        if (rect.top <= activationY && rect.bottom > activationY) {
+          nextActiveSection = section.id;
         }
       });
 
-      if (activeIdx >= 0) {
-        const virtualId = virtualActiveRef.current;
-        if (virtualId) {
-          const virtualIdx = sections.findIndex(section => section.id === virtualId);
-          if (virtualIdx >= 0) {
-            activeIdx = virtualIdx;
-          } else {
-            virtualActiveRef.current = null;
-          }
-        }
-        setActiveSection(sections[activeIdx].id);
-      } else {
-        // Fallback: section whose center is closest to viewport center
-        const viewportCenter = window.innerHeight / 2;
-        let minDistance = Infinity;
-        sections.forEach((section, idx) => {
-          const rect = section.getBoundingClientRect();
-          const center = rect.top + rect.height / 2;
-          const distance = Math.abs(center - viewportCenter);
-          if (distance < minDistance) {
-            minDistance = distance;
-            activeIdx = idx;
-          }
-        });
-        if (activeIdx >= 0) {
-          setActiveSection(sections[activeIdx].id);
-        } else {
-          setActiveSection('');
-        }
-      }
-    };
-
-    const onVirtualSectionChange = (event: Event) => {
-      const detail = (event as CustomEvent<{ id?: string | null }>).detail;
-      virtualActiveRef.current = detail?.id ?? null;
-      updateActiveSection();
+      setActiveSection(nextActiveSection);
     };
 
     updateActiveSection();
@@ -112,20 +66,17 @@ export default function Nav() {
       window.addEventListener('scroll', updateActiveSection, { passive: true });
     }
     window.addEventListener('resize', updateActiveSection);
-    window.addEventListener('virtual-section-change', onVirtualSectionChange);
     return () => {
       unsubscribeLenis?.();
       if (!lenis) {
         window.removeEventListener('scroll', updateActiveSection);
       }
       window.removeEventListener('resize', updateActiveSection);
-      window.removeEventListener('virtual-section-change', onVirtualSectionChange);
     };
   }, [lenis]);
 
   const handleLink = (href: string) => {
     setMenuOpen(false);
-    virtualActiveRef.current = null;
     const el = document.querySelector(href) as HTMLElement | null;
     if (!el) return;
     scrollToY(getSectionTargetTop(el), lenis, { duration: 1.15 });
