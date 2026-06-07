@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { scrollToY, useLenis } from './LenisScroll';
 
 const links = [
@@ -19,7 +20,13 @@ export default function Nav() {
       0,
       document.documentElement.scrollHeight - window.innerHeight,
     );
-    const top = window.scrollY + section.getBoundingClientRect().top;
+    const transitionTarget = ScrollTrigger.getById(`section-target-${section.id}`);
+    const navHeight = document.querySelector('header')?.getBoundingClientRect().height ?? 64;
+    const targetCorrection = section.id === 'about' ? navHeight : 0;
+    const top =
+      transitionTarget?.end !== undefined
+        ? transitionTarget.end + targetCorrection
+        : window.scrollY + section.getBoundingClientRect().top;
     return Math.min(Math.max(0, top), maxScrollTop);
   };
 

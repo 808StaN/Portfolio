@@ -85,6 +85,9 @@ export default function SectionTiltDirector() {
         });
 
         ScrollTrigger.create({
+          id: incomingSection.id
+            ? `section-target-${incomingSection.id}`
+            : undefined,
           trigger: section,
           start: () => getOverlapStart(section),
           end: () => getOverlapEnd(section),
