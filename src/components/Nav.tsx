@@ -34,20 +34,8 @@ export default function Nav() {
 
   useEffect(() => {
     const ids = ['work', 'about', 'stack', 'contact'];
-    const SECTION_TOP_EPS = 1;
-
-    const getCollapsedGroupRange = (tops: number[], idx: number) => {
-      const baseTop = tops[idx];
-      let start = idx;
-      while (start > 0 && Math.abs(tops[start - 1] - baseTop) <= SECTION_TOP_EPS) {
-        start -= 1;
-      }
-      let end = idx;
-      while (end < tops.length - 1 && Math.abs(tops[end + 1] - baseTop) <= SECTION_TOP_EPS) {
-        end += 1;
-      }
-      return [start, end] as const;
-    };
+    const navHeight = 64;
+    const triggerOffset = navHeight + 24; // 88px from top
 
     const updateActiveSection = () => {
       const sections = ids
@@ -55,9 +43,7 @@ export default function Nav() {
         .filter((section): section is HTMLElement => Boolean(section));
       if (sections.length === 0) return;
 
-      const tops = sections.map(getSectionTargetTop);
       const scrollY = lenis?.scroll ?? window.scrollY;
-      const y = scrollY + 2;
 
       if (scrollY < getHomeScrollEnd()) {
         virtualActiveRef.current = null;
@@ -65,33 +51,53 @@ export default function Nav() {
         return;
       }
 
-      let candidateIdx = -1;
-      tops.forEach((top, idx) => {
-        if (top <= y) {
-          candidateIdx = idx;
+      // Find section with most visible area below the navbar trigger point
+      let activeIdx = -1;
+      let maxOverlap = 0;
+
+      sections.forEach((section, idx) => {
+        const rect = section.getBoundingClientRect();
+        const overlap = Math.max(
+          0,
+          Math.min(rect.bottom, window.innerHeight) - Math.max(rect.top, triggerOffset),
+        );
+
+        if (overlap > maxOverlap) {
+          maxOverlap = overlap;
+          activeIdx = idx;
         }
       });
 
-      if (candidateIdx === -1) {
-        virtualActiveRef.current = null;
-        setActiveSection('');
-        return;
-      }
-
-      const [groupStart, groupEnd] = getCollapsedGroupRange(tops, candidateIdx);
-
-      let resolvedIdx = groupStart !== groupEnd ? groupStart : candidateIdx;
-      const virtualId = virtualActiveRef.current;
-      if (virtualId) {
-        const virtualIdx = sections.findIndex(section => section.id === virtualId);
-        if (virtualIdx >= groupStart && virtualIdx <= groupEnd) {
-          resolvedIdx = virtualIdx;
+      if (activeIdx >= 0) {
+        const virtualId = virtualActiveRef.current;
+        if (virtualId) {
+          const virtualIdx = sections.findIndex(section => section.id === virtualId);
+          if (virtualIdx >= 0) {
+            activeIdx = virtualIdx;
+          } else {
+            virtualActiveRef.current = null;
+          }
+        }
+        setActiveSection(sections[activeIdx].id);
+      } else {
+        // Fallback: section whose center is closest to viewport center
+        const viewportCenter = window.innerHeight / 2;
+        let minDistance = Infinity;
+        sections.forEach((section, idx) => {
+          const rect = section.getBoundingClientRect();
+          const center = rect.top + rect.height / 2;
+          const distance = Math.abs(center - viewportCenter);
+          if (distance < minDistance) {
+            minDistance = distance;
+            activeIdx = idx;
+          }
+        });
+        if (activeIdx >= 0) {
+          setActiveSection(sections[activeIdx].id);
         } else {
-          virtualActiveRef.current = null;
+          setActiveSection('');
         }
       }
-
-      setActiveSection(sections[resolvedIdx]?.id ?? '');
     };
 
     const onVirtualSectionChange = (event: Event) => {
