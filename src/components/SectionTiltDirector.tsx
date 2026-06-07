@@ -95,8 +95,6 @@ export default function SectionTiltDirector() {
     });
 
     ScrollTrigger.refresh();
-    lenis?.resize();
-    window.dispatchEvent(new Event("resize"));
     const unsubscribeLenis = lenis?.on("scroll", ScrollTrigger.update);
     window.addEventListener("resize", updateAllTiltClips);
 

@@ -34,8 +34,8 @@ export default function CustomScrollbar() {
     let frame = 0;
     const readMetrics = () => {
       frame = 0;
-      const limit = lenis?.limit ?? getScrollLimit();
-      const scroll = Math.max(0, Math.min(limit, lenis?.scroll ?? window.scrollY));
+      const limit = getScrollLimit();
+      const scroll = Math.max(0, Math.min(limit, window.scrollY));
       const trackHeight = trackRef.current?.clientHeight ?? window.innerHeight;
 
       setMetrics({
@@ -57,23 +57,36 @@ export default function CustomScrollbar() {
     window.addEventListener("scroll", requestMetrics, { passive: true });
     window.addEventListener("resize", requestMetrics);
 
+    const ro = new ResizeObserver(requestMetrics);
+    ro.observe(document.documentElement);
+
+    let moTimeout: ReturnType<typeof setTimeout> | null = null;
+    const mo = new MutationObserver(() => {
+      if (moTimeout) clearTimeout(moTimeout);
+      moTimeout = setTimeout(requestMetrics, 50);
+    });
+    mo.observe(document.documentElement, {
+      childList: true,
+      subtree: true,
+      attributes: true,
+    });
+
     return () => {
       root.classList.remove("custom-scrollbar-enabled");
       root.classList.remove("custom-scrollbar-dragging");
       unsubscribeLenis?.();
       window.removeEventListener("scroll", requestMetrics);
       window.removeEventListener("resize", requestMetrics);
+      ro.disconnect();
+      mo.disconnect();
+      if (moTimeout) clearTimeout(moTimeout);
       if (frame) window.cancelAnimationFrame(frame);
     };
   }, [lenis]);
 
   const scrollTo = (targetScroll: number) => {
-    const nextScroll = Math.max(0, Math.min(metrics.limit, targetScroll));
-    if (lenis) {
-      lenis.scrollTo(nextScroll, { immediate: true });
-      return;
-    }
-
+    const limit = getScrollLimit();
+    const nextScroll = Math.max(0, Math.min(limit, targetScroll));
     window.scrollTo({ top: nextScroll, behavior: "auto" });
   };
 
