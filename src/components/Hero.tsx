@@ -40,7 +40,7 @@ export default function Hero() {
     >
       <div className="section-tilt-panel">
         <div className="section-shader-layer" aria-hidden="true">
-          <SectionShaderBackground color="#5B8CFF" />
+          <SectionShaderBackground color="#F4793A" />
         </div>
 
         {/* Content */}
