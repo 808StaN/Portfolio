@@ -70,7 +70,6 @@ export default function Hero() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 0.1, ease: easeOut }}
           >
-            <span className="w-6 h-px bg-white/40" />
             <span className="section-label">Full-Stack Developer - Dawid Stanisz</span>
           </motion.div>
 
@@ -99,8 +98,7 @@ export default function Hero() {
                 ref={wordRef}
                 style={{
                   display: 'inline-block',
-                  color: 'rgba(255,255,255,0.65)',
-                  fontStyle: 'italic',
+                  color: 'rgba(255,255,255,0.88)',
                 }}
               >
                 {words[0]}
