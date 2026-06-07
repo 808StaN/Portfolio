@@ -29,18 +29,6 @@ export default function About() {
           <SectionShaderBackground color={sectionColors.about} />
         </div>
 
-        <div
-          className="absolute pointer-events-none"
-          style={{
-            left: '-18%',
-            top: '18%',
-            width: '58%',
-            height: '58%',
-            background: 'radial-gradient(circle, rgba(79,142,247,0.07) 0%, transparent 72%)',
-            filter: 'blur(60px)',
-          }}
-        />
-
         <div className="section-tilt-container section-inner relative" ref={ref}>
         <motion.div
           className="flex items-center gap-3 mb-14"

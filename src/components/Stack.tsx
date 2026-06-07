@@ -117,18 +117,6 @@ export default function Stack() {
           <SectionShaderBackground color={sectionColors.stack} />
         </div>
 
-        <div
-          className="absolute pointer-events-none"
-          style={{
-            right: '-10%',
-            top: '12%',
-            width: '52%',
-            height: '66%',
-            background: 'radial-gradient(circle, rgba(249,115,22,0.055) 0%, transparent 72%)',
-            filter: 'blur(75px)',
-          }}
-        />
-
         <div className="section-tilt-container section-inner relative" ref={ref}>
         <motion.div
           className="flex items-center gap-3 mb-14"
