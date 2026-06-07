@@ -258,7 +258,10 @@ html.custom-scrollbar-dragging * {
 }
 
 .section-shell.section-tilt-section > .section-tilt-panel {
-  padding-top: clamp(14px, 2.1vh, 26px);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding-top: clamp(80px, 10vh, 100px);
   padding-bottom: var(--section-space-y);
 }
 
@@ -279,6 +282,7 @@ html.custom-scrollbar-dragging * {
 .section-tilt-container {
   backface-visibility: hidden;
   pointer-events: none;
+  margin-block: auto;
 }
 
 /* Interaktywne elementy wewnątrz sekcji muszą być klikalne,
@@ -357,7 +361,7 @@ html.custom-scrollbar-dragging * {
 
 .projects-project-inner {
   min-height: 100svh;
-  padding-top: clamp(24px, 4vh, 48px);
+  padding-top: clamp(80px, 10vh, 100px);
   padding-bottom: clamp(70px, 9vh, 108px);
   display: flex;
   flex-direction: column;
