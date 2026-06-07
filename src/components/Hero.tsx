@@ -1,15 +1,30 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, type MouseEvent } from 'react';
 import { motion, useReducedMotion } from 'framer-motion';
 import SectionShaderBackground from './SectionShaderBackground';
 import { sectionColors } from '../constants/sectionColors';
+import { scrollToY, useLenis } from './LenisScroll';
 
-const words = ['fast', 'scalable', 'reliable','responsive', 'modern'];
+const words = ['fast', 'scalable', 'reliable', 'responsive', 'modern'];
 
 const easeOut = [0.16, 1, 0.3, 1] as const;
 
 export default function Hero() {
   const prefersReduced = useReducedMotion();
+  const lenis = useLenis();
   const wordRef = useRef<HTMLSpanElement>(null);
+
+  const handleProjectsClick = (event: MouseEvent<HTMLAnchorElement>) => {
+    event.preventDefault();
+    const work = document.getElementById('work');
+    if (!work) return;
+
+    const maxScrollTop = Math.max(
+      0,
+      document.documentElement.scrollHeight - window.innerHeight,
+    );
+    const top = window.scrollY + work.getBoundingClientRect().top;
+    scrollToY(Math.min(Math.max(0, top), maxScrollTop), lenis, { duration: 1.15 });
+  };
 
   useEffect(() => {
     if (prefersReduced || !wordRef.current) return;
@@ -47,10 +62,10 @@ export default function Hero() {
 
         {/* Content */}
         <div className="section-tilt-container hero-inner relative z-10 flex flex-col justify-between min-h-screen pt-24 md:pt-28 pb-12 md:pb-14">
-        <div className="flex-1 flex flex-col justify-end pb-6 md:pb-10">
+        <div className="flex-1 flex flex-col items-center justify-center text-center pb-10 md:pb-14">
           {/* Eyebrow */}
           <motion.div
-            className="flex items-center gap-3 mb-6"
+            className="flex items-center justify-center gap-3 mb-6"
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 0.1, ease: easeOut }}
@@ -101,20 +116,35 @@ export default function Hero() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.9, delay: 0.56, ease: easeOut }}
             >
-              web apps.
+              web apps
             </motion.h1>
           </div>
 
           {/* Sub */}
-          <div className="mt-8 flex flex-col sm:flex-row sm:items-end justify-between gap-6 md:gap-8">
+          <div className="mt-8 flex flex-col items-center gap-6 md:gap-7">
             <motion.p
-              className="max-w-md text-sm md:text-base leading-relaxed"
+              className="max-w-[46rem] text-sm md:text-base leading-relaxed"
               style={{ color: 'rgba(255,255,255,0.54)', fontFamily: 'var(--font-sans)' }}
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.9, delay: 0.7, ease: easeOut }}
             >
-React, Next.js and Node.js Developer focused on building web apps and desktop tools. I care about speed, clean UX, and practical delivery from concept to release.            </motion.p>
+              React, Next.js and Node.js Developer focused on building web apps and desktop tools. I care about speed, clean UX, and practical delivery from concept to release.
+            </motion.p>
+
+            <motion.div
+              className="hero-actions"
+              initial={{ opacity: 0, y: 18 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.85, delay: 0.82, ease: easeOut }}
+            >
+              <a href="#work" className="hero-cta hero-cta-primary" onClick={handleProjectsClick}>
+                View projects
+              </a>
+              <a href="/Dawid_Stanisz_CV.pdf" download className="hero-cta hero-cta-secondary">
+                Download CV
+              </a>
+            </motion.div>
           </div>
         </div>
 
