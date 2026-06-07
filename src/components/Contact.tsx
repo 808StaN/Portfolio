@@ -56,16 +56,6 @@ export default function Contact() {
         </div>
 
         <div className="section-tilt-container section-inner relative" ref={ref}>
-        <motion.div
-          className="flex items-center gap-3 mb-14"
-          initial={{ opacity: 0, x: -20 }}
-          animate={inView ? { opacity: 1, x: 0 } : {}}
-          transition={{ duration: 0.6, ease: easeOut }}
-        >
-          <span className="section-label">Contact</span>
-          <div className="flex-1 h-px" style={{ background: 'rgba(255,255,255,0.07)' }} />
-        </motion.div>
-
         <div className="grid grid-cols-1 lg:grid-cols-[minmax(0,1.04fr)_minmax(0,0.96fr)] gap-14 lg:gap-24">
           <div>
             <motion.h2

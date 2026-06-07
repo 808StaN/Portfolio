@@ -118,16 +118,6 @@ export default function Stack() {
         </div>
 
         <div className="section-tilt-container section-inner relative" ref={ref}>
-        <motion.div
-          className="flex items-center gap-3 mb-14"
-          initial={{ opacity: 0, x: -20 }}
-          animate={inView ? { opacity: 1, x: 0 } : {}}
-          transition={{ duration: 0.6, ease: easeOut }}
-        >
-          <span className="section-label">Stack</span>
-          <div className="flex-1 h-px" style={{ background: 'rgba(255,255,255,0.07)' }} />
-        </motion.div>
-
         <div className="mb-12 md:mb-14">
           <motion.h2
             className="section-title text-white/90 max-w-[12ch]"

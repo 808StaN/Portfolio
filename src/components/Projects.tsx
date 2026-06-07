@@ -222,22 +222,6 @@ export default function Projects() {
 
                 <div className="section-tilt-container section-inner projects-inner projects-project-inner relative z-10">
                   <div className="projects-header">
-                    <motion.div
-                      className="flex items-center gap-3 mb-5"
-                      initial={{ opacity: 0, x: -20 }}
-                      animate={inView ? { opacity: 1, x: 0 } : {}}
-                      transition={{ duration: 0.6, ease: easeOut }}
-                    >
-                      <span className="section-label">Selected Work</span>
-                      <div
-                        className="flex-1 h-px"
-                        style={{ background: "rgba(255,255,255,0.07)" }}
-                      />
-                      <span className="section-label">
-                        {index + 1} out of {featuredProjects.length}
-                      </span>
-                    </motion.div>
-
                     <motion.h2
                       className="section-title text-white/90 max-w-[13ch]"
                       style={{ fontSize: "clamp(1.95rem, 3.7vw, 3.95rem)" }}
