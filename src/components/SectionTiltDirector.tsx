@@ -49,6 +49,8 @@ export default function SectionTiltDirector() {
       clipTargets.forEach(({ section, panel }) => {
         updateTiltClip(section, panel);
       });
+      lenis?.resize();
+      window.dispatchEvent(new Event("resize"));
     };
 
     const ctx = gsap.context(() => {
@@ -93,6 +95,8 @@ export default function SectionTiltDirector() {
     });
 
     ScrollTrigger.refresh();
+    lenis?.resize();
+    window.dispatchEvent(new Event("resize"));
     const unsubscribeLenis = lenis?.on("scroll", ScrollTrigger.update);
     window.addEventListener("resize", updateAllTiltClips);
 
