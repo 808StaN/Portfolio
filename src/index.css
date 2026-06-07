@@ -24,9 +24,6 @@
   --section-space-y: clamp(58px, 9vw, 120px);
   --font-sans: 'Inter', system-ui, sans-serif;
   --font-display: 'Syne', system-ui, sans-serif;
-  --scrollbar-track: rgba(6, 8, 15, 0.62);
-  --scrollbar-thumb: rgba(131, 157, 255, 0.72);
-  --scrollbar-thumb-hover: rgba(171, 192, 255, 0.9);
   /* wysokość galerii projektów (szerokość = wartość × 16/9) */
   --projects-gallery-height: min(64vh, 700px);
 }
@@ -40,8 +37,16 @@ html {
   scroll-behavior: auto;
   background-color: var(--color-bg);
   color: var(--color-text);
-  scrollbar-color: var(--scrollbar-thumb) var(--scrollbar-track);
-  scrollbar-width: thin;
+}
+
+html.custom-scrollbar-enabled {
+  scrollbar-width: none;
+}
+
+html.custom-scrollbar-enabled::-webkit-scrollbar,
+html.custom-scrollbar-enabled body::-webkit-scrollbar {
+  width: 0;
+  height: 0;
 }
 
 body {
@@ -51,8 +56,6 @@ body {
   overflow-x: hidden;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  scrollbar-color: var(--scrollbar-thumb) var(--scrollbar-track);
-  scrollbar-width: thin;
 }
 
 #root {
@@ -110,61 +113,60 @@ body {
   color: #fff;
 }
 
-::-webkit-scrollbar {
-  width: 12px;
-  height: 12px;
+.custom-scrollbar {
+  position: fixed;
+  top: 14px;
+  right: 8px;
+  bottom: 14px;
+  width: 14px;
+  z-index: 9997;
+  pointer-events: none;
 }
 
-::-webkit-scrollbar-track {
-  background:
-    linear-gradient(
-      180deg,
-      color-mix(in srgb, var(--scrollbar-track) 82%, rgba(255, 255, 255, 0.08) 18%) 0%,
-      var(--scrollbar-track) 100%
-    );
-  border-left: 1px solid rgba(255, 255, 255, 0.08);
-  box-shadow:
-    inset 1px 0 0 rgba(255, 255, 255, 0.05),
-    inset 0 0 24px rgba(24, 38, 78, 0.55);
-}
-
-::-webkit-scrollbar-thumb {
-  background:
-    linear-gradient(
-      180deg,
-      color-mix(in srgb, var(--scrollbar-thumb) 78%, rgba(255, 255, 255, 0.22) 22%) 0%,
-      var(--scrollbar-thumb) 60%,
-      color-mix(in srgb, var(--scrollbar-thumb) 72%, rgba(79, 142, 247, 0.34) 28%) 100%
-    );
+.custom-scrollbar-track {
+  position: absolute;
+  inset-block: 0;
+  right: 5px;
+  width: 4px;
   border-radius: 999px;
-  border: 2px solid color-mix(in srgb, var(--scrollbar-track) 72%, rgba(255, 255, 255, 0.06) 28%);
-  box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.36),
-    0 0 0 1px rgba(140, 167, 255, 0.22),
-    0 6px 16px rgba(18, 26, 58, 0.5);
-  min-height: 28px;
+  background: transparent;
+  pointer-events: auto;
+  cursor: pointer;
 }
 
-::-webkit-scrollbar-thumb:hover {
-  background:
-    linear-gradient(
-      180deg,
-      color-mix(in srgb, var(--scrollbar-thumb-hover) 76%, rgba(255, 255, 255, 0.26) 24%) 0%,
-      var(--scrollbar-thumb-hover) 100%
-    );
+.custom-scrollbar-thumb {
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 4px;
+  min-height: 36px;
+  border-radius: 999px;
+  background: rgba(218, 229, 255, 0.5);
   box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.44),
-    0 0 0 1px rgba(171, 192, 255, 0.34),
-    0 8px 20px rgba(25, 38, 82, 0.55);
+    0 0 0 1px rgba(255, 255, 255, 0.12),
+    0 10px 28px rgba(32, 62, 140, 0.34);
+  cursor: grab;
+  transition: width 0.18s ease, right 0.18s ease, background 0.18s ease;
+  will-change: transform;
 }
 
-::-webkit-scrollbar-thumb:active {
-  background:
-    linear-gradient(
-      180deg,
-      color-mix(in srgb, var(--scrollbar-thumb-hover) 80%, rgba(255, 255, 255, 0.18) 20%) 0%,
-      color-mix(in srgb, var(--scrollbar-thumb) 72%, rgba(99, 132, 226, 0.44) 28%) 100%
-    );
+.custom-scrollbar-track:hover .custom-scrollbar-thumb,
+html.custom-scrollbar-dragging .custom-scrollbar-thumb {
+  right: -1px;
+  width: 6px;
+  background: rgba(235, 241, 255, 0.72);
+}
+
+html.custom-scrollbar-dragging,
+html.custom-scrollbar-dragging * {
+  cursor: grabbing !important;
+  user-select: none;
+}
+
+@media (max-width: 767px) {
+  .custom-scrollbar {
+    display: none;
+  }
 }
 
 /* Canvas container */

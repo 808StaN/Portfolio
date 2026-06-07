@@ -9,6 +9,7 @@ import Footer from "./components/Footer";
 import Cursor from "./components/Cursor";
 import GrainOverlay from "./components/GrainOverlay";
 import SectionTiltDirector from "./components/SectionTiltDirector";
+import CustomScrollbar from "./components/CustomScrollbar";
 import { scrollToY, useLenis } from "./components/LenisScroll";
 
 export default function App() {
@@ -17,9 +18,6 @@ export default function App() {
   useEffect(() => {
     const root = document.documentElement;
     let rafId = 0;
-    const lerp = (a: number, b: number, t: number) => a + (b - a) * t;
-    const hsla = (h: number, s: number, l: number, a: number) =>
-      `hsla(${h.toFixed(1)} ${s.toFixed(1)}% ${l.toFixed(1)}% / ${a.toFixed(3)})`;
 
     const updateScrollProgress = () => {
       const scrollable =
@@ -28,36 +26,6 @@ export default function App() {
       const progressRaw = scrollable > 0 ? scroll / scrollable : 0;
       const progress = Math.max(0, Math.min(1, progressRaw));
       root.style.setProperty("--scroll-progress", progress.toFixed(4));
-      const trackHue = lerp(228, 296, progress);
-      const thumbHue = lerp(222, 308, progress);
-      const hoverHue = lerp(230, 314, progress);
-      root.style.setProperty(
-        "--scrollbar-track",
-        hsla(
-          trackHue,
-          lerp(66, 66, progress),
-          lerp(24, 24, progress),
-          lerp(0.99, 0.99, progress),
-        ),
-      );
-      root.style.setProperty(
-        "--scrollbar-thumb",
-        hsla(
-          thumbHue,
-          lerp(74, 86, progress),
-          lerp(52, 64, progress),
-          lerp(0.82, 0.78, progress),
-        ),
-      );
-      root.style.setProperty(
-        "--scrollbar-thumb-hover",
-        hsla(
-          hoverHue,
-          lerp(88, 98, progress),
-          lerp(70, 82, progress),
-          lerp(0.96, 0.92, progress),
-        ),
-      );
       rafId = 0;
     };
 
@@ -82,9 +50,6 @@ export default function App() {
       window.removeEventListener("resize", onScrollOrResize);
       if (rafId) cancelAnimationFrame(rafId);
       root.style.removeProperty("--scroll-progress");
-      root.style.removeProperty("--scrollbar-track");
-      root.style.removeProperty("--scrollbar-thumb");
-      root.style.removeProperty("--scrollbar-thumb-hover");
     };
   }, [lenis]);
 
@@ -423,6 +388,7 @@ export default function App() {
 
       {/* Custom cursor (desktop only) */}
       <Cursor />
+      <CustomScrollbar />
 
       {/* Navigation */}
       <Nav />
