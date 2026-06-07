@@ -219,13 +219,6 @@ export default function Projects() {
                   <SectionShaderBackground color="#4655D9" />
                 </div>
 
-                <div
-                  className="absolute inset-0 pointer-events-none"
-                  style={{
-                    background: `radial-gradient(120% 92% at 50% 60%, ${project.accent}2e 0%, rgba(10,16,38,0.2) 45%, transparent 75%)`,
-                  }}
-                />
-
                 <div className="section-tilt-container section-inner projects-inner projects-project-inner relative z-10">
                   <div className="projects-header">
                     <motion.div
