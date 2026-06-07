@@ -205,10 +205,14 @@ html.custom-scrollbar-dragging * {
 .nav-section-backdrop-layer {
   position: absolute;
   inset: 0;
+  overflow: hidden;
 }
 
-.nav-section-backdrop-base {
-  background: #5B8CFF;
+.nav-section-backdrop .shader-preview,
+.nav-section-backdrop .shader-preview canvas {
+  display: block;
+  width: 100% !important;
+  height: 100% !important;
 }
 
 .section-shell {

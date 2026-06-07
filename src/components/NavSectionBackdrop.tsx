@@ -1,7 +1,9 @@
 import { useEffect, useState } from "react";
+import SectionShaderBackground from "./SectionShaderBackground";
 import { useLenis } from "./LenisScroll";
 
 const NAV_HEIGHT = 64;
+const CLIP_OVERSCAN = 2;
 
 const sectionColors = {
   home: "#5B8CFF",
@@ -29,58 +31,6 @@ const getSectionColor = (section: HTMLElement) => {
   if (section.id === "contact") return sectionColors.contact;
   if (section.id === "work" || section.closest("#work")) return sectionColors.work;
   return sectionColors.home;
-};
-
-const getPanelQuad = (panel: HTMLElement): Point[] => {
-  const getBoxQuads = (panel as HTMLElement & {
-    getBoxQuads?: () => Array<{
-      p1: Point;
-      p2: Point;
-      p3: Point;
-      p4: Point;
-    }>;
-  }).getBoxQuads;
-
-  const [quad] = getBoxQuads?.call(panel) ?? [];
-  if (quad) {
-    return [quad.p1, quad.p2, quad.p3, quad.p4];
-  }
-
-  const rect = panel.getBoundingClientRect();
-  const width = panel.offsetWidth;
-  const height = panel.offsetHeight;
-  const transform = getComputedStyle(panel).transform;
-
-  if (width > 0 && height > 0 && transform && transform !== "none") {
-    const matrix = new DOMMatrixReadOnly(transform);
-    const localCorners = [
-      { x: 0, y: -height },
-      { x: width, y: -height },
-      { x: width, y: 0 },
-      { x: 0, y: 0 },
-    ].map((point) => {
-      const transformed = matrix.transformPoint(point);
-      return { x: transformed.x, y: transformed.y };
-    });
-    const minX = Math.min(...localCorners.map((point) => point.x));
-    const minY = Math.min(...localCorners.map((point) => point.y));
-    const origin = {
-      x: rect.left - minX,
-      y: rect.top - minY,
-    };
-
-    return localCorners.map((point) => ({
-      x: origin.x + point.x,
-      y: origin.y + point.y,
-    }));
-  }
-
-  return [
-    { x: rect.left, y: rect.top },
-    { x: rect.right, y: rect.top },
-    { x: rect.right, y: rect.bottom },
-    { x: rect.left, y: rect.bottom },
-  ];
 };
 
 const clipPolygon = (
@@ -113,34 +63,38 @@ const clipToNavbar = (polygon: Point[], width: number) => {
   let next = polygon;
   next = clipPolygon(
     next,
-    (point) => point.x >= 0,
+    (point) => point.x >= -CLIP_OVERSCAN,
     (from, to) => {
-      const t = (0 - from.x) / (to.x - from.x || 1);
-      return { x: 0, y: from.y + (to.y - from.y) * t };
+      const x = -CLIP_OVERSCAN;
+      const t = (x - from.x) / (to.x - from.x || 1);
+      return { x, y: from.y + (to.y - from.y) * t };
     },
   );
   next = clipPolygon(
     next,
-    (point) => point.x <= width,
+    (point) => point.x <= width + CLIP_OVERSCAN,
     (from, to) => {
-      const t = (width - from.x) / (to.x - from.x || 1);
-      return { x: width, y: from.y + (to.y - from.y) * t };
+      const x = width + CLIP_OVERSCAN;
+      const t = (x - from.x) / (to.x - from.x || 1);
+      return { x, y: from.y + (to.y - from.y) * t };
     },
   );
   next = clipPolygon(
     next,
-    (point) => point.y >= 0,
+    (point) => point.y >= -CLIP_OVERSCAN,
     (from, to) => {
-      const t = (0 - from.y) / (to.y - from.y || 1);
-      return { x: from.x + (to.x - from.x) * t, y: 0 };
+      const y = -CLIP_OVERSCAN;
+      const t = (y - from.y) / (to.y - from.y || 1);
+      return { x: from.x + (to.x - from.x) * t, y };
     },
   );
   next = clipPolygon(
     next,
-    (point) => point.y <= NAV_HEIGHT,
+    (point) => point.y <= NAV_HEIGHT + CLIP_OVERSCAN,
     (from, to) => {
-      const t = (NAV_HEIGHT - from.y) / (to.y - from.y || 1);
-      return { x: from.x + (to.x - from.x) * t, y: NAV_HEIGHT };
+      const y = NAV_HEIGHT + CLIP_OVERSCAN;
+      const t = (y - from.y) / (to.y - from.y || 1);
+      return { x: from.x + (to.x - from.x) * t, y };
     },
   );
 
@@ -152,6 +106,65 @@ const toClipPath = (polygon: Point[]) => {
     .map((point) => `${point.x.toFixed(2)}px ${point.y.toFixed(2)}px`)
     .join(", ");
   return `polygon(${points})`;
+};
+
+const getPanelQuad = (section: HTMLElement): Point[] => {
+  const panel =
+    section.querySelector<HTMLElement>(":scope > .section-tilt-panel") ??
+    section;
+  const getBoxQuads = (panel as HTMLElement & {
+    getBoxQuads?: () => Array<{
+      p1: Point;
+      p2: Point;
+      p3: Point;
+      p4: Point;
+    }>;
+  }).getBoxQuads;
+  const [quad] = getBoxQuads?.call(panel) ?? [];
+  if (quad) return [quad.p1, quad.p2, quad.p3, quad.p4];
+
+  const rect = panel.getBoundingClientRect();
+  const computed = getComputedStyle(panel);
+  const transform = computed.transform;
+  const width = panel.offsetWidth || rect.width;
+  const height = panel.offsetHeight || rect.height;
+
+  if (!transform || transform === "none" || width <= 0 || height <= 0) {
+    return [
+      { x: rect.left, y: rect.top },
+      { x: rect.right, y: rect.top },
+      { x: rect.right, y: rect.bottom },
+      { x: rect.left, y: rect.bottom },
+    ];
+  }
+
+  const sectionRect = section.getBoundingClientRect();
+  const matrix = new DOMMatrixReadOnly(transform);
+  const [originXRaw, originYRaw] = computed.transformOrigin.split(" ");
+  const originX = Number.parseFloat(originXRaw) || 0;
+  const originY = Number.parseFloat(originYRaw) || height;
+  const baseLeft = sectionRect.left + panel.offsetLeft;
+  const baseTop = sectionRect.top + panel.offsetTop;
+
+  return [
+    { x: 0, y: 0 },
+    { x: width, y: 0 },
+    { x: width, y: height },
+    { x: 0, y: height },
+  ].map((point) => {
+    const dx = point.x - originX;
+    const dy = point.y - originY;
+    return {
+      x: baseLeft + originX + matrix.a * dx + matrix.c * dy + matrix.e,
+      y: baseTop + originY + matrix.b * dx + matrix.d * dy + matrix.f,
+    };
+  });
+};
+
+const getSectionPolygon = (section: HTMLElement, width: number) => {
+  const polygon = getPanelQuad(section);
+
+  return clipToNavbar(polygon, width);
 };
 
 export default function NavSectionBackdrop() {
@@ -169,10 +182,7 @@ export default function NavSectionBackdrop() {
       );
 
       const nextLayers = sections.flatMap((section, index) => {
-        const panel =
-          section.querySelector<HTMLElement>(":scope > .section-tilt-panel") ??
-          section;
-        const polygon = clipToNavbar(getPanelQuad(panel), width);
+        const polygon = getSectionPolygon(section, width);
         if (polygon.length < 3) return [];
 
         return [
@@ -206,13 +216,17 @@ export default function NavSectionBackdrop() {
 
   return (
     <div className="nav-section-backdrop" aria-hidden="true">
-      <div className="nav-section-backdrop-base" />
+      <div className="nav-section-backdrop-base">
+        <SectionShaderBackground color={sectionColors.home} />
+      </div>
       {layers.map((layer) => (
         <div
           key={layer.key}
           className="nav-section-backdrop-layer"
-          style={{ backgroundColor: layer.color, clipPath: layer.clipPath }}
-        />
+          style={{ clipPath: layer.clipPath }}
+        >
+          <SectionShaderBackground color={layer.color} />
+        </div>
       ))}
     </div>
   );
