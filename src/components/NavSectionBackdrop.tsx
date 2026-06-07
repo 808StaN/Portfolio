@@ -1,17 +1,10 @@
 import { useEffect, useState } from "react";
 import SectionShaderBackground from "./SectionShaderBackground";
 import { useLenis } from "./LenisScroll";
+import { sectionColors } from "../constants/sectionColors";
 
 const NAV_HEIGHT = 64;
 const CLIP_OVERSCAN = 2;
-
-const sectionColors = {
-  home: "#5B8CFF",
-  work: "#4655D9",
-  about: "#6D4FD6",
-  stack: "#287CA8",
-  contact: "#1F5F87",
-};
 
 type Point = {
   x: number;
@@ -25,6 +18,9 @@ type BackdropLayer = {
 };
 
 const getSectionColor = (section: HTMLElement) => {
+  const dataColor = section.getAttribute("data-section-color");
+  if (dataColor) return dataColor;
+
   if (section.id === "home") return sectionColors.home;
   if (section.id === "about") return sectionColors.about;
   if (section.id === "stack") return sectionColors.stack;

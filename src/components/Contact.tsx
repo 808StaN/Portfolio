@@ -1,6 +1,7 @@
 import { useRef } from 'react';
 import { motion, useInView } from 'framer-motion';
 import SectionShaderBackground from './SectionShaderBackground';
+import { sectionColors } from '../constants/sectionColors';
 
 const easeOut = [0.16, 1, 0.3, 1] as const;
 
@@ -48,10 +49,10 @@ export default function Contact() {
   const inView = useInView(ref, { once: true, margin: '-80px' });
 
   return (
-    <section id="contact" className="section-tilt-section section-shell relative overflow-hidden" data-section-tilt>
+    <section id="contact" className="section-tilt-section section-shell relative overflow-hidden" data-section-tilt data-section-color={sectionColors.contact}>
       <div className="section-tilt-panel">
         <div className="section-shader-layer" aria-hidden="true">
-          <SectionShaderBackground color="#1F5F87" />
+          <SectionShaderBackground color={sectionColors.contact} />
         </div>
 
         <div

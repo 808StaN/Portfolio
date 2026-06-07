@@ -213,10 +213,11 @@ export default function Projects() {
               key={project.id}
               className="section-tilt-section projects-project-section relative"
               data-section-tilt
+              data-section-color={project.color}
             >
               <div className="section-tilt-panel projects-project-panel">
                 <div className="section-shader-layer" aria-hidden="true">
-                  <SectionShaderBackground color="#4655D9" />
+                  <SectionShaderBackground color={project.color} />
                 </div>
 
                 <div className="section-tilt-container section-inner projects-inner projects-project-inner relative z-10">

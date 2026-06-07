@@ -9,6 +9,7 @@ import openStudioImage2 from "../assets/projects/openstudio2.jpg";
 import openStudioImage3 from "../assets/projects/openstudio3.jpg";
 import instaFetchImage from "../assets/projects/InstaFetch.jpg";
 import storeManagerImage from "../assets/projects/StoreManager.jpg";
+import { sectionColors } from "../constants/sectionColors";
 
 export interface Project {
   id: string;
@@ -26,6 +27,7 @@ export interface Project {
   link?: string;
   linkLabel?: string;
   accent: string;
+  color: string;
   index: string;
   /** false = ukryty w galerii portfolio (dane zostają w pliku). */
   featured?: boolean;
@@ -65,6 +67,7 @@ export const projects: Project[] = [
     link: 'https://riftpick.com',
     linkLabel: 'View App',
     accent: '#c89b3c',
+    color: sectionColors.projectRiftPick,
     index: '01',
   },
   {
@@ -82,6 +85,7 @@ export const projects: Project[] = [
     status: 'live',
     link: 'https://github.com/808StaN/OpenStudio',
     accent: '#14b8a6',
+    color: sectionColors.projectOpenStudio,
     index: '02',
   },
   {
@@ -99,6 +103,7 @@ export const projects: Project[] = [
     status: 'live',
     link: 'https://github.com/808StaN/OtakuVersus',
     accent: '#4f8ef7',
+    color: sectionColors.projectOtakuVersus,
     index: '03',
   },
   {
@@ -116,6 +121,7 @@ export const projects: Project[] = [
     status: 'live',
     link: 'https://github.com/808StaN/InstaFetch',
     accent: '#f97316',
+    color: sectionColors.work,
     index: '04',
     featured: false,
   },
@@ -134,6 +140,7 @@ export const projects: Project[] = [
     status: 'case-study',
     link: 'https://github.com/808StaN/StoreManager',
     accent: '#10b981',
+    color: sectionColors.work,
     index: '05',
     featured: false,
   },

@@ -1,6 +1,7 @@
 import { useEffect, useRef } from 'react';
 import { motion, useReducedMotion } from 'framer-motion';
 import SectionShaderBackground from './SectionShaderBackground';
+import { sectionColors } from '../constants/sectionColors';
 
 const words = ['fast', 'scalable', 'reliable','responsive', 'modern'];
 
@@ -36,11 +37,12 @@ export default function Hero() {
       id="home"
       className="section-tilt-section relative w-full min-h-screen flex flex-col justify-center overflow-hidden"
       data-section-tilt
+      data-section-color={sectionColors.home}
       aria-label="Hero"
     >
       <div className="section-tilt-panel">
         <div className="section-shader-layer" aria-hidden="true">
-          <SectionShaderBackground color="#F4793A" />
+          <SectionShaderBackground color={sectionColors.home} />
         </div>
 
         {/* Content */}
