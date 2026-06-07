@@ -24,13 +24,6 @@ export default function Nav() {
     return Math.min(Math.max(0, top), maxScrollTop);
   };
 
-  const getHomeScrollEnd = () => {
-    const home = document.getElementById('home');
-    return home
-      ? Math.max(120, home.offsetHeight - 96)
-      : Math.max(120, window.innerHeight - 96);
-  };
-
   useEffect(() => {
     const ids = links.map(link => link.href.slice(1));
 
@@ -39,13 +32,6 @@ export default function Nav() {
         .map(id => document.getElementById(id) as HTMLElement | null)
         .filter((section): section is HTMLElement => Boolean(section));
       if (sections.length === 0) return;
-
-      const scrollY = lenis?.scroll ?? window.scrollY;
-
-      if (scrollY < getHomeScrollEnd()) {
-        setActiveSection('');
-        return;
-      }
 
       const activationY = window.innerHeight * 0.5;
       let nextActiveSection = '';
