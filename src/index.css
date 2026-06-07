@@ -289,7 +289,7 @@ html.custom-scrollbar-dragging * {
   display: flex;
   flex-direction: column;
   justify-content: flex-start;
-  padding-top: clamp(120px, 14vh, 160px);
+  padding-top: clamp(88px, 10vh, 116px);
   padding-bottom: var(--section-space-y);
 }
 
@@ -393,7 +393,7 @@ html.custom-scrollbar-dragging * {
 
 .projects-project-inner {
   min-height: 100svh;
-  padding-top: clamp(80px, 10vh, 100px);
+  padding-top: clamp(88px, 10vh, 116px);
   padding-bottom: clamp(70px, 9vh, 108px);
   display: flex;
   flex-direction: column;
@@ -589,6 +589,17 @@ html.custom-scrollbar-dragging * {
 .about-cert-link {
   margin-top: 0;
   flex: 0 0 auto;
+}
+
+.contact-inner {
+  min-height: calc(100svh - clamp(88px, 10vh, 116px) - var(--section-space-y));
+  display: flex;
+  flex-direction: column;
+}
+
+.contact-footer {
+  margin-top: auto;
+  padding-top: clamp(48px, 8vh, 84px);
 }
 
 .projects-visual-wrap {

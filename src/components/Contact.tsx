@@ -55,12 +55,12 @@ export default function Contact() {
           <SectionShaderBackground color={sectionColors.contact} />
         </div>
 
-        <div className="section-tilt-container section-inner relative" ref={ref}>
+        <div className="section-tilt-container section-inner contact-inner relative" ref={ref}>
         <div className="grid grid-cols-1 lg:grid-cols-[minmax(0,1.04fr)_minmax(0,0.96fr)] gap-14 lg:gap-24">
           <div>
             <motion.h2
-              className="section-title text-white/90 mb-7 max-w-[12ch]"
-              style={{ fontSize: 'clamp(2rem, 3.7vw, 3.9rem)' }}
+              className="section-title text-white/90 max-w-[12ch]"
+              style={{ fontSize: 'clamp(2rem, 3.7vw, 3.9rem)', marginBottom: 'clamp(1.75rem, 3.2vw, 2.6rem)' }}
               initial={{ opacity: 0, y: 30 }}
               animate={inView ? { opacity: 1, y: 0 } : {}}
               transition={{ duration: 0.8, delay: 0.1, ease: easeOut }}
@@ -127,17 +127,19 @@ export default function Contact() {
           </div>
         </div>
 
-        <div className="divider mb-8 mt-20" />
-        <div className="flex items-center justify-center">
-          <motion.p
-            className="text-[11px] text-center"
-            style={{ color: 'rgba(255,255,255,0.22)', fontFamily: 'var(--font-sans)' }}
-            initial={{ opacity: 0 }}
-            whileInView={{ opacity: 1 }}
-            viewport={{ once: true }}
-          >
-            Designed & developed by Dawid Stanisz (808StaN) - 2026
-          </motion.p>
+        <div className="contact-footer">
+          <div className="divider mb-8" />
+          <div className="flex items-center justify-center">
+            <motion.p
+              className="text-[11px] text-center"
+              style={{ color: 'rgba(255,255,255,0.22)', fontFamily: 'var(--font-sans)' }}
+              initial={{ opacity: 0 }}
+              whileInView={{ opacity: 1 }}
+              viewport={{ once: true }}
+            >
+              Designed & developed by Dawid Stanisz (808StaN) - 2026
+            </motion.p>
+          </div>
         </div>
         </div>
       </div>
