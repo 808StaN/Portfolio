@@ -5,7 +5,6 @@ import Projects from "./components/Projects";
 import About from "./components/About";
 import Stack from "./components/Stack";
 import Contact from "./components/Contact";
-import Footer from "./components/Footer";
 import Cursor from "./components/Cursor";
 import SectionTiltDirector from "./components/SectionTiltDirector";
 import CustomScrollbar from "./components/CustomScrollbar";
@@ -408,8 +407,7 @@ export default function App() {
         <Contact />
       </main>
 
-      {/* Footer */}
-      <Footer />
+
     </div>
   );
 }
