@@ -98,11 +98,6 @@ body {
     radial-gradient(95% 58% at 50% 120%, transparent 0%, rgba(0, 0, 0, 0.14) 78%);
 }
 
-/* Grain blends with WebGL/ambient only; UI sits above without a cut-out hole */
-.app-grain-layer {
-  z-index: 0;
-}
-
 .app-shell > main {
   position: relative;
   z-index: 1;

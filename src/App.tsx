@@ -7,7 +7,6 @@ import Stack from "./components/Stack";
 import Contact from "./components/Contact";
 import Footer from "./components/Footer";
 import Cursor from "./components/Cursor";
-import GrainOverlay from "./components/GrainOverlay";
 import SectionTiltDirector from "./components/SectionTiltDirector";
 import CustomScrollbar from "./components/CustomScrollbar";
 import { scrollToY, useLenis } from "./components/LenisScroll";
@@ -382,9 +381,6 @@ export default function App() {
     >
       <div className="app-ambient" aria-hidden="true" />
       <div className="app-vignette" aria-hidden="true" />
-
-      {/* Film grain overlay */}
-      <GrainOverlay />
 
       {/* Custom cursor (desktop only) */}
       <Cursor />
