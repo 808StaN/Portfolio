@@ -7,7 +7,7 @@ type SectionShaderBackgroundProps = {
 
 export default function SectionShaderBackground({
   color,
-  grain = 0.1,
+  grain = 0.01,
 }: SectionShaderBackgroundProps) {
   return (
     <Shader className="shader-preview h-full w-full">
