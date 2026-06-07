@@ -217,10 +217,16 @@ body {
 }
 
 .section-tilt-section {
+  --tilt-hit-drop: 0px;
   position: relative;
   min-height: 100svh;
   overflow: visible;
+  clip-path: polygon(0 0, 100% var(--tilt-hit-drop), 100% 100%, 0 100%);
   pointer-events: none;
+}
+
+.pin-spacer {
+  pointer-events: none !important;
 }
 
 .section-shell.section-tilt-section {
