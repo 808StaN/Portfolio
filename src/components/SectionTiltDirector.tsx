@@ -5,7 +5,7 @@ import { useLenis } from "./LenisScroll";
 
 gsap.registerPlugin(ScrollTrigger);
 
-const incomingAngles = [11.5, 9.5, 7.5, 5, 3.5, 2, 1, 0.3, 0];
+const incomingAngles = [12, 10, 8, 6, 5, 4, 2, 1, 0];
 
 const isTallerThanViewport = (section: HTMLElement) =>
   section.offsetHeight > window.innerHeight + 2;
