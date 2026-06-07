@@ -136,10 +136,9 @@ export default function Contact() {
             </motion.div>
           </div>
         </div>
-        </div>
 
         <div className="divider mb-8 mt-20" />
-        <div className="section-inner flex items-center justify-center">
+        <div className="flex items-center justify-center">
           <motion.p
             className="text-[11px] text-center"
             style={{ color: 'rgba(255,255,255,0.22)', fontFamily: 'var(--font-sans)' }}
@@ -149,6 +148,7 @@ export default function Contact() {
           >
             Designed & developed by Dawid Stanisz (808StaN) - 2026
           </motion.p>
+        </div>
         </div>
       </div>
     </section>
