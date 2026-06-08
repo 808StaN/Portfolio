@@ -120,7 +120,7 @@ export default function Stack() {
           >
             Tech I use
             <br />
-            <span style={{ color: 'rgba(255,255,255,0.54)' }}>to ship products.</span>
+            <span style={{ color: 'rgba(255,255,255,0.54)' }}>to ship products</span>
           </motion.h2>
         </div>
 

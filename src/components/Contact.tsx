@@ -67,7 +67,7 @@ export default function Contact() {
             >
               Open to new
               <br />
-              <span style={{ color: 'rgba(255,255,255,0.5)' }}>opportunities.</span>
+              <span style={{ color: 'rgba(255,255,255,0.5)' }}>opportunities</span>
             </motion.h2>
 
             <motion.p

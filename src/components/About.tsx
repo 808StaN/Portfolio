@@ -41,7 +41,7 @@ export default function About() {
             >
               Building products
               <br />
-              <span style={{ color: 'rgba(255,255,255,0.56)' }}>with frontend precision and backend reliability.</span>
+              <span style={{ color: 'rgba(255,255,255,0.56)' }}>with frontend precision and backend reliability</span>
             </motion.h2>
 
             <motion.div

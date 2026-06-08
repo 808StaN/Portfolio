@@ -292,7 +292,7 @@ export default function Projects() {
                       Things I have
                       <br />
                       <span style={{ color: "rgba(255,255,255,0.58)" }}>
-                        built and shipped.
+                        built and shipped
                       </span>
                     </motion.h2>
                   </div>
