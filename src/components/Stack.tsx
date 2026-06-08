@@ -23,10 +23,10 @@ const categories = [
       'Redux Toolkit',
       'Electron',
       'Prisma',
-      'TanStack Query',
       'Tailwind CSS',
-      'Motion',
       'GSAP',
+      'Motion',
+      'TanStack Query',
     ],
   },
   {
