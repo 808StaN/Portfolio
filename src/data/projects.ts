@@ -20,6 +20,7 @@ import instaFetch1100 from "../assets/projects/InstaFetch.jpg?w=1100&format=jpg&
 import instaFetchOriginal from "../assets/projects/InstaFetch.jpg";
 import storeManager1100 from "../assets/projects/StoreManager.jpg?w=1100&format=jpg&quality=95";
 import storeManagerOriginal from "../assets/projects/StoreManager.jpg";
+import type { GlowColor } from "../components/ui/spotlight-card";
 import { sectionColors } from "../constants/sectionColors";
 
 export interface ProjectImage {
@@ -61,6 +62,7 @@ export interface Project {
   linkLabel?: string;
   accent: string;
   color: string;
+  glowColor: GlowColor;
   index: string;
   /** false = ukryty w galerii portfolio (dane zostają w pliku). */
   featured?: boolean;
@@ -101,6 +103,7 @@ export const projects: Project[] = [
     linkLabel: 'View App',
     accent: '#c89b3c',
     color: sectionColors.projectRiftPick,
+    glowColor: 'riftpick',
     index: '01',
   },
   {
@@ -119,6 +122,7 @@ export const projects: Project[] = [
     link: 'https://github.com/808StaN/OpenStudio',
     accent: '#14b8a6',
     color: sectionColors.projectOpenStudio,
+    glowColor: 'openstudio',
     index: '02',
   },
   {
@@ -137,6 +141,7 @@ export const projects: Project[] = [
     link: 'https://github.com/808StaN/OtakuVersus',
     accent: '#4f8ef7',
     color: sectionColors.projectOtakuVersus,
+    glowColor: 'otakuversus',
     index: '03',
   },
   {
@@ -155,6 +160,7 @@ export const projects: Project[] = [
     link: 'https://github.com/808StaN/InstaFetch',
     accent: '#f97316',
     color: sectionColors.work,
+    glowColor: 'instafetch',
     index: '04',
     featured: false,
   },
@@ -174,6 +180,7 @@ export const projects: Project[] = [
     link: 'https://github.com/808StaN/StoreManager',
     accent: '#10b981',
     color: sectionColors.work,
+    glowColor: 'storemanager',
     index: '05',
     featured: false,
   },

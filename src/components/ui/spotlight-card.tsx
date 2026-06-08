@@ -1,9 +1,19 @@
 import { useEffect, useRef, type CSSProperties, type ReactNode } from "react";
 
+const glowColorMap = {
+  riftpick: { base: 205, spread: 15 },
+  openstudio: { base:  124, spread: 15 },
+  otakuversus: { base: 340, spread: 15 },
+  instafetch: { base: 195, spread: 15 },
+  storemanager: { base: 155, spread: 15 },
+} as const;
+
+export type GlowColor = keyof typeof glowColorMap;
+
 interface GlowCardProps {
   children: ReactNode;
   className?: string;
-  glowColor?: "blue" | "purple" | "green" | "red" | "orange" | "projects";
+  glowColor?: GlowColor;
   size?: "sm" | "md" | "lg";
   width?: string | number;
   height?: string | number;
@@ -11,15 +21,6 @@ interface GlowCardProps {
 }
 
 type GlowCardStyle = CSSProperties & Record<`--${string}`, string | number>;
-
-const glowColorMap = {
-  blue: { base: 220, spread: 200 },
-  purple: { base: 280, spread: 300 },
-  green: { base: 120, spread: 200 },
-  red: { base: 0, spread: 200 },
-  orange: { base: 30, spread: 200 },
-  projects: { base: 200, spread: 100 },
-};
 
 const clamp01 = (value: number) => Math.max(0, Math.min(1, value));
 
@@ -101,7 +102,7 @@ function injectGlowStyles() {
 export function GlowCard({
   children,
   className = "",
-  glowColor = "blue",
+  glowColor = "riftpick",
   size = "md",
   width,
   height,

@@ -342,7 +342,7 @@ export default function Projects() {
                     >
                       <GlowCard
                         customSize
-                        glowColor="projects"
+                        glowColor={project.glowColor}
                         className="projects-visual-border"
                       >
                         <div className="projects-visual-scroll">
