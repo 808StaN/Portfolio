@@ -103,6 +103,24 @@ body {
   z-index: 1;
 }
 
+.hero-clouds-layer {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+}
+
+.hero-clouds-layer canvas {
+  display: block !important;
+  width: 100% !important;
+  height: 100% !important;
+}
+
+.hero-shader-layer {
+  z-index: 1;
+  opacity: 0.50;
+}
+
 ::selection {
   background: rgba(79, 142, 247, 0.3);
   color: #fff;

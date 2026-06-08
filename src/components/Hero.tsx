@@ -1,5 +1,6 @@
 import { useEffect, useRef, type MouseEvent } from 'react';
 import { motion, useReducedMotion } from 'framer-motion';
+import HeroCloudsBackground from './HeroCloudsBackground';
 import SectionShaderBackground from './SectionShaderBackground';
 import { sectionColors } from '../constants/sectionColors';
 import { scrollToY, useLenis } from './LenisScroll';
@@ -56,7 +57,8 @@ export default function Hero() {
       aria-label="Hero"
     >
       <div className="section-tilt-panel">
-        <div className="section-shader-layer" aria-hidden="true">
+        <HeroCloudsBackground />
+        <div className="section-shader-layer hero-shader-layer" aria-hidden="true">
           <SectionShaderBackground color={sectionColors.home} />
         </div>
 

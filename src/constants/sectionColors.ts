@@ -1,6 +1,6 @@
 export const sectionColors = {
-  home: "#075A9C",
-  work: "#0D6673",
+  home: "#08162E",
+  work: "#075A9C",
 
   about: "#3A315E",
   stack: "#263A59",
