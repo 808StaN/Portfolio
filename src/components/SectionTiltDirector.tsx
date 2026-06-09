@@ -4,6 +4,7 @@ import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { useLenis } from "./LenisScroll";
 
 gsap.registerPlugin(ScrollTrigger);
+ScrollTrigger.config({ ignoreMobileResize: true });
 
 const incomingAngles = [14, 12, 10, 8, 6, 4, 3, 2, 1, 0];
 
@@ -16,9 +17,12 @@ const getOverlapStart = (section: HTMLElement) =>
 const getOverlapEnd = (section: HTMLElement) =>
   isTallerThanViewport(section) ? "+=100%" : "bottom top";
 
+const getViewportWidth = () =>
+  document.documentElement.clientWidth || window.visualViewport?.width || window.innerWidth;
+
 const getTiltDrop = (rotation: number) => {
   const radians = (Math.abs(rotation) * Math.PI) / 180;
-  return Math.max(0, Math.ceil(window.innerWidth * Math.tan(radians)));
+  return Math.max(0, Math.ceil(getViewportWidth() * Math.tan(radians)));
 };
 
 export default function SectionTiltDirector() {
@@ -50,7 +54,6 @@ export default function SectionTiltDirector() {
         updateTiltClip(section, panel);
       });
       lenis?.resize();
-      window.dispatchEvent(new Event("resize"));
     };
 
     const ctx = gsap.context(() => {

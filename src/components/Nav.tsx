@@ -83,7 +83,7 @@ export default function Nav() {
         animate={{ opacity: 1 }}
         transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
       >
-        <nav className="relative h-16 nav-blur">
+        <nav className="relative h-14 md:h-16 nav-blur">
           <div
             className="hero-inner relative z-10 h-full flex items-center justify-between"
             style={{ width: 'min(1600px, calc(100% - (var(--page-gutter) * 1.2)))' }}
@@ -126,30 +126,36 @@ export default function Nav() {
                 GitHub -&gt;
               </a>
             </div>
-
-            <button
-              className="lg:hidden absolute top-2.5 right-2.5 flex flex-col gap-1.5 p-2 cursor-pointer bg-transparent border-none z-50"
-              onClick={() => setMenuOpen(v => !v)}
-              aria-label="Toggle menu"
-              aria-expanded={menuOpen}
-            >
-              <motion.span
-                className="block w-6 h-px bg-white/75"
-                animate={{ rotate: menuOpen ? 45 : 0, y: menuOpen ? 5 : 0 }}
-                transition={{ duration: 0.3 }}
-              />
-              <motion.span
-                className="block w-6 h-px bg-white/75"
-                animate={{ opacity: menuOpen ? 0 : 1 }}
-                transition={{ duration: 0.3 }}
-              />
-              <motion.span
-                className="block w-6 h-px bg-white/75"
-                animate={{ rotate: menuOpen ? -45 : 0, y: menuOpen ? -5 : 0 }}
-                transition={{ duration: 0.3 }}
-              />
-            </button>
           </div>
+          <button
+            className="lg:hidden absolute flex h-11 w-11 flex-col items-center justify-center gap-1.5 cursor-pointer border-none"
+            style={{
+              top: '50%',
+              right: '10px',
+              transform: 'translateY(-50%)',
+              zIndex: 9999,
+              background: 'transparent',
+            }}
+            onClick={() => setMenuOpen(v => !v)}
+            aria-label="Toggle menu"
+            aria-expanded={menuOpen}
+          >
+            <motion.span
+              style={{ display: 'block', width: 24, height: 1, background: 'rgba(255,255,255,0.86)' }}
+              animate={{ rotate: menuOpen ? 45 : 0, y: menuOpen ? 5 : 0 }}
+              transition={{ duration: 0.3 }}
+            />
+            <motion.span
+              style={{ display: 'block', width: 24, height: 1, background: 'rgba(255,255,255,0.86)' }}
+              animate={{ opacity: menuOpen ? 0 : 1 }}
+              transition={{ duration: 0.3 }}
+            />
+            <motion.span
+              style={{ display: 'block', width: 24, height: 1, background: 'rgba(255,255,255,0.86)' }}
+              animate={{ rotate: menuOpen ? -45 : 0, y: menuOpen ? -5 : 0 }}
+              transition={{ duration: 0.3 }}
+            />
+          </button>
         </nav>
       </motion.header>
 
