@@ -645,7 +645,8 @@ html.custom-scrollbar-dragging * {
 
 .projects-title-stretch {
   position: relative;
-  transform: translateY(clamp(16px, 0vh, 48px));
+  transform: translateY(clamp(64px, 5vh, 96px));
+  margin-left: -2px;
   /* Stała wysokość slotu (scaleY:1) — opis zawsze 16px niżej, bez skakania */
   font-size: clamp(2.5rem, 4.5vw, 5.2rem);
   line-height: 1.02;
@@ -659,11 +660,7 @@ html.custom-scrollbar-dragging * {
   left: 0;
   width: 100%;
   white-space: nowrap;
-  will-change: transform;
   overflow: visible;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  backface-visibility: hidden;
 }
 
 .projects-title {
