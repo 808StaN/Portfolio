@@ -110,7 +110,7 @@ export const projects: Project[] = [
     id: 'openstudio',
     title: 'OpenStudio',
     description:
-      'Browser + desktop DAW built with React, Web Audio API, and Electron.',
+      'OpenStudio is a browser and desktop DAW built with React, Web Audio API, and Electron. It brings the core beatmaking workflow into one app: browse sounds, build patterns, edit melodies, arrange clips, mix tracks, save projects locally or in the cloud, and export the final track to WAV or MP3.',
     longDescription:
       'Music production workflow with track controls, timeline editing, and cross-platform desktop deployment.',
     image: openStudioImage,
@@ -129,7 +129,7 @@ export const projects: Project[] = [
     id: 'otakuversus',
     title: 'OtakuVersus',
     description:
-      'Manga-styled anime guessing game with singleplayer and real-time multiplayer modes.',
+      'OtakuVersus is a manga-styled anime guessing game with both singleplayer and real-time multiplayer modes. Players identify anime titles from scene images, earn points, and compete in rankings.',
     longDescription:
       'Players identify anime titles from scenes, compete for points, and climb rankings in online matches.',
     image: otakuVersusImage,

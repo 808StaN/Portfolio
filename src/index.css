@@ -606,10 +606,6 @@ html.custom-scrollbar-dragging * {
   justify-content: flex-start;
 }
 
-.projects-header {
-  margin-bottom: clamp(12px, 2.2vh, 24px);
-}
-
 .projects-layout {
   display: grid;
   grid-template-columns: minmax(240px, 0.56fr) minmax(0, 2fr);
@@ -630,6 +626,7 @@ html.custom-scrollbar-dragging * {
   grid-column: 1;
   grid-row: 1;
   padding-left: 0;
+  overflow: visible;
 }
 
 .projects-layout.is-reversed .projects-meta {
@@ -646,13 +643,39 @@ html.custom-scrollbar-dragging * {
   font-family: var(--font-sans);
 }
 
+.projects-title-stretch {
+  position: relative;
+  transform: translateY(clamp(16px, 0vh, 48px));
+  /* Stała wysokość slotu (scaleY:1) — opis zawsze 16px niżej, bez skakania */
+  font-size: clamp(2.5rem, 4.5vw, 5.2rem);
+  line-height: 1.02;
+  height: 1.02em;
+  overflow: visible;
+}
+
+.projects-title-scale {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  white-space: nowrap;
+  will-change: transform;
+  overflow: visible;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  backface-visibility: hidden;
+}
+
 .projects-title {
   font-family: var(--font-display);
-  font-size: clamp(2rem, 3.5vw, 4.1rem);
+  font-weight: 600;
+  font-size: 1em;
   line-height: 1.02;
   letter-spacing: -0.02em;
   color: rgba(255, 255, 255, 0.95);
   margin: 0;
+  position: relative;
+  z-index: 1;
 }
 
 .projects-category {
@@ -1136,8 +1159,8 @@ html.custom-scrollbar-dragging * {
     padding-left: 0;
   }
 
-  .projects-title {
-    font-size: clamp(1.7rem, 5.2vw, 3.1rem);
+  .projects-title-stretch {
+    font-size: clamp(2rem, 6.2vw, 3.8rem);
   }
 
   .projects-description {
