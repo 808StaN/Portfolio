@@ -108,7 +108,9 @@ export default function HeroHoleBackground({ noiseRef }: HeroHoleBackgroundProps
           });
           const iconSize = cellSize * 0.55;
           const iconOffset = (cellSize - iconSize) / 2;
+          ctx.globalAlpha = 0.5;
           ctx.drawImage(img, x + iconOffset, y + iconOffset, iconSize, iconSize);
+          ctx.globalAlpha = 1.0;
         }
       }
 
@@ -191,7 +193,7 @@ export default function HeroHoleBackground({ noiseRef }: HeroHoleBackgroundProps
     mvPosition = modelViewMatrix * mvPosition;
     gl_Position = projectionMatrix * mvPosition;
 
-    vIconIndex = iconIndex;
+    vIconIndex = floor(fract(sin(dot(vec3(floor(time) + rcl.x, rcl.y, rcl.z), vec3(12.9898, 78.233, 37.719))) * 43758.5453) * ${techIcons.length}.0);
     vIsTop = aIsTop;
             `,
           );
