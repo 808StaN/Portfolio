@@ -216,6 +216,10 @@ export default function SectionTiltDirector() {
         clipTargets.push({ section: incomingSection, panel: incomingPanel });
         updateTiltClip(incomingSection, incomingPanel);
 
+        const isOutgoingProject = section.dataset.sectionGroup === 'projects';
+        const tiltStart = isOutgoingProject ? '+=200%' : () => getOverlapStart(section);
+        const tiltEnd = isOutgoingProject ? '+=300%' : () => getOverlapEnd(section);
+
         gsap.to(incomingPanel, {
           keyframes: incomingAngles.slice(1).map((rotation) => ({
             rotation,
@@ -229,22 +233,24 @@ export default function SectionTiltDirector() {
           },
           scrollTrigger: {
             trigger: section,
-            start: () => getOverlapStart(section),
-            end: () => getOverlapEnd(section),
+            start: tiltStart,
+            end: tiltEnd,
             scrub: true,
           },
         });
 
-        ScrollTrigger.create({
-          id: incomingSection.id
-            ? `section-target-${incomingSection.id}`
-            : undefined,
-          trigger: section,
-          start: () => getOverlapStart(section),
-          end: () => getOverlapEnd(section),
-          pin: true,
-          pinSpacing: false,
-        });
+        if (!isOutgoingProject) {
+          ScrollTrigger.create({
+            id: incomingSection.id
+              ? `section-target-${incomingSection.id}`
+              : undefined,
+            trigger: section,
+            start: () => getOverlapStart(section),
+            end: () => getOverlapEnd(section),
+            pin: true,
+            pinSpacing: false,
+          });
+        }
       });
     });
 

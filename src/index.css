@@ -808,7 +808,6 @@ html.custom-scrollbar-dragging * {
   display: flex;
   align-items: center;
   justify-content: center;
-  min-height: 100svh;
 }
 
 .projects-layout.is-reversed .projects-carousel-wrap {
@@ -818,29 +817,11 @@ html.custom-scrollbar-dragging * {
 .scene {
   perspective: 900px;
   position: relative;
-  height: 100svh;
+  height: 472px;
   display: flex;
   justify-content: center;
   align-items: center;
   width: 100%;
-}
-
-.scene__title {
-  position: relative;
-  z-index: 10;
-  margin: 0;
-  font-family: var(--font-display);
-  font-weight: 700;
-  letter-spacing: -0.02em;
-  color: rgba(255, 255, 255, 0.9);
-  pointer-events: none;
-}
-
-.scene__title span {
-  display: inline-block;
-  font-size: clamp(1.1rem, 1.6vw, 1.5rem);
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
 }
 
 .carousel {

@@ -7,6 +7,7 @@ gsap.registerPlugin(ScrollTrigger);
 
 const CELL_COUNT = 4;
 const RADIUS = 500;
+const ANGLE_STEP = 360 / CELL_COUNT;
 
 type ProjectCarouselProps = {
   project: Project;
@@ -21,47 +22,50 @@ export default function ProjectCarousel({ project }: ProjectCarouselProps) {
     const carousel = carouselRef.current;
     if (!scene || !carousel) return;
 
-    const cells = carousel.querySelectorAll<HTMLElement>(".carousel__cell");
-    const cards = carousel.querySelectorAll<HTMLElement>(".card");
-    const angleStep = 360 / cells.length;
+    const section = scene.closest<HTMLElement>("[data-section-tilt]");
+    if (!section) return;
 
+    const cells = carousel.querySelectorAll<HTMLElement>(".carousel__cell");
     cells.forEach((cell, i) => {
-      const angle = i * angleStep;
+      const angle = i * ANGLE_STEP;
       cell.style.transform = `rotateY(${angle}deg) translateZ(${RADIUS}px)`;
     });
 
+    const nextSection = section.nextElementSibling as HTMLElement | null;
+    const isLastProject =
+      nextSection &&
+      (!nextSection.dataset.sectionGroup ||
+        nextSection.dataset.sectionGroup !== "projects");
+
+    const pinEnd = isLastProject ? "+=300%" : "+=200%";
+
     const ctx = gsap.context(() => {
-      gsap.fromTo(
+      const tl = gsap.timeline({
+        scrollTrigger: {
+          trigger: section,
+          start: "top top",
+          end: pinEnd,
+          scrub: true,
+          pin: true,
+          pinSpacing: true,
+        },
+      });
+
+      tl.fromTo(
         carousel,
         { rotationY: 0, rotationZ: 3, rotationX: 3 },
         {
-          rotationY: -180,
+          rotationY: -270,
           rotationZ: -3,
           rotationX: -3,
           ease: "sine.inOut",
-          scrollTrigger: {
-            trigger: scene,
-            start: "top bottom",
-            end: "bottom top",
-            scrub: true,
-          },
+          duration: 2,
         },
       );
 
-      gsap.fromTo(
-        cards,
-        { rotationZ: 10 },
-        {
-          rotationZ: -10,
-          ease: "none",
-          scrollTrigger: {
-            trigger: scene,
-            start: "top bottom",
-            end: "bottom top",
-            scrub: true,
-          },
-        },
-      );
+      if (isLastProject) {
+        tl.to({}, { duration: 1 });
+      }
     }, scene);
 
     return () => ctx.revert();
@@ -75,9 +79,6 @@ export default function ProjectCarousel({ project }: ProjectCarouselProps) {
 
   return (
     <div className="scene" ref={sceneRef}>
-      <h2 className="scene__title">
-        <span>{project.title}</span>
-      </h2>
       <div className="carousel" ref={carouselRef}>
         {carouselImages.map((image, i) => (
           <div className="carousel__cell" key={`${project.id}-cell-${i}`}>
