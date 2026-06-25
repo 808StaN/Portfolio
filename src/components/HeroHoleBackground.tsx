@@ -1,9 +1,13 @@
 import { useEffect, useRef, type RefObject } from 'react';
 import * as THREE from 'three';
+import techIcons from '../constants/techIcons.json';
 
 const rowCount = 20;
 const columnCount = 64;
 const layerCount = 2;
+const atlasCols = 8;
+const cellSize = 256;
+const atlasSize = atlasCols * cellSize;
 
 type ShaderParameters = Parameters<NonNullable<THREE.Material['onBeforeCompile']>>[0];
 
@@ -43,17 +47,42 @@ export default function HeroHoleBackground({ noiseRef }: HeroHoleBackgroundProps
 
     geometry.setAttribute('rcl', new THREE.InstancedBufferAttribute(new Float32Array(rowCol), 3));
 
+    const iconIndices = new Float32Array(rowCount * columnCount * layerCount);
+    for (let i = 0; i < iconIndices.length; i += 1) {
+      iconIndices[i] = i % techIcons.length;
+    }
+    geometry.setAttribute('iconIndex', new THREE.InstancedBufferAttribute(iconIndices, 1));
+
     const canvas = document.createElement('canvas');
-    const size = 256;
-    canvas.width = size;
-    canvas.height = size;
+    canvas.width = atlasSize;
+    canvas.height = atlasSize;
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
 
-    ctx.fillStyle = 'white';
-    ctx.fillRect(0, 0, size, size);
-    ctx.fillStyle = '#0D3B90';
-    ctx.fillRect(0.25, 0.25, size - 0.5, size - 0.5);
+    const drawCell = (x: number, y: number, iconPath?: string) => {
+      ctx.fillStyle = 'white';
+      ctx.fillRect(x, y, cellSize, cellSize);
+      ctx.fillStyle = '#0D3B90';
+      ctx.fillRect(x + 0.25, y + 0.25, cellSize - 0.5, cellSize - 0.5);
+
+      if (iconPath) {
+        const iconSize = cellSize * 0.55;
+        const iconOffset = (cellSize - iconSize) / 2;
+        ctx.save();
+        ctx.translate(x + iconOffset, y + iconOffset);
+        ctx.scale(iconSize / 24, iconSize / 24);
+        ctx.fillStyle = 'white';
+        ctx.fill(new Path2D(iconPath));
+        ctx.restore();
+      }
+    };
+
+    for (let i = 0; i < atlasCols * atlasCols; i += 1) {
+      const col = i % atlasCols;
+      const row = Math.floor(i / atlasCols);
+      const iconPath = i < techIcons.length ? (techIcons[i] as string) : undefined;
+      drawCell(col * cellSize, row * cellSize, iconPath);
+    }
 
     const texture = new THREE.CanvasTexture(canvas);
     texture.colorSpace = THREE.SRGBColorSpace;
@@ -72,6 +101,8 @@ export default function HeroHoleBackground({ noiseRef }: HeroHoleBackgroundProps
           `
     uniform float time;
     attribute vec3 rcl;
+    attribute float iconIndex;
+    varying float vIconIndex;
     #include <common>
           `,
         )
@@ -117,6 +148,30 @@ export default function HeroHoleBackground({ noiseRef }: HeroHoleBackgroundProps
 
     mvPosition = modelViewMatrix * mvPosition;
     gl_Position = projectionMatrix * mvPosition;
+
+    vIconIndex = iconIndex;
+          `,
+        );
+
+      patchedShader.fragmentShader = patchedShader.fragmentShader
+        .replace(
+          '#include <common>',
+          `
+    varying float vIconIndex;
+    #include <common>
+          `,
+        )
+        .replace(
+          '#include <map_fragment>',
+          `
+    float atlasCols = ${atlasCols}.0;
+    float cellW = 1.0 / atlasCols;
+    float colAtlas = mod(vIconIndex, atlasCols);
+    float rowAtlas = floor(vIconIndex / atlasCols);
+    vec2 cellOffsetAtlas = vec2(colAtlas * cellW, (atlasCols - 1.0 - rowAtlas) * cellW);
+    vec2 atlasUV = cellOffsetAtlas + vMapUv * vec2(cellW);
+    vec4 sampledDiffuseColor = texture2D(map, atlasUV);
+    diffuseColor *= sampledDiffuseColor;
           `,
         );
     };
