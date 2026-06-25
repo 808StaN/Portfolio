@@ -277,21 +277,19 @@ export default function Projects() {
             >
               <div className="section-tilt-panel projects-project-panel" style={{ background: project.color }}>
                 <div className="section-tilt-container section-inner projects-inner projects-project-inner relative z-10">
-                  <div className="projects-header">
-                    <motion.h2
-                      className="section-title text-white/90 max-w-[13ch]"
-                      style={{ fontSize: "clamp(1.95rem, 3.7vw, 3.95rem)" }}
-                      initial={{ opacity: 0, y: 30 }}
-                      animate={inView ? { opacity: 1, y: 0 } : {}}
-                      transition={{ duration: 0.8, delay: 0.1, ease: easeOut }}
-                    >
-                      Things I have
-                      <br />
-                      <span style={{ color: "rgba(255,255,255,0.58)" }}>
-                        built and shipped
-                      </span>
-                    </motion.h2>
-                  </div>
+                  {project.id === 'riftpick' && (
+                    <div className="projects-header">
+                      <motion.h2
+                        className="section-title text-white/90 max-w-[13ch]"
+                        style={{ fontSize: "clamp(1.95rem, 3.7vw, 3.95rem)" }}
+                        initial={{ opacity: 0, y: 30 }}
+                        animate={inView ? { opacity: 1, y: 0 } : {}}
+                        transition={{ duration: 0.8, delay: 0.1, ease: easeOut }}
+                      >
+                        My Projects
+                      </motion.h2>
+                    </div>
+                  )}
 
                   <div className={`projects-layout ${reversed ? "is-reversed" : ""}`}>
                     <motion.div
