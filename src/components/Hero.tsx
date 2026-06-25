@@ -12,6 +12,7 @@ export default function Hero() {
   const prefersReduced = useReducedMotion();
   const lenis = useLenis();
   const wordRef = useRef<HTMLSpanElement>(null);
+  const noiseRef = useRef<HTMLDivElement>(null);
 
   const handleProjectsClick = (event: MouseEvent<HTMLAnchorElement>) => {
     event.preventDefault();
@@ -56,7 +57,8 @@ export default function Hero() {
       aria-label="Hero"
     >
       <div className="section-tilt-panel" style={{ background: sectionColors.home }}>
-        <HeroHoleBackground />
+        <HeroHoleBackground noiseRef={noiseRef} />
+        <div ref={noiseRef} className="hero-noise-layer" aria-hidden="true" />
 
         {/* Content */}
         <div className="section-tilt-container hero-inner relative z-10 flex flex-col justify-between min-h-screen pt-24 md:pt-28 pb-12 md:pb-14">

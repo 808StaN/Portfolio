@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, type RefObject } from 'react';
 import * as THREE from 'three';
 
 const rowCount = 20;
@@ -13,7 +13,11 @@ type ShaderWithTime = ShaderParameters & {
   };
 };
 
-export default function HeroHoleBackground() {
+type HeroHoleBackgroundProps = {
+  noiseRef?: RefObject<HTMLDivElement | null>;
+};
+
+export default function HeroHoleBackground({ noiseRef }: HeroHoleBackgroundProps = {}) {
   const containerRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
@@ -145,6 +149,10 @@ export default function HeroHoleBackground() {
     const render = (timestamp = 0) => {
       time.value = timestamp / 1000;
       scene.rotation.y = -timestamp / 10000;
+      if (noiseRef?.current) {
+        const rot = scene.rotation.y;
+        noiseRef.current.style.transform = `translate(${Math.sin(rot) * 40}px, ${Math.cos(rot) * 30}px)`;
+      }
       renderer.render(scene, camera);
     };
 

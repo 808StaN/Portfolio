@@ -443,6 +443,20 @@ html.custom-scrollbar-dragging * {
   z-index: 2;
 }
 
+.section-tilt-panel:has(.hero-noise-layer)::after {
+  content: none;
+}
+
+.hero-noise-layer {
+  position: absolute;
+  inset: -10%;
+  background: url('/noise.png');
+  background-size: 250px;
+  pointer-events: none;
+  z-index: 2;
+  will-change: transform;
+}
+
 .section-shell .section-tilt-container {
   margin-block: 0;
 }
