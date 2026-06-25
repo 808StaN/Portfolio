@@ -98,13 +98,13 @@ export default function Nav() {
                   className={`text-sm transition-all duration-300 cursor-pointer bg-transparent border-none relative group ${
                     activeSection === link.href.slice(1)
                       ? 'text-white'
-                      : 'text-white/50 hover:text-white/85'
+                      : 'text-white hover:text-white'
                   }`}
                   style={{ fontFamily: 'var(--font-sans)', letterSpacing: '0.01em' }}
                 >
                   {link.label}
                   <span
-                    className={`absolute -bottom-0.5 left-0 h-px bg-white/50 transition-all duration-300 ${
+                    className={`absolute -bottom-0.5 left-0 h-px bg-white transition-all duration-300 ${
                       activeSection === link.href.slice(1) ? 'w-full' : 'w-0 group-hover:w-full'
                     }`}
                   />
@@ -117,7 +117,7 @@ export default function Nav() {
                 href="https://github.com/808StaN"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex items-center gap-2 text-sm text-white/50 hover:text-white/85 transition-colors duration-300"
+                className="inline-flex items-center gap-2 text-sm text-white hover:text-white transition-colors duration-300"
                 style={{ fontFamily: 'var(--font-sans)' }}
               >
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
@@ -141,17 +141,17 @@ export default function Nav() {
             aria-expanded={menuOpen}
           >
             <motion.span
-              style={{ display: 'block', width: 24, height: 1, background: 'rgba(255,255,255,0.86)' }}
-              animate={{ rotate: menuOpen ? 45 : 0, y: menuOpen ? 5 : 0 }}
-              transition={{ duration: 0.3 }}
-            />
-            <motion.span
-              style={{ display: 'block', width: 24, height: 1, background: 'rgba(255,255,255,0.86)' }}
-              animate={{ opacity: menuOpen ? 0 : 1 }}
-              transition={{ duration: 0.3 }}
-            />
-            <motion.span
-              style={{ display: 'block', width: 24, height: 1, background: 'rgba(255,255,255,0.86)' }}
+            style={{ display: 'block', width: 24, height: 1, background: '#fff' }}
+            animate={{ rotate: menuOpen ? 45 : 0, y: menuOpen ? 5 : 0 }}
+            transition={{ duration: 0.3 }}
+          />
+          <motion.span
+            style={{ display: 'block', width: 24, height: 1, background: '#fff' }}
+            animate={{ opacity: menuOpen ? 0 : 1 }}
+            transition={{ duration: 0.3 }}
+          />
+          <motion.span
+            style={{ display: 'block', width: 24, height: 1, background: '#fff' }}
               animate={{ rotate: menuOpen ? -45 : 0, y: menuOpen ? -5 : 0 }}
               transition={{ duration: 0.3 }}
             />
@@ -180,7 +180,7 @@ export default function Nav() {
                   transition={{ delay: i * 0.07, duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
                   style={{ fontFamily: 'var(--font-display)' }}
                 >
-                  <span className="text-4xl font-700 text-white/90 hover:text-white transition-colors duration-200">
+                  <span className="text-4xl font-700 text-white hover:text-white transition-colors duration-200">
                     {link.label}
                   </span>
                 </motion.button>
@@ -189,7 +189,7 @@ export default function Nav() {
                 href="https://github.com/808StaN"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="mt-4 inline-flex items-center gap-2 text-sm text-white/40 hover:text-white/70 transition-colors duration-200"
+                className="mt-4 inline-flex items-center gap-2 text-sm text-white hover:text-white transition-colors duration-200"
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 transition={{ delay: 0.35 }}
