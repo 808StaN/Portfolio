@@ -97,6 +97,8 @@
   --color-accent-blue: #4f8ef7;
   --color-accent-teal: #14b8a6;
   --color-accent-orange: #f97316;
+  --nav-bg-color: transparent;
+  --nav-bg-z: 15;
   --scroll-progress: 0;
   /* boczny navbar (Nav.tsx) — bez zmian przy szerszej treści */
   --page-gutter: clamp(20px, 4vw, 64px);
@@ -220,7 +222,6 @@ body {
 
 .app-shell > main {
   position: relative;
-  z-index: 1;
 }
 
 .hero-hole-layer {
@@ -369,7 +370,25 @@ html.custom-scrollbar-dragging * {
 }
 
 /* Nav */
+.nav-bg-layer {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3.5rem;
+  background: var(--nav-bg-color);
+  z-index: var(--nav-bg-z);
+  pointer-events: none;
+}
+
+@media (min-width: 768px) {
+  .nav-bg-layer {
+    height: 4rem;
+  }
+}
+
 .nav-blur {
+  position: relative;
   overflow: hidden;
   border-bottom: 1px solid rgba(255, 255, 255, 0.33);
 }

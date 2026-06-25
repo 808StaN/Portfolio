@@ -25,24 +25,71 @@ const getTiltDrop = (rotation: number) => {
   return Math.max(0, Math.ceil(getViewportWidth() * Math.tan(radians)));
 };
 
+const setNavBackground = (color: string, z: number) => {
+  const root = document.documentElement;
+  root.style.setProperty("--nav-bg-color", color);
+  root.style.setProperty("--nav-bg-z", String(z));
+};
+
 export default function SectionTiltDirector() {
   const lenis = useLenis();
 
   useEffect(() => {
-    const reducedMotion = window.matchMedia(
-      "(prefers-reduced-motion: reduce)",
-    ).matches;
-    if (reducedMotion) return;
-
     const sections = Array.from(
       document.querySelectorAll<HTMLElement>("[data-section-tilt]"),
     );
-    if (sections.length < 2) return;
+    if (sections.length === 0) return;
+
+    setNavBackground(sections[0].dataset.sectionColor || "transparent", 15);
+
+    const cleanupNavBackground = () => {
+      const root = document.documentElement;
+      root.style.removeProperty("--nav-bg-color");
+      root.style.removeProperty("--nav-bg-z");
+    };
+
+    const reducedMotion = window.matchMedia(
+      "(prefers-reduced-motion: reduce)",
+    ).matches;
+    if (reducedMotion || sections.length < 2) return cleanupNavBackground;
 
     const clipTargets: Array<{
       section: HTMLElement;
       panel: HTMLElement;
     }> = [];
+
+    const sectionData = sections.map((section, index) => {
+      const panel = section.querySelector<HTMLElement>(':scope > .section-tilt-panel');
+      return {
+        section,
+        panel,
+        color: section.dataset.sectionColor || 'transparent',
+        z: (index + 1) * 10,
+      };
+    });
+
+    const syncNavBackground = () => {
+      let bestColor = 'transparent';
+      let bestZ = -1;
+
+      for (const { section, panel, color, z } of sectionData) {
+        if (!panel) continue;
+        const rotation = Number(gsap.getProperty(panel, 'rotation')) || 0;
+        if (Math.abs(rotation) >= 0.05) continue;
+
+        const rect = section.getBoundingClientRect();
+        if (rect.top > 0 || rect.bottom <= 0) continue;
+
+        if (z > bestZ) {
+          bestZ = z;
+          bestColor = color;
+        }
+      }
+
+      if (bestZ >= 0) {
+        setNavBackground(bestColor, bestZ + 5);
+      }
+    };
 
     const updateTiltClip = (section: HTMLElement, panel: HTMLElement) => {
       const rotation = Number(gsap.getProperty(panel, "rotation")) || 0;
@@ -53,12 +100,13 @@ export default function SectionTiltDirector() {
       clipTargets.forEach(({ section, panel }) => {
         updateTiltClip(section, panel);
       });
+      syncNavBackground();
       lenis?.resize();
     };
 
     const ctx = gsap.context(() => {
       sections.forEach((section, index) => {
-        gsap.set(section, { zIndex: index + 1 });
+        gsap.set(section, { zIndex: (index + 1) * 10 });
       });
 
       sections.slice(0, -1).forEach((section, index) => {
@@ -78,7 +126,10 @@ export default function SectionTiltDirector() {
             ease: "none",
           })),
           ease: "none",
-          onUpdate: () => updateTiltClip(incomingSection, incomingPanel),
+          onUpdate: () => {
+            updateTiltClip(incomingSection, incomingPanel);
+            syncNavBackground();
+          },
           scrollTrigger: {
             trigger: section,
             start: () => getOverlapStart(section),
@@ -101,15 +152,28 @@ export default function SectionTiltDirector() {
     });
 
     ScrollTrigger.refresh();
-    const unsubscribeLenis = lenis?.on("scroll", ScrollTrigger.update);
+    requestAnimationFrame(syncNavBackground);
+
+    const onScroll = () => {
+      ScrollTrigger.update();
+      syncNavBackground();
+    };
+    const unsubscribeLenis = lenis?.on("scroll", onScroll);
+    if (!lenis) {
+      window.addEventListener("scroll", onScroll, { passive: true });
+    }
     window.addEventListener("resize", updateAllTiltClips);
 
     return () => {
       unsubscribeLenis?.();
+      if (!lenis) {
+        window.removeEventListener("scroll", onScroll);
+      }
       window.removeEventListener("resize", updateAllTiltClips);
       sections.forEach((section) => {
         section.style.removeProperty("--tilt-hit-drop");
       });
+      cleanupNavBackground();
       ctx.revert();
     };
   }, [lenis]);

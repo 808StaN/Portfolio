@@ -76,6 +76,7 @@ export default function Nav() {
 
   return (
     <>
+      <div className="nav-bg-layer" aria-hidden="true" />
       <motion.header
         className="fixed top-0 left-0 right-0 z-[9996]"
         style={{ top: 0, left: 0, right: 0 }}
