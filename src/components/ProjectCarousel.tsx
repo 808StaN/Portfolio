@@ -31,20 +31,24 @@ export default function ProjectCarousel({ project }: ProjectCarouselProps) {
       cell.style.transform = `rotateY(${angle}deg) translateZ(${RADIUS}px)`;
     });
 
-    const nextSection = section.nextElementSibling as HTMLElement | null;
+    // "Ostatni projekt" = ten, po którym następuje sekcja spoza grupy projektów
+    // (OtakuVersus → About). Wtedy pin trwa dłużej (300%): 200% na rotację zdjęć,
+    // a ostatnie 100% to "postój" karuzeli, podczas którego SectionTiltDirector
+    // wynurza kolejną sekcję (About) jako standardowy tilt nad przypiętą karuzelą.
+    const allTilt = Array.from(
+      document.querySelectorAll<HTMLElement>("[data-section-tilt]"),
+    );
+    const nextSection = allTilt[allTilt.indexOf(section) + 1] ?? null;
     const isLastProject =
-      nextSection &&
-      (!nextSection.dataset.sectionGroup ||
-        nextSection.dataset.sectionGroup !== "projects");
-
-    const pinEnd = isLastProject ? "+=300%" : "+=200%";
+      !!nextSection && nextSection.dataset.sectionGroup !== "projects";
 
     const ctx = gsap.context(() => {
       const tl = gsap.timeline({
         scrollTrigger: {
+          id: `carousel-${project.id}`,
           trigger: section,
           start: "top top",
-          end: pinEnd,
+          end: isLastProject ? "+=300%" : "+=200%",
           scrub: true,
           pin: true,
           pinSpacing: true,
@@ -63,6 +67,8 @@ export default function ProjectCarousel({ project }: ProjectCarouselProps) {
         },
       );
 
+      // Pusty ogon: rotacja kończy się na 200%, a karuzela trzyma pin przez
+      // ostatnie 100%, gdy About się wynurza.
       if (isLastProject) {
         tl.to({}, { duration: 1 });
       }

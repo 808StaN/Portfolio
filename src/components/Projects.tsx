@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { motion, useInView } from "framer-motion";
+import { ScrollTrigger } from "gsap/ScrollTrigger";
 import ProjectCarousel from "./ProjectCarousel";
 import {
   featuredProjects,
@@ -58,6 +59,11 @@ export default function Projects() {
 
     loadDescriptions();
     return () => controller.abort();
+  }, []);
+
+  useEffect(() => {
+    const raf = requestAnimationFrame(() => ScrollTrigger.refresh());
+    return () => cancelAnimationFrame(raf);
   }, []);
 
   const getProjectDescription = (project: Project) =>
