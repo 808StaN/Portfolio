@@ -5,9 +5,11 @@ import techIcons from '../constants/techIcons';
 const rowCount = 20;
 const columnCount = 64;
 const layerCount = 2;
-const atlasCols = 8;
+const atlasCols = techIcons.length + 1;
+const atlasRows = 1;
 const cellSize = 256;
-const atlasSize = atlasCols * cellSize;
+const atlasWidth = atlasCols * cellSize;
+const atlasHeight = atlasRows * cellSize;
 
 type ShaderParameters = Parameters<NonNullable<THREE.Material['onBeforeCompile']>>[0];
 
@@ -77,12 +79,12 @@ export default function HeroHoleBackground({ noiseRef }: HeroHoleBackgroundProps
 
     const generateAtlas = async () => {
       const canvas = document.createElement('canvas');
-      canvas.width = atlasSize;
-      canvas.height = atlasSize;
+      canvas.width = atlasWidth;
+      canvas.height = atlasHeight;
       const ctx = canvas.getContext('2d');
       if (!ctx) return null;
 
-      for (let i = 0; i < atlasCols * atlasCols; i += 1) {
+      for (let i = 0; i < atlasCols * atlasRows; i += 1) {
         const col = i % atlasCols;
         const row = Math.floor(i / atlasCols);
         const x = col * cellSize;
@@ -106,9 +108,9 @@ export default function HeroHoleBackground({ noiseRef }: HeroHoleBackgroundProps
             img.onerror = reject;
             img.src = url;
           });
-          const iconSize = cellSize * 0.55;
+          const iconSize = cellSize * 0.50;
           const iconOffset = (cellSize - iconSize) / 2;
-          ctx.globalAlpha = 0.5;
+          ctx.globalAlpha = 0.33;
           ctx.drawImage(img, x + iconOffset, y + iconOffset, iconSize, iconSize);
           ctx.globalAlpha = 1.0;
         }
@@ -212,12 +214,10 @@ export default function HeroHoleBackground({ noiseRef }: HeroHoleBackgroundProps
             `
     float atlasCols = ${atlasCols}.0;
     float cellW = 1.0 / atlasCols;
-    float effectiveIconIndex = vIsTop > 0.5 ? vIconIndex : ${atlasCols * atlasCols - 1}.0;
-    float colAtlas = mod(effectiveIconIndex, atlasCols);
-    float rowAtlas = floor(effectiveIconIndex / atlasCols);
-    vec2 cellOffsetAtlas = vec2(colAtlas * cellW, (atlasCols - 1.0 - rowAtlas) * cellW);
-    float pad = 0.5 / ${atlasSize}.0;
-    vec2 atlasUV = cellOffsetAtlas + vec2(pad) + vMapUv * (vec2(cellW) - 2.0 * pad);
+    float effectiveIconIndex = vIsTop > 0.5 ? vIconIndex : ${atlasCols - 1}.0;
+    float padX = 0.5 / ${atlasWidth}.0;
+    float padY = 0.5 / ${atlasHeight}.0;
+    vec2 atlasUV = vec2(effectiveIconIndex * cellW + padX, padY) + vMapUv * vec2(cellW - 2.0 * padX, 1.0 - 2.0 * padY);
     vec4 sampledDiffuseColor = texture2D(map, atlasUV);
     diffuseColor *= sampledDiffuseColor;
             `,
