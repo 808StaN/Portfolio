@@ -46,7 +46,8 @@ export default function HeroHoleBackground() {
 
     ctx.fillStyle = 'white';
     ctx.fillRect(0, 0, size, size);
-    ctx.clearRect(3, 3, size - 6, size - 6);
+    ctx.fillStyle = '#0D3B90';
+    ctx.fillRect(3, 3, size - 6, size - 6);
 
     const texture = new THREE.CanvasTexture(canvas);
     texture.anisotropy = 42;
