@@ -196,7 +196,10 @@ export default function SectionTiltDirector() {
             updateTiltClip(incomingSection, incomingPanel);
             syncNavBackground();
             const p = this.progress();
-            const blended = lerpHsl(prevHsl, incomingHsl, p);
+            const eased = p < 0.5
+              ? 2 * p * p
+              : 1 - Math.pow(-2 * p + 2, 2) / 2;
+            const blended = lerpHsl(prevHsl, incomingHsl, eased);
             incomingPanel.style.backgroundColor = hslToHex(blended.h, blended.s, blended.l);
           },
           scrollTrigger: {
