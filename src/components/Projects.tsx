@@ -271,6 +271,7 @@ export default function Projects() {
               key={project.id}
               className="section-tilt-section projects-project-section relative"
               data-section-tilt
+              data-section-group="projects"
               data-section-color={project.color}
               data-project-id={project.id}
             >

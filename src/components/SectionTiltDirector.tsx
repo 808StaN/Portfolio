@@ -181,8 +181,38 @@ export default function SectionTiltDirector() {
         const incomingColor = incomingSection.dataset.sectionColor || 'transparent';
         const prevHsl = hexToHsl(prevColor);
         const incomingHsl = hexToHsl(incomingColor);
+        const sameGroup =
+          section.dataset.sectionGroup &&
+          section.dataset.sectionGroup === incomingSection.dataset.sectionGroup;
 
-        gsap.set(incomingPanel, { rotation: incomingAngles[0], backgroundColor: prevColor });
+        gsap.set(incomingPanel, { backgroundColor: prevColor });
+
+        const applyBlend = (p: number) => {
+          const eased = p < 0.5
+            ? 2 * p * p
+            : 1 - Math.pow(-2 * p + 2, 2) / 2;
+          const blended = lerpHsl(prevHsl, incomingHsl, eased);
+          incomingPanel.style.backgroundColor = hslToHex(blended.h, blended.s, blended.l);
+        };
+
+        if (sameGroup) {
+          clipTargets.push({ section: incomingSection, panel: incomingPanel });
+          updateTiltClip(incomingSection, incomingPanel);
+
+          ScrollTrigger.create({
+            trigger: incomingSection,
+            start: 'top bottom',
+            end: 'top top',
+            scrub: true,
+            onUpdate: (self) => {
+              applyBlend(self.progress);
+              syncNavBackground();
+            },
+          });
+          return;
+        }
+
+        gsap.set(incomingPanel, { rotation: incomingAngles[0] });
         clipTargets.push({ section: incomingSection, panel: incomingPanel });
         updateTiltClip(incomingSection, incomingPanel);
 
@@ -195,12 +225,7 @@ export default function SectionTiltDirector() {
           onUpdate: function () {
             updateTiltClip(incomingSection, incomingPanel);
             syncNavBackground();
-            const p = this.progress();
-            const eased = p < 0.5
-              ? 2 * p * p
-              : 1 - Math.pow(-2 * p + 2, 2) / 2;
-            const blended = lerpHsl(prevHsl, incomingHsl, eased);
-            incomingPanel.style.backgroundColor = hslToHex(blended.h, blended.s, blended.l);
+            applyBlend(this.progress());
           },
           scrollTrigger: {
             trigger: section,

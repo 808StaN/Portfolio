@@ -564,6 +564,19 @@ html.custom-scrollbar-dragging * {
   min-height: 100svh;
 }
 
+[data-section-group="projects"] + [data-section-group="projects"] {
+  margin-top: -1px;
+}
+
+[data-section-group="projects"] {
+  clip-path: none;
+}
+
+[data-section-group="projects"] > .section-tilt-panel {
+  will-change: auto;
+  backface-visibility: visible;
+}
+
 .projects-project-panel {
   display: flex;
   align-items: center;
