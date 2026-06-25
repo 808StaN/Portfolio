@@ -7,7 +7,6 @@ import {
   type Project,
   type ProjectImage,
 } from "../data/projects";
-import SectionShaderBackground from "./SectionShaderBackground";
 
 const easeOut = [0.16, 1, 0.3, 1] as const;
 const PROJECT_IMAGE_SIZES = "(max-width: 768px) calc(100vw - 32px), (max-width: 1200px) 70vw, 1100px";
@@ -275,11 +274,7 @@ export default function Projects() {
               data-section-color={project.color}
               data-project-id={project.id}
             >
-              <div className="section-tilt-panel projects-project-panel">
-                <div className="section-shader-layer" aria-hidden="true">
-                  <SectionShaderBackground color={project.color} />
-                </div>
-
+              <div className="section-tilt-panel projects-project-panel" style={{ background: project.color }}>
                 <div className="section-tilt-container section-inner projects-inner projects-project-inner relative z-10">
                   <div className="projects-header">
                     <motion.h2

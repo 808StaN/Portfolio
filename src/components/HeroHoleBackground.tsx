@@ -5,8 +5,10 @@ const rowCount = 20;
 const columnCount = 64;
 const layerCount = 2;
 
-type ShaderWithTime = THREE.Shader & {
-  uniforms: THREE.Shader['uniforms'] & {
+type ShaderParameters = Parameters<NonNullable<THREE.Material['onBeforeCompile']>>[0];
+
+type ShaderWithTime = ShaderParameters & {
+  uniforms: ShaderParameters['uniforms'] & {
     time: { value: number };
   };
 };
@@ -38,7 +40,7 @@ export default function HeroHoleBackground() {
     geometry.setAttribute('rcl', new THREE.InstancedBufferAttribute(new Float32Array(rowCol), 3));
 
     const canvas = document.createElement('canvas');
-    const size = 1024;
+    const size = 256;
     canvas.width = size;
     canvas.height = size;
     const ctx = canvas.getContext('2d');
@@ -47,9 +49,10 @@ export default function HeroHoleBackground() {
     ctx.fillStyle = 'white';
     ctx.fillRect(0, 0, size, size);
     ctx.fillStyle = '#0D3B90';
-    ctx.fillRect(3, 3, size - 6, size - 6);
+    ctx.fillRect(0.25, 0.25, size - 0.5, size - 0.5);
 
     const texture = new THREE.CanvasTexture(canvas);
+    texture.colorSpace = THREE.SRGBColorSpace;
     texture.anisotropy = 42;
 
     const material = new THREE.MeshBasicMaterial({ map: texture });

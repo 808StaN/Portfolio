@@ -237,11 +237,6 @@ body {
   height: 100% !important;
 }
 
-.hero-shader-layer {
-  z-index: 0;
-  opacity: 0.50;
-}
-
 ::selection {
   background: rgba(79, 142, 247, 0.3);
   color: #fff;
@@ -440,20 +435,6 @@ html.custom-scrollbar-dragging * {
 
 .section-shell .section-tilt-container {
   margin-block: 0;
-}
-
-.section-shader-layer {
-  position: absolute;
-  inset: 0;
-  z-index: 0;
-  pointer-events: none;
-}
-
-.section-shader-layer .shader-preview,
-.section-shader-layer .shader-preview canvas {
-  display: block;
-  width: 100% !important;
-  height: 100% !important;
 }
 
 .section-tilt-container {

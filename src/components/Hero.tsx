@@ -1,7 +1,6 @@
 import { useEffect, useRef, type MouseEvent } from 'react';
 import { motion, useReducedMotion } from 'framer-motion';
 import HeroHoleBackground from './HeroHoleBackground';
-import SectionShaderBackground from './SectionShaderBackground';
 import { sectionColors } from '../constants/sectionColors';
 import { scrollToY, useLenis } from './LenisScroll';
 
@@ -56,11 +55,8 @@ export default function Hero() {
       data-section-color={sectionColors.home}
       aria-label="Hero"
     >
-      <div className="section-tilt-panel">
+      <div className="section-tilt-panel" style={{ background: sectionColors.home }}>
         <HeroHoleBackground />
-        <div className="section-shader-layer hero-shader-layer" aria-hidden="true">
-          <SectionShaderBackground color={sectionColors.home} />
-        </div>
 
         {/* Content */}
         <div className="section-tilt-container hero-inner relative z-10 flex flex-col justify-between min-h-screen pt-24 md:pt-28 pb-12 md:pb-14">

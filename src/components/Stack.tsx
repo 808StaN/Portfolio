@@ -1,6 +1,5 @@
 import { useRef } from 'react';
 import { motion, useInView } from 'framer-motion';
-import SectionShaderBackground from './SectionShaderBackground';
 import { sectionColors } from '../constants/sectionColors';
 
 const easeOut = [0.16, 1, 0.3, 1] as const;
@@ -106,11 +105,7 @@ export default function Stack() {
 
   return (
     <section id="stack" className="section-tilt-section section-shell relative overflow-hidden" data-section-tilt data-section-color={sectionColors.stack}>
-      <div className="section-tilt-panel">
-        <div className="section-shader-layer" aria-hidden="true">
-          <SectionShaderBackground color={sectionColors.stack} />
-        </div>
-
+      <div className="section-tilt-panel" style={{ background: sectionColors.stack }}>
         <div className="section-tilt-container section-inner relative" ref={ref}>
         <div>
           <motion.h2
