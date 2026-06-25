@@ -433,6 +433,16 @@ html.custom-scrollbar-dragging * {
   padding-bottom: var(--section-space-y);
 }
 
+.section-tilt-panel::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: url('/noise.png');
+  background-size: 250px;
+  pointer-events: none;
+  z-index: 2;
+}
+
 .section-shell .section-tilt-container {
   margin-block: 0;
 }
