@@ -223,21 +223,22 @@ body {
   z-index: 1;
 }
 
-.hero-clouds-layer {
+.hero-hole-layer {
   position: absolute;
   inset: 0;
-  z-index: 0;
+  z-index: 1;
   pointer-events: none;
+  background: transparent;
 }
 
-.hero-clouds-layer canvas {
-  display: block !important;
+.hero-hole-canvas {
+  display: block;
   width: 100% !important;
   height: 100% !important;
 }
 
 .hero-shader-layer {
-  z-index: 1;
+  z-index: 0;
   opacity: 0.50;
 }
 
