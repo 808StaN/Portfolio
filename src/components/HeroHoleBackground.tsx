@@ -1,6 +1,6 @@
 import { useEffect, useRef, type RefObject } from 'react';
 import * as THREE from 'three';
-import techIcons from '../constants/techIcons.json';
+import techIcons from '../constants/techIcons';
 
 const rowCount = 20;
 const columnCount = 64;
@@ -63,8 +63,15 @@ export default function HeroHoleBackground({ noiseRef }: HeroHoleBackgroundProps
     geometry.setAttribute('rcl', new THREE.InstancedBufferAttribute(new Float32Array(rowCol), 3));
 
     const iconIndices = new Float32Array(rowCount * columnCount * layerCount);
-    for (let i = 0; i < iconIndices.length; i += 1) {
-      iconIndices[i] = i % techIcons.length;
+    let iconIdx = 0;
+    for (let i = 0; i < rowCount; i += 1) {
+      for (let j = 0; j < layerCount; j += 1) {
+        for (let k = 0; k < columnCount; k += 1) {
+          const h = ((i * 73856093) ^ (k * 19349663) ^ (j * 83492791)) >>> 0;
+          iconIndices[iconIdx] = h % techIcons.length;
+          iconIdx += 1;
+        }
+      }
     }
     geometry.setAttribute('iconIndex', new THREE.InstancedBufferAttribute(iconIndices, 1));
 
@@ -87,7 +94,7 @@ export default function HeroHoleBackground({ noiseRef }: HeroHoleBackgroundProps
         ctx.fillRect(x + 0.25, y + 0.25, cellSize - 0.5, cellSize - 0.5);
 
         if (i < techIcons.length) {
-          const iconPath = techIcons[i] as string;
+          const iconPath = techIcons[i].path;
           const renderSize = 512;
           const svgString = `<svg xmlns="http://www.w3.org/2000/svg" width="${renderSize}" height="${renderSize}" viewBox="0 0 24 24"><path d="${iconPath}" fill="white"/></svg>`;
           const url = `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svgString)}`;
