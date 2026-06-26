@@ -3,6 +3,7 @@ import { motion, useReducedMotion } from 'framer-motion';
 import HeroHoleBackground from './HeroHoleBackground';
 import { sectionColors } from '../constants/sectionColors';
 import { scrollToY, useLenis } from './LenisScroll';
+import GravityLink from './ui/GravityLink';
 
 const words = ['fast', 'scalable', 'reliable', 'responsive', 'modern'];
 
@@ -136,12 +137,22 @@ export default function Hero() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.85, delay: 0.82, ease: easeOut }}
             >
-              <a href="#work" className="hero-cta hero-cta-primary" onClick={handleProjectsClick}>
-                View projects
-              </a>
-              <a href="/Dawid_Stanisz_CV.pdf" download className="hero-cta hero-cta-secondary">
-                Download CV
-              </a>
+              <GravityLink
+                href="#work"
+                text="View projects"
+                variant="primary"
+                icon="arrow-right"
+                sizing={{ paddingX: 28, paddingY: 14, fontSize: 14 }}
+                onClick={handleProjectsClick}
+              />
+              <GravityLink
+                href="/Dawid_Stanisz_CV.pdf"
+                download
+                text="Download CV"
+                variant="secondary"
+                icon="arrow-up-right"
+                sizing={{ paddingX: 24, paddingY: 14, fontSize: 14 }}
+              />
             </motion.div>
           </div>
         </div>

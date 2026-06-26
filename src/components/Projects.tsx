@@ -3,6 +3,7 @@ import { motion, useInView } from "framer-motion";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import ProjectCarousel from "./ProjectCarousel";
 import ProjectTitleStretch from "./ProjectTitleStretch";
+import GravityLink from "./ui/GravityLink";
 import {
   featuredProjects,
   type Project,
@@ -125,14 +126,16 @@ export default function Projects() {
                         ))}
                       </div>
                       {project.link ? (
-                        <a
+                        <GravityLink
                           href={project.link}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="projects-repo-btn"
-                        >
-                          {project.linkLabel ?? "View repository"}
-                        </a>
+                          text={project.linkLabel ?? "View repository"}
+                          variant="project"
+                          icon="arrow-up-right"
+                          sizing={{ paddingX: 17, paddingY: 10, fontSize: 12.5 }}
+                          style={{ marginTop: 16 }}
+                        />
                       ) : null}
                     </motion.div>
 

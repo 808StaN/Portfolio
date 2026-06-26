@@ -2,6 +2,7 @@ import { useRef } from 'react';
 import { motion, useInView } from 'framer-motion';
 import { sectionColors } from '../constants/sectionColors';
 import ProjectTitleStretch from './ProjectTitleStretch';
+import GravityLink from './ui/GravityLink';
 
 const easeOut = [0.16, 1, 0.3, 1] as const;
 
@@ -54,16 +55,21 @@ export default function About() {
               </p>
             </motion.div>
 
-            <motion.a
-              href="/Dawid_Stanisz_CV.pdf"
-              download
-              className="projects-repo-btn about-cv-btn"
+            <motion.div
+              className="about-cv-btn"
               initial={{ opacity: 0, y: 24 }}
               animate={inView ? { opacity: 1, y: 0 } : {}}
               transition={{ duration: 0.8, delay: 0.28, ease: easeOut }}
             >
-              Download CV
-            </motion.a>
+              <GravityLink
+                href="/Dawid_Stanisz_CV.pdf"
+                download
+                text="Download CV"
+                variant="secondary"
+                icon="arrow-up-right"
+                sizing={{ paddingX: 18, paddingY: 10, fontSize: 12.5 }}
+              />
+            </motion.div>
           </div>
 
           <div className="flex flex-col gap-8">
