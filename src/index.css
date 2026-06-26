@@ -466,7 +466,7 @@ html.custom-scrollbar-dragging * {
   justify-content: flex-start;
   padding-top: clamp(88px, 10vh, 116px);
   padding-bottom: var(--section-space-y);
-  border-radius: var(--panel-radius);
+  border-radius: var(--panel-radius) var(--panel-radius) 0 0;
 }
 
 .section-tilt-panel::after {
