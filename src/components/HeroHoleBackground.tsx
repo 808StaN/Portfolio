@@ -3,10 +3,8 @@ import * as THREE from 'three';
 import techIcons from '../constants/techIcons';
 
 const rowCount = 20;
-const baseColumnCount = 64;
 const columnCount = 48;
 const layerCount = 2;
-const oneStep = 0.2765 * (baseColumnCount / columnCount);
 const atlasCols = techIcons.length + 1;
 const atlasRows = 1;
 const cellSize = 256;
@@ -159,17 +157,12 @@ export default function HeroHoleBackground({ noiseRef }: HeroHoleBackgroundProps
             `
     const float columnCount = float(${columnCount});
     const float arc = 2.0 * 3.14159265359 / columnCount;
-    const float oneStep = ${oneStep.toFixed(6)};
-
-    float shift = 3.0 - fract(time) * oneStep;
-
-    float radius = shift;
-    float zShift = 0.0;
-    int x = int(rcl.x);
-    for (int i = 0; i < x; i++) {
-      radius += radius * arc;
-      zShift += radius * arc;
-    }
+    const float initialRadius = 3.0;
+    float growth = 1.0 + arc;
+    float phase = fract(time);
+    float virtualRow = rcl.x - phase;
+    float radius = initialRadius * pow(growth, virtualRow);
+    float zPosition = initialRadius * (pow(growth, virtualRow + 1.0) - growth + 1.0);
 
     vec4 mvPosition = vec4(transformed, 1.0);
 
@@ -178,13 +171,13 @@ export default function HeroHoleBackground({ noiseRef }: HeroHoleBackgroundProps
     }
 
     mvPosition.xz *= radius * arc;
-    mvPosition.z += zShift + shift;
+    mvPosition.z += zPosition;
 
     float t = sin(rcl.y / 5.3) * 1.1
             + sin(rcl.y / 1.3) * 1.5
             + cos(rcl.y / 1.7) * 2.5;
 
-    t = 2.0 - rcl.x + abs(t) + fract(time);
+    t = 2.0 - virtualRow + abs(t);
     t += rcl.z * abs(sin(rcl.y));
     t = max(t, 0.0);
     mvPosition.y -= t * t * t + rcl.z;
