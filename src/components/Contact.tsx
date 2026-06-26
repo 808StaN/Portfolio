@@ -1,6 +1,7 @@
 import { useRef } from 'react';
 import { motion, useInView } from 'framer-motion';
 import { sectionColors } from '../constants/sectionColors';
+import ProjectTitleStretch from './ProjectTitleStretch';
 
 const easeOut = [0.16, 1, 0.3, 1] as const;
 
@@ -53,20 +54,10 @@ export default function Contact() {
         <div className="section-tilt-container section-inner contact-inner relative" ref={ref}>
         <div className="grid grid-cols-1 lg:grid-cols-[minmax(0,1.04fr)_minmax(0,0.96fr)] gap-14 lg:gap-24">
           <div>
-            <motion.h2
-              className="section-title text-white/90 max-w-[12ch]"
-              style={{ fontSize: 'clamp(2rem, 3.7vw, 3.9rem)', marginBottom: 'clamp(1.75rem, 3.2vw, 2.6rem)' }}
-              initial={{ opacity: 0, y: 30 }}
-              animate={inView ? { opacity: 1, y: 0 } : {}}
-              transition={{ duration: 0.8, delay: 0.1, ease: easeOut }}
-            >
-              Open to new
-              <br />
-              <span style={{ color: 'rgba(255,255,255,0.5)' }}>opportunities</span>
-            </motion.h2>
+            <ProjectTitleStretch title="Contact Me" projectId="contact" />
 
             <motion.p
-              className="text-base leading-relaxed max-w-[62ch]"
+              className="contact-intro text-base leading-relaxed max-w-[62ch]"
               style={{ color: 'rgba(255,255,255,0.56)', fontFamily: 'var(--font-sans)' }}
               initial={{ opacity: 0, y: 20 }}
               animate={inView ? { opacity: 1, y: 0 } : {}}
