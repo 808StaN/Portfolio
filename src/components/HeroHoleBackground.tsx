@@ -3,8 +3,10 @@ import * as THREE from 'three';
 import techIcons from '../constants/techIcons';
 
 const rowCount = 20;
-const columnCount = 64;
+const baseColumnCount = 64;
+const columnCount = 48;
 const layerCount = 2;
+const oneStep = 0.2765 * (baseColumnCount / columnCount);
 const atlasCols = techIcons.length + 1;
 const atlasRows = 1;
 const cellSize = 256;
@@ -157,7 +159,7 @@ export default function HeroHoleBackground({ noiseRef }: HeroHoleBackgroundProps
             `
     const float columnCount = float(${columnCount});
     const float arc = 2.0 * 3.14159265359 / columnCount;
-    const float oneStep = 0.283;
+    const float oneStep = ${oneStep.toFixed(6)};
 
     float shift = 3.0 - fract(time) * oneStep;
 
