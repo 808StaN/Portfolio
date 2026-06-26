@@ -648,7 +648,7 @@ html.custom-scrollbar-dragging * {
   transform: translateY(clamp(64px, 5vh, 96px));
   margin-left: -2px;
   /* Stała wysokość slotu (scaleY:1) — opis zawsze 16px niżej, bez skakania */
-  font-size: clamp(2.5rem, 4.5vw, 5.2rem);
+  font-size: clamp(2.35rem, 4.1vw, 4.85rem);
   line-height: 1.02;
   height: 1.02em;
   overflow: visible;
@@ -1158,7 +1158,7 @@ html.custom-scrollbar-dragging * {
   }
 
   .projects-title-stretch {
-    font-size: clamp(2rem, 6.2vw, 3.8rem);
+    font-size: clamp(1.9rem, 5.8vw, 3.55rem);
   }
 
   .projects-description {
