@@ -661,6 +661,7 @@ html.custom-scrollbar-dragging * {
   width: 100%;
   white-space: nowrap;
   overflow: visible;
+  transform-origin: left 80%;
 }
 
 .projects-title {

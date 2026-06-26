@@ -64,7 +64,16 @@ export default function Projects() {
 
   useEffect(() => {
     const raf = requestAnimationFrame(() => ScrollTrigger.refresh());
-    return () => cancelAnimationFrame(raf);
+    // Podmiana fontu (Syne) zmienia metryki tytułów — przelicz triggery raz, gdy
+    // font jest gotowy. Jeden globalny refresh zamiast pomiaru per-tytuł.
+    let cancelled = false;
+    document.fonts?.ready.then(() => {
+      if (!cancelled) ScrollTrigger.refresh();
+    });
+    return () => {
+      cancelled = true;
+      cancelAnimationFrame(raf);
+    };
   }, []);
 
   const getProjectDescription = (project: Project) =>
