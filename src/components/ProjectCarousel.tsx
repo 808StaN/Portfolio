@@ -6,7 +6,7 @@ import { getProjectImages, type Project } from "../data/projects";
 gsap.registerPlugin(ScrollTrigger);
 
 const CELL_COUNT = 4;
-const RADIUS = 500;
+const RADIUS = 619;
 const ANGLE_STEP = 360 / CELL_COUNT;
 
 type ProjectCarouselProps = {
