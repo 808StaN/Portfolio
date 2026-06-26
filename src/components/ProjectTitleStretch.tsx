@@ -10,7 +10,7 @@ gsap.registerPlugin(ScrollTrigger);
 //
 // Tekst jest renderowany OD RAZU w dużym foncie (×STRETCH_START), a transform tylko go
 // POMNIEJSZA (scale <= 1). Downscaling rastra jest zawsze ostry, więc nie ma pikselozy.
-export const STRETCH_START = 3;
+export const STRETCH_START = 4;
 export const STRETCH_END = 1;
 
 // Stała kompensacja szerokości: font jest ×STRETCH_START szerszy, więc ściskamy go z powrotem.
@@ -19,11 +19,16 @@ const REST_SCALE_Y = STRETCH_END / STRETCH_START;
 // Deterministyczny pivot skalowania (dół widocznych liter). Stały — bez pomiaru DOM,
 // dzięki czemu origin nigdy nie zależy od timingu refreshy (źródło buga RiftPicka).
 const BASELINE_RATIO = 0.8;
-const TRANSFORM_ORIGIN = `left ${BASELINE_RATIO * 100}%`;
+
+function getTransformOrigin(edgeAlign: "left" | "right") {
+  const y = `${BASELINE_RATIO * 100}%`;
+  return edgeAlign === "right" ? `right ${y}` : `left ${y}`;
+}
 
 type ProjectTitleStretchProps = {
   title: string;
   projectId: string;
+  edgeAlign?: "left" | "right";
 };
 
 function applyTitleStretch(scaleEl: HTMLElement, progress: number) {
@@ -35,8 +40,10 @@ function applyTitleStretch(scaleEl: HTMLElement, progress: number) {
 export default function ProjectTitleStretch({
   title,
   projectId,
+  edgeAlign = "left",
 }: ProjectTitleStretchProps) {
   const scaleRef = useRef<HTMLDivElement>(null);
+  const transformOrigin = getTransformOrigin(edgeAlign);
 
   const lenis = useLenis();
 
@@ -47,7 +54,7 @@ export default function ProjectTitleStretch({
     const section = scaleEl.closest<HTMLElement>("[data-section-tilt]");
     if (!section) return;
 
-    scaleEl.style.transformOrigin = TRANSFORM_ORIGIN;
+    scaleEl.style.transformOrigin = transformOrigin;
 
     const reducedMotion = window.matchMedia(
       "(prefers-reduced-motion: reduce)",
@@ -73,15 +80,17 @@ export default function ProjectTitleStretch({
     return () => {
       trigger.kill();
     };
-  }, [lenis, projectId]);
+  }, [lenis, projectId, transformOrigin]);
 
   return (
-    <div className="projects-title-stretch">
+    <div
+      className={`projects-title-stretch${edgeAlign === "right" ? " is-edge-right" : ""}`}
+    >
       <div
         className="projects-title-scale"
         ref={scaleRef}
         style={{
-          transformOrigin: TRANSFORM_ORIGIN,
+          transformOrigin,
           transform: `scale(${BASE_SCALE_X}, ${REST_SCALE_Y})`,
         }}
       >

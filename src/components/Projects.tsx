@@ -101,7 +101,7 @@ export default function Projects() {
                 <div className="section-tilt-container section-inner projects-inner projects-project-inner relative z-10">
                   <div className={`projects-layout ${reversed ? "is-reversed" : ""}`}>
                     <motion.div
-                      className="projects-meta"
+                      className={`projects-meta${reversed ? " is-edge-right" : ""}`}
                       initial={{ opacity: 0, y: 24 }}
                       animate={inView ? { opacity: 1, y: 0 } : {}}
                       transition={{
@@ -113,6 +113,7 @@ export default function Projects() {
                       <ProjectTitleStretch
                         title={slashTitle(project.title)}
                         projectId={project.id}
+                        edgeAlign={reversed ? "right" : "left"}
                       />
                       <p className="projects-category">{project.category}</p>
                       <p className="projects-description">

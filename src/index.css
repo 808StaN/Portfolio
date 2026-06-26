@@ -647,6 +647,37 @@ html.custom-scrollbar-dragging * {
   grid-column: 2;
 }
 
+.projects-meta.is-edge-right {
+  justify-self: end;
+  margin-left: auto;
+  text-align: right;
+}
+
+.projects-meta.is-edge-right .projects-description {
+  margin-left: auto;
+}
+
+.projects-meta.is-edge-right .projects-tagline {
+  justify-content: flex-end;
+}
+
+.projects-title-stretch.is-edge-right {
+  margin-left: 0;
+  margin-right: 0;
+}
+
+/* Lustrzane odbicie RiftPicka: prawa krawędź nieskalowanego boxa = prawa krawędź slotu */
+.projects-title-stretch.is-edge-right .projects-title-scale {
+  left: auto;
+  right: 0;
+  width: auto;
+  transform-origin: right 80%;
+}
+
+.projects-title-stretch.is-edge-right .projects-title {
+  display: inline-block;
+}
+
 .projects-kicker {
   display: block;
   margin-bottom: 14px;
@@ -682,7 +713,7 @@ html.custom-scrollbar-dragging * {
   font-family: var(--font-display);
   font-weight: 600;
   font-size: 1em;
-  line-height: 1.5;
+  line-height: 1.25;
   letter-spacing: -0.02em;
   color: rgba(255, 255, 255, 0.95);
   margin: 0;
