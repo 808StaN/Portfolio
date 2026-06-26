@@ -1,6 +1,7 @@
 import { useRef } from 'react';
 import { motion, useInView } from 'framer-motion';
 import { sectionColors } from '../constants/sectionColors';
+import ProjectTitleStretch from './ProjectTitleStretch';
 
 const easeOut = [0.16, 1, 0.3, 1] as const;
 
@@ -27,20 +28,10 @@ export default function About() {
         <div className="section-tilt-container section-inner relative" ref={ref}>
         <div className="grid grid-cols-1 lg:grid-cols-[minmax(0,1.08fr)_minmax(0,0.92fr)] gap-12 lg:gap-16">
           <div>
-            <motion.h2
-              className="section-title text-white/90 max-w-[20ch]"
-              style={{ fontSize: 'clamp(1.95rem, 3.5vw, 3.7rem)', marginBottom: 'clamp(1.75rem, 3.2vw, 2.6rem)' }}
-              initial={{ opacity: 0, y: 30 }}
-              animate={inView ? { opacity: 1, y: 0 } : {}}
-              transition={{ duration: 0.8, delay: 0.1, ease: easeOut }}
-            >
-              Building products
-              <br />
-              <span style={{ color: 'rgba(255,255,255,0.56)' }}>with frontend precision and backend reliability</span>
-            </motion.h2>
+            <ProjectTitleStretch title="About Me" projectId="about" />
 
             <motion.div
-              className="space-y-4 max-w-[66ch] mb-7"
+              className="about-intro space-y-4 max-w-[66ch] mb-7"
               initial={{ opacity: 0, y: 20 }}
               animate={inView ? { opacity: 1, y: 0 } : {}}
               transition={{ duration: 0.8, delay: 0.2, ease: easeOut }}

@@ -10,7 +10,7 @@ gsap.registerPlugin(ScrollTrigger);
 //
 // Tekst jest renderowany OD RAZU w dużym foncie (×STRETCH_START), a transform tylko go
 // POMNIEJSZA (scale <= 1). Downscaling rastra jest zawsze ostry, więc nie ma pikselozy.
-export const STRETCH_START = 4;
+export const STRETCH_START = 3;
 export const STRETCH_END = 1;
 
 // Stała kompensacja szerokości: font jest ×STRETCH_START szerszy, więc ściskamy go z powrotem.

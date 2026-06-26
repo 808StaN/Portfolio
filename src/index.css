@@ -668,7 +668,7 @@ html.custom-scrollbar-dragging * {
   font-family: var(--font-display);
   font-weight: 600;
   font-size: 1em;
-  line-height: 1.02;
+  line-height: 1.25;
   letter-spacing: -0.02em;
   color: rgba(255, 255, 255, 0.95);
   margin: 0;
@@ -740,6 +740,10 @@ html.custom-scrollbar-dragging * {
 }
 
 /* About */
+.about-intro {
+  margin-top: 16px;
+}
+
 .about-cv-btn {
   margin-top: 15px;
   white-space: nowrap;
