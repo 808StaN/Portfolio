@@ -95,14 +95,15 @@ export default function About() {
                       </h3>
                       <p className="about-cert-issuer">{certificate.issuer}</p>
                     </div>
-                    <a
+                    <GravityLink
                       href={certificate.href}
                       target="_blank"
                       rel="noreferrer"
-                      className="projects-repo-btn about-cert-link"
-                    >
-                      View certificate
-                    </a>
+                      text="View certificate"
+                      variant="project"
+                      icon="arrow-up-right"
+                      sizing={{ paddingX: 14, paddingY: 8, fontSize: 11.5 }}
+                    />
                   </motion.article>
                 ))}
               </div>
