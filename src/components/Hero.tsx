@@ -141,7 +141,7 @@ export default function Hero() {
                 href="#work"
                 text="View projects"
                 variant="primary"
-                icon="arrow-right"
+                icon="arrow-down"
                 sizing={{ paddingX: 28, paddingY: 14, fontSize: 14 }}
                 onClick={handleProjectsClick}
               />
@@ -150,7 +150,7 @@ export default function Hero() {
                 download
                 text="Download CV"
                 variant="secondary"
-                icon="arrow-up-right"
+                icon="download"
                 sizing={{ paddingX: 24, paddingY: 14, fontSize: 14 }}
               />
             </motion.div>

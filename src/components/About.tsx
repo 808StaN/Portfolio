@@ -66,7 +66,7 @@ export default function About() {
                 download
                 text="Download CV"
                 variant="secondary"
-                icon="arrow-up-right"
+                icon="download"
                 sizing={{ paddingX: 18, paddingY: 10, fontSize: 12.5 }}
               />
             </motion.div>

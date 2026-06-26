@@ -1,7 +1,7 @@
 import { useCallback, useRef, useState, type MouseEvent } from 'react';
 import { motion, useMotionValue, useSpring, type HTMLMotionProps } from 'framer-motion';
 
-type GravityIcon = 'none' | 'arrow-right' | 'arrow-up-right' | 'chevron-right' | 'plus' | 'sparkle' | 'lightning' | 'star';
+type GravityIcon = 'none' | 'arrow-right' | 'arrow-down' | 'arrow-up-right' | 'download' | 'chevron-right' | 'plus' | 'sparkle' | 'lightning' | 'star';
 type GravityVariant = 'primary' | 'secondary' | 'project';
 
 type GravityColors = {
@@ -77,11 +77,26 @@ function IconSvg({ name, size = 16, color = 'currentColor' }: { name: GravityIco
           <polyline points="12 5 19 12 12 19" />
         </svg>
       );
+    case 'arrow-down':
+      return (
+        <svg style={common} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+          <line x1="12" y1="5" x2="12" y2="19" />
+          <polyline points="19 12 12 19 5 12" />
+        </svg>
+      );
     case 'arrow-up-right':
       return (
         <svg style={common} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
           <line x1="7" y1="17" x2="17" y2="7" />
           <polyline points="7 7 17 7 17 17" />
+        </svg>
+      );
+    case 'download':
+      return (
+        <svg style={common} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+          <path d="M12 3v12" />
+          <path d="m7 10 5 5 5-5" />
+          <path d="M5 21h14" />
         </svg>
       );
     case 'chevron-right':
