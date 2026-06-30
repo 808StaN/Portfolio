@@ -1,4 +1,4 @@
-import { useEffect, useRef, type RefObject } from 'react';
+import { useEffect, useRef } from 'react';
 import * as THREE from 'three';
 import techIcons from '../constants/techIcons';
 
@@ -19,11 +19,7 @@ type ShaderWithTime = ShaderParameters & {
   };
 };
 
-type HeroHoleBackgroundProps = {
-  noiseRef?: RefObject<HTMLDivElement | null>;
-};
-
-export default function HeroHoleBackground({ noiseRef }: HeroHoleBackgroundProps = {}) {
+export default function HeroHoleBackground() {
   const containerRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
@@ -237,10 +233,6 @@ export default function HeroHoleBackground({ noiseRef }: HeroHoleBackgroundProps
       const render = (timestamp = 0) => {
         time.value = timestamp / 1000;
         scene.rotation.y = -timestamp / 10000;
-        if (noiseRef?.current) {
-          const rot = scene.rotation.y;
-          noiseRef.current.style.transform = `translate(${Math.sin(rot) * 40}px, ${Math.cos(rot) * 30}px)`;
-        }
         renderer!.render(scene, camera);
       };
 
