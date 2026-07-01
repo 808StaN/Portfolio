@@ -1286,6 +1286,12 @@ html.custom-scrollbar-dragging * {
     max-width: none;
   }
 
+  .projects-title-stretch {
+    transform: translateY(clamp(30px, 5vw, 44px));
+    margin-bottom: clamp(12px, 3vw, 20px);
+    font-size: clamp(1.85rem, 9vw, 3rem);
+  }
+
   .about-cert-item {
     flex-direction: column;
     align-items: flex-start;
@@ -1318,6 +1324,12 @@ html.custom-scrollbar-dragging * {
 @media (max-width: 480px) {
   :root {
     --carousel-width: min(390px, calc(100vw - 20px));
+  }
+
+  .projects-title-stretch {
+    transform: translateY(28px);
+    margin-bottom: 14px;
+    font-size: clamp(1.7rem, 8.5vw, 2.55rem);
   }
 
   .section-label {
