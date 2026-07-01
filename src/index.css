@@ -1145,6 +1145,7 @@ html.custom-scrollbar-dragging * {
 }
 
 .mobile-menu-backdrop {
+  z-index: 10000;
   background:
     radial-gradient(
       90% 52% at 50% -12%,

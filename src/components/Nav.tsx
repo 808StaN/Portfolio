@@ -164,7 +164,7 @@ export default function Nav() {
       <AnimatePresence>
         {menuOpen && (
           <motion.div
-            className="mobile-menu-backdrop fixed inset-0 z-40 flex flex-col justify-center items-center"
+            className="mobile-menu-backdrop fixed inset-0 z-[10000] flex flex-col justify-center items-center"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
