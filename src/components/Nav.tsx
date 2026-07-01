@@ -170,6 +170,15 @@ export default function Nav() {
             exit={{ opacity: 0 }}
             transition={{ duration: 0.3 }}
           >
+            <button
+              type="button"
+              className="absolute right-5 top-5 flex h-11 w-11 items-center justify-center border-none bg-transparent text-white"
+              onClick={() => setMenuOpen(false)}
+              aria-label="Close menu"
+            >
+              <span className="absolute h-px w-7 rotate-45 bg-white" />
+              <span className="absolute h-px w-7 -rotate-45 bg-white" />
+            </button>
             <nav className="flex flex-col items-center gap-10">
               {links.map((link, i) => (
                 <motion.button
