@@ -109,10 +109,11 @@
   --panel-radius: clamp(16px, 2.4vw, 28px);
   --font-sans: 'Inter', system-ui, sans-serif;
   --font-display: 'Syne', system-ui, sans-serif;
-  /* Karuzela 3D projektów (16:9, bazowo 840×472 +10%) */
-  --carousel-width: 1039.5px;
-  --carousel-height: 584.1px;
-  --carousel-depth: -680.6px;
+  /* Karuzela 3D projektów (16:9, skalowana do viewportu) */
+  --carousel-width: min(1039.5px, calc(100vw - 32px));
+  --carousel-height: calc(var(--carousel-width) * 0.562);
+  --carousel-radius: calc(var(--carousel-width) * 0.5955);
+  --carousel-depth: calc(var(--carousel-width) * -0.6547);
   --projects-gallery-height: min(64vh, 866px);
 }
 
@@ -1215,6 +1216,10 @@ html.custom-scrollbar-dragging * {
 }
 
 @media (max-width: 980px) {
+  :root {
+    --carousel-width: min(760px, calc(100vw - 28px));
+  }
+
   .hero-inner {
     min-height: 100svh;
     padding-top: 88px;
@@ -1233,7 +1238,11 @@ html.custom-scrollbar-dragging * {
   .projects-carousel-wrap {
     order: 2;
     margin-top: 2px;
-    min-height: 60svh;
+    min-height: auto;
+  }
+
+  .scene {
+    perspective: 760px;
   }
 
   .projects-layout {
@@ -1254,6 +1263,7 @@ html.custom-scrollbar-dragging * {
 
   :root {
     --content-gutter: clamp(12px, 4.5vw, 20px);
+    --carousel-width: min(560px, calc(100vw - 24px));
   }
 
   .projects-monopo {
@@ -1287,7 +1297,11 @@ html.custom-scrollbar-dragging * {
   }
 
   .projects-carousel-wrap {
-    min-height: 50svh;
+    min-height: auto;
+  }
+
+  .scene {
+    perspective: 680px;
   }
 
   .projects-layout {
@@ -1301,6 +1315,10 @@ html.custom-scrollbar-dragging * {
 }
 
 @media (max-width: 480px) {
+  :root {
+    --carousel-width: min(390px, calc(100vw - 20px));
+  }
+
   .section-label {
     letter-spacing: 0.12em;
   }

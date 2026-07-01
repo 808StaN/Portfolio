@@ -6,7 +6,6 @@ import { getProjectImages, type Project } from "../data/projects";
 gsap.registerPlugin(ScrollTrigger);
 
 const CELL_COUNT = 4;
-const RADIUS = 619;
 const ANGLE_STEP = 360 / CELL_COUNT;
 
 type ProjectCarouselProps = {
@@ -28,7 +27,7 @@ export default function ProjectCarousel({ project }: ProjectCarouselProps) {
     const cells = carousel.querySelectorAll<HTMLElement>(".carousel__cell");
     cells.forEach((cell, i) => {
       const angle = i * ANGLE_STEP;
-      cell.style.transform = `rotateY(${angle}deg) translateZ(${RADIUS}px)`;
+      cell.style.transform = `rotateY(${angle}deg) translateZ(var(--carousel-radius))`;
     });
 
     // "Ostatni projekt" = ten, po którym następuje sekcja spoza grupy projektów
