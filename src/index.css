@@ -1146,33 +1146,25 @@ html.custom-scrollbar-dragging * {
 
 .mobile-menu-backdrop {
   z-index: 10000;
-  background:
-    radial-gradient(
-      90% 52% at 50% -12%,
-      rgba(79, 142, 247, 0.2) 0%,
-      rgba(8, 22, 46, 0.2) 34%,
-      transparent 68%
-    ),
-    radial-gradient(
-      82% 68% at 6% 18%,
-      rgba(58, 49, 94, 0.36) 0%,
-      transparent 62%
-    ),
-    radial-gradient(
-      92% 76% at 88% 94%,
-      rgba(36, 49, 61, 0.46) 0%,
-      rgba(8, 22, 46, 0.22) 44%,
-      transparent 72%
-    ),
-    linear-gradient(
-      180deg,
-      rgba(8, 22, 46, 0.96) 0%,
-      rgba(14, 20, 42, 0.97) 42%,
-      rgba(18, 20, 36, 0.98) 100%
-    );
+  isolation: isolate;
+  overflow: hidden;
+  background: #0D3B90;
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06);
-  backdrop-filter: blur(18px) saturate(112%);
-  -webkit-backdrop-filter: blur(18px) saturate(112%);
+}
+
+.mobile-menu-backdrop::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  background: url('/noise.png');
+  background-size: 250px;
+  pointer-events: none;
+}
+
+.mobile-menu-backdrop nav {
+  position: relative;
+  z-index: 1;
 }
 
 @media (max-width: 1200px) {
