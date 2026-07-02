@@ -102,7 +102,7 @@ export default function Cursor() {
       {/* Dot */}
       <div
         ref={dotRef}
-        className="fixed top-0 left-0 pointer-events-none z-[9999] will-change-transform"
+        className="fixed top-0 left-0 pointer-events-none z-[10002] will-change-transform"
         style={{
           width: "8px",
           height: "8px",
@@ -118,7 +118,7 @@ export default function Cursor() {
       {/* Ring */}
       <div
         ref={ringRef}
-        className="fixed top-0 left-0 pointer-events-none z-[9998] will-change-transform"
+        className="fixed top-0 left-0 pointer-events-none z-[10001] will-change-transform"
         style={{
           width: "32px",
           height: "32px",
