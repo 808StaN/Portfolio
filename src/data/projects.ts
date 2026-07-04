@@ -116,7 +116,7 @@ export const projects: Project[] = [
     image: openStudioImage,
     images: [openStudioImage, openStudioImage2, openStudioImage3],
     category: 'Desktop + Web Tool',
-    tags: ['React 19', 'JavaScript', 'Web Audio API', 'Electron', 'Vite'],
+    tags: ['React 19', 'JavaScript', 'Web Audio API', 'Electron', 'Vite', 'AI Agent'],
     year: '2026',
     status: 'live',
     link: 'https://github.com/808StaN/OpenStudio',
