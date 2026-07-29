@@ -1488,6 +1488,18 @@ html.custom-scrollbar-dragging * {
   height: 100%;
 }
 
+.services-hero-showcase-canvas {
+  position: absolute;
+  top: 10%;
+  left: 38%;
+  z-index: 2;
+  display: block;
+  width: 60%;
+  height: auto;
+  pointer-events: none;
+  user-select: none;
+}
+
 .services-hero::after {
   content: '';
   position: absolute;
@@ -1501,7 +1513,11 @@ html.custom-scrollbar-dragging * {
   background-size: 250px;
 }
 
-.services-hero-content,
+.services-hero-content {
+  position: relative;
+  z-index: 3;
+}
+
 .services-contact-content,
 .services-final-cta-content {
   position: relative;
@@ -1575,6 +1591,16 @@ html.custom-scrollbar-dragging * {
   font-size: clamp(1rem, 1.45vw, 1.16rem);
   line-height: 1.7;
   color: rgba(245, 249, 255, 0.73);
+}
+
+@media (min-width: 981px) {
+  .services-hero h1 {
+    max-width: 660px;
+  }
+
+  .services-hero-copy {
+    max-width: 570px;
+  }
 }
 
 .services-actions {
@@ -1902,7 +1928,7 @@ html.custom-scrollbar-dragging * {
 
 .services-project {
   display: grid;
-  grid-template-columns: minmax(0, 1.85fr) minmax(0, 1fr);
+  grid-template-columns: minmax(0, 2.1fr) minmax(0, 1fr);
   align-items: center;
   gap: clamp(28px, 5vw, 84px);
 }
@@ -1989,26 +2015,25 @@ html.custom-scrollbar-dragging * {
   border-bottom: 1px solid var(--services-border);
 }
 
-.services-faq summary {
+.services-faq-toggle {
   display: flex;
   align-items: center;
   justify-content: space-between;
+  width: 100%;
   gap: 24px;
   padding: 21px 0;
+  border: 0;
+  background: transparent;
   cursor: pointer;
   color: rgba(255, 255, 255, 0.93);
   font-family: var(--font-display);
   font-size: 1.04rem;
   font-weight: 600;
   line-height: 1.35;
-  list-style: none;
+  text-align: left;
 }
 
-.services-faq summary::-webkit-details-marker {
-  display: none;
-}
-
-.services-faq summary span {
+.services-faq-toggle span {
   flex: 0 0 auto;
   color: rgba(230, 239, 255, 0.65);
   font-family: var(--font-sans);
@@ -2017,11 +2042,15 @@ html.custom-scrollbar-dragging * {
   transition: transform 0.2s ease;
 }
 
-.services-faq[open] summary span {
+.services-faq-toggle[aria-expanded="true"] span {
   transform: rotate(45deg);
 }
 
-.services-faq p {
+.services-faq-answer {
+  overflow: hidden;
+}
+
+.services-faq-answer p {
   max-width: 650px;
   margin: 0;
   padding: 0 44px 22px 0;
@@ -2159,7 +2188,7 @@ html.custom-scrollbar-dragging * {
   }
 
   .services-project {
-    grid-template-columns: minmax(0, 1.85fr) minmax(0, 1fr);
+    grid-template-columns: minmax(0, 2.1fr) minmax(0, 1fr);
     gap: clamp(24px, 4vw, 42px);
   }
 }
@@ -2231,12 +2260,12 @@ html.custom-scrollbar-dragging * {
     width: 100%;
   }
 
-  .services-faq summary {
+  .services-faq-toggle {
     padding: 18px 0;
     font-size: 0.98rem;
   }
 
-  .services-faq p {
+  .services-faq-answer p {
     padding-right: 0;
   }
 }
@@ -2251,4 +2280,5 @@ html.custom-scrollbar-dragging * {
   .services-project-image img {
     transition: none;
   }
+
 }

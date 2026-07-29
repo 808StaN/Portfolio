@@ -1,4 +1,5 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
+import { AnimatePresence, motion } from "framer-motion";
 import Cursor from "../components/Cursor";
 import CustomScrollbar from "../components/CustomScrollbar";
 import GravityLink from "../components/ui/GravityLink";
@@ -176,6 +177,8 @@ const faq = [
 ];
 
 export default function ServicesPage() {
+  const [openFaqs, setOpenFaqs] = useState<string[]>([]);
+
   useEffect(() => {
     const previousTitle = document.title;
     const previousLanguage = document.documentElement.lang;
@@ -351,12 +354,43 @@ export default function ServicesPage() {
               <h2 id="services-faq-heading">Najczęstsze pytania</h2>
             </header>
             <div className="services-faq-list">
-              {faq.map((item) => (
-                <details className="services-faq" key={item.question}>
-                  <summary>{item.question}<span aria-hidden="true">+</span></summary>
-                  <p>{item.answer}</p>
-                </details>
-              ))}
+              {faq.map((item, index) => {
+                const isOpen = openFaqs.includes(item.question);
+
+                return (
+                  <article className="services-faq" key={item.question}>
+                    <button
+                      className="services-faq-toggle"
+                      type="button"
+                      aria-expanded={isOpen}
+                      aria-controls={`faq-answer-${index}`}
+                      onClick={() => {
+                        setOpenFaqs((current) => (
+                          current.includes(item.question)
+                            ? current.filter((question) => question !== item.question)
+                            : [...current, item.question]
+                        ));
+                      }}
+                    >
+                      {item.question}<span aria-hidden="true">+</span>
+                    </button>
+                    <AnimatePresence initial={false}>
+                      {isOpen && (
+                        <motion.div
+                          id={`faq-answer-${index}`}
+                          className="services-faq-answer"
+                          initial={{ height: 0, opacity: 0 }}
+                          animate={{ height: "auto", opacity: 1 }}
+                          exit={{ height: 0, opacity: 0 }}
+                          transition={{ duration: 0.32, ease: [0.16, 1, 0.3, 1] }}
+                        >
+                          <p>{item.answer}</p>
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
+                  </article>
+                );
+              })}
             </div>
           </div>
         </section>
