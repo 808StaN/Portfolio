@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import Cursor from "../components/Cursor";
 import CustomScrollbar from "../components/CustomScrollbar";
@@ -178,7 +178,6 @@ const faq = [
 
 export default function ServicesPage() {
   const [openFaqs, setOpenFaqs] = useState<string[]>([]);
-  const servicesSectionRef = useRef<HTMLElement>(null);
 
   useEffect(() => {
     const previousTitle = document.title;
@@ -201,16 +200,18 @@ export default function ServicesPage() {
   }, []);
 
   useEffect(() => {
-    const section = servicesSectionRef.current;
-    if (!section) return;
+    const sections = Array.from(document.querySelectorAll<HTMLElement>(".services-scroll-color-transition"));
+    if (!sections.length) return;
 
     let frame = 0;
     const updateGradient = () => {
       frame = 0;
-      const { top } = section.getBoundingClientRect();
       const navbarHeight = document.querySelector(".services-nav")?.getBoundingClientRect().height ?? 0;
-      const progress = Math.min(Math.max((window.innerHeight - top) / (window.innerHeight - navbarHeight), 0), 1);
-      section.style.setProperty("--services-hero-gradient-opacity", `${1 - progress}`);
+      sections.forEach((section) => {
+        const { top } = section.getBoundingClientRect();
+        const progress = Math.min(Math.max((window.innerHeight - top) / (window.innerHeight - navbarHeight), 0), 1);
+        section.style.setProperty("--services-scroll-color-opacity", `${1 - progress}`);
+      });
     };
     const requestUpdate = () => {
       if (!frame) frame = window.requestAnimationFrame(updateGradient);
@@ -278,7 +279,7 @@ export default function ServicesPage() {
           </div>
         </section>
 
-        <section ref={servicesSectionRef} className="services-section services-offerings-section services-offerings-section--services" aria-labelledby="services-help-heading">
+        <section className="services-section services-offerings-section services-offerings-section--services services-scroll-color-transition services-scroll-color-transition--hero" aria-labelledby="services-help-heading">
           <div className="services-wrap">
             <header className="services-section-heading">
               <p className="services-eyebrow">Zakres usług</p>
@@ -298,7 +299,7 @@ export default function ServicesPage() {
           </div>
         </section>
 
-        <section className="services-section services-offerings-section services-offerings-section--benefits" aria-labelledby="services-benefits-heading">
+        <section className="services-section services-offerings-section services-offerings-section--benefits services-scroll-color-transition services-scroll-color-transition--services" aria-labelledby="services-benefits-heading">
           <div className="services-wrap">
             <header className="services-section-heading">
               <p className="services-eyebrow">W ramach współpracy</p>
@@ -318,7 +319,7 @@ export default function ServicesPage() {
           </div>
         </section>
 
-        <section className="services-section services-process-section" aria-labelledby="services-process-heading">
+        <section className="services-section services-process-section services-scroll-color-transition services-scroll-color-transition--benefits" aria-labelledby="services-process-heading">
           <div className="services-wrap">
             <header className="services-section-heading">
               <p className="services-eyebrow">Prosty proces</p>
@@ -338,7 +339,7 @@ export default function ServicesPage() {
           </div>
         </section>
 
-        <section id="realizacje" className="services-section services-examples-section" aria-labelledby="services-examples-heading">
+        <section id="realizacje" className="services-section services-examples-section services-scroll-color-transition services-scroll-color-transition--process" aria-labelledby="services-examples-heading">
           <div className="services-wrap">
             <header className="services-section-heading">
               <p className="services-eyebrow">Wybrane projekty</p>
@@ -380,7 +381,7 @@ export default function ServicesPage() {
           </div>
         </section>
 
-        <section className="services-section" aria-labelledby="services-faq-heading">
+        <section className="services-section services-scroll-color-transition services-scroll-color-transition--examples" aria-labelledby="services-faq-heading">
           <div className="services-wrap services-faq-layout">
             <header className="services-section-heading">
               <p className="services-eyebrow">Przed rozpoczęciem</p>
@@ -428,7 +429,7 @@ export default function ServicesPage() {
           </div>
         </section>
 
-        <section id="kontakt" className="services-contact" aria-labelledby="services-contact-heading">
+        <section id="kontakt" className="services-contact services-scroll-color-transition services-scroll-color-transition--faq" aria-labelledby="services-contact-heading">
           <div className="services-wrap services-contact-content">
             <p className="services-eyebrow">Kontakt</p>
             <h2 id="services-contact-heading">Porozmawiajmy o Twoim projekcie</h2>
@@ -440,7 +441,7 @@ export default function ServicesPage() {
           </div>
         </section>
 
-        <section className="services-final-cta" aria-labelledby="services-cta-heading">
+        <section className="services-final-cta services-scroll-color-transition services-scroll-color-transition--contact" aria-labelledby="services-cta-heading">
           <div className="services-wrap services-final-cta-content">
             <div>
               <p className="services-eyebrow">Następny krok</p>

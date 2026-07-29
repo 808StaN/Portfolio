@@ -1648,30 +1648,62 @@ html.custom-scrollbar-dragging * {
   background-color: #292E43;
 }
 
-.services-offerings-section--services::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  z-index: 0;
-  pointer-events: none;
-  opacity: var(--services-hero-gradient-opacity, 1);
-  background: #1652B3;
+.services-scroll-color-transition {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
 }
 
-.services-offerings-section--services::after {
+.services-scroll-color-transition::before,
+.services-scroll-color-transition::after {
   content: '';
   position: absolute;
   inset: 0;
   z-index: 0;
   pointer-events: none;
-  opacity: var(--services-hero-gradient-opacity, 1);
+  opacity: var(--services-scroll-color-opacity, 1);
+}
+
+.services-scroll-color-transition::before {
+  background: var(--services-scroll-start-color);
+}
+
+.services-scroll-color-transition::after {
   background: url('/noise.png');
   background-size: 250px;
 }
 
-.services-offerings-section > .services-wrap {
+.services-scroll-color-transition > .services-wrap {
   position: relative;
   z-index: 1;
+}
+
+.services-scroll-color-transition--hero {
+  --services-scroll-start-color: #1652B3;
+}
+
+.services-scroll-color-transition--services {
+  --services-scroll-start-color: #292E43;
+}
+
+.services-scroll-color-transition--benefits {
+  --services-scroll-start-color: #202641;
+}
+
+.services-scroll-color-transition--process {
+  --services-scroll-start-color: #071931;
+}
+
+.services-scroll-color-transition--examples {
+  --services-scroll-start-color: #17254A;
+}
+
+.services-scroll-color-transition--faq {
+  --services-scroll-start-color: #071931;
+}
+
+.services-scroll-color-transition--contact {
+  --services-scroll-start-color: #102f5f;
 }
 
 .services-offerings-section--benefits {
