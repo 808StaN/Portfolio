@@ -1470,8 +1470,8 @@ html.custom-scrollbar-dragging * {
   align-items: center;
   padding: clamp(112px, 14vw, 176px) 0 clamp(80px, 10vw, 132px);
   overflow: hidden;
-  background: linear-gradient(to top right, #0D3B90, #071931);
-  background: linear-gradient(to top right in hsl, #0D3B90, #071931);
+  background: linear-gradient(to top right, #1652B3, #0A2457);
+  background: linear-gradient(to top right in hsl, #1652B3, #0A2457);
 }
 
 .services-hero-shader {
@@ -1604,12 +1604,7 @@ html.custom-scrollbar-dragging * {
 .services-dual-section {
   position: relative;
   overflow: hidden;
-  background:
-    url('/noise.png'),
-    radial-gradient(65% 105% at 0% 8%, rgba(51, 94, 174, 0.42), transparent 72%),
-    radial-gradient(48% 92% at 100% 82%, rgba(118, 87, 127, 0.28), transparent 74%),
-    linear-gradient(115deg, #151826 0%, #1B315D 48%, #34345D 100%);
-  background-size: 250px, auto, auto, auto;
+  background: #292E43;
 }
 
 .services-dual-grid {
@@ -1620,19 +1615,21 @@ html.custom-scrollbar-dragging * {
 
 .services-dual-panel {
   padding: clamp(48px, 5vw, 72px) clamp(40px, 5vw, 88px);
-  backdrop-filter: blur(18px) saturate(1.08);
-  -webkit-backdrop-filter: blur(18px) saturate(1.08);
 }
 
 .services-dual-panel--services {
-  background: linear-gradient(135deg, rgba(18, 28, 55, 0.22), rgba(18, 28, 55, 0.04));
+  background-color: #292E43;
+  background-image: url('/noise.png');
+  background-size: 250px;
 }
 
 .services-dual-panel--benefits {
   display: flex;
   flex-direction: column;
-  border-left: 1px solid rgba(221, 232, 255, 0.2);
-  background: linear-gradient(135deg, rgba(35, 28, 61, 0.18), rgba(35, 28, 61, 0.04));
+  border-left: 0;
+  background-color: #202641;
+  background-image: url('/noise.png');
+  background-size: 250px;
 }
 
 .services-dual-heading {
@@ -1649,27 +1646,27 @@ html.custom-scrollbar-dragging * {
   margin: 18px 0 0;
   font-size: 0.95rem;
   line-height: 1.65;
-  color: rgba(221, 232, 255, 0.7);
+  color: rgba(222, 233, 255, 0.68);
 }
 
 .services-dual-panel--services .services-eyebrow {
-  color: rgba(176, 207, 255, 0.74);
+  color: #5C9FFF;
 }
 
 .services-dual-panel--services h2 {
-  color: #EEF4FF;
+  color: #5C9FFF;
 }
 
 .services-dual-panel--benefits .services-eyebrow {
-  color: rgba(221, 210, 255, 0.7);
+  color: #5C9FFF;
 }
 
 .services-dual-panel--benefits .services-dual-heading h2 {
-  color: #EEF4FF;
+  color: #5C9FFF;
 }
 
 .services-dual-panel--benefits .services-dual-heading > p:last-child {
-  color: rgba(221, 232, 255, 0.7);
+  color: rgba(222, 233, 255, 0.68);
 }
 
 .services-section-heading {
@@ -1781,11 +1778,11 @@ html.custom-scrollbar-dragging * {
 
 .services-service-list,
 .services-benefits-list {
-  border-top: 1px solid rgba(221, 232, 255, 0.24);
+  border-top: 1px solid rgba(92, 159, 255, 0.38);
 }
 
 .services-benefits-list {
-  border-color: rgba(221, 232, 255, 0.25);
+  border-color: rgba(92, 159, 255, 0.3);
 }
 
 .services-service-row,
@@ -1793,7 +1790,7 @@ html.custom-scrollbar-dragging * {
   display: grid;
   grid-template-columns: minmax(0, 1fr);
   padding: 27px 0 29px;
-  border-bottom: 1px solid rgba(221, 232, 255, 0.24);
+  border-bottom: 1px solid rgba(92, 159, 255, 0.24);
   transition: background 0.25s ease;
 }
 
@@ -1823,21 +1820,25 @@ html.custom-scrollbar-dragging * {
 }
 
 .services-dual-panel--services .services-service-row:hover {
-  background: rgba(221, 232, 255, 0.055);
+  background: rgba(92, 159, 255, 0.08);
 }
 
 .services-dual-panel--benefits .services-service-row:hover {
-  background: rgba(221, 232, 255, 0.055);
+  background: rgba(92, 159, 255, 0.08);
+}
+
+.services-dual-panel--benefits .services-service-row {
+  border-bottom-color: rgba(92, 159, 255, 0.24);
 }
 
 .services-dual-panel--services .services-service-row h3 {
-  color: #EEF4FF;
+  color: #F2F5FA;
   font-size: clamp(1.08rem, 1.35vw, 1.3rem);
 }
 
 .services-dual-panel--services .services-service-row p {
   max-width: 58ch;
-  color: rgba(221, 232, 255, 0.7);
+  color: rgba(222, 233, 255, 0.68);
 }
 
 .services-dual-panel--benefits .services-service-row h3 {
@@ -1845,7 +1846,7 @@ html.custom-scrollbar-dragging * {
 }
 
 .services-dual-panel--benefits .services-service-row p {
-  color: rgba(221, 232, 255, 0.7);
+  color: rgba(222, 233, 255, 0.68);
 }
 
 .services-process {
@@ -2052,15 +2053,17 @@ html.custom-scrollbar-dragging * {
   }
 
   .services-dual-panel--services {
-    background: url('/noise.png'), linear-gradient(135deg, #1B315D, #151826);
-    background-size: 250px, auto;
+    background-color: #292E43;
+    background-image: url('/noise.png');
+    background-size: 250px;
   }
 
   .services-dual-panel--benefits {
-    border-top: 1px solid rgba(221, 232, 255, 0.2);
+    border-top: 1px solid rgba(92, 159, 255, 0.18);
     border-left: 0;
-    background: url('/noise.png'), linear-gradient(135deg, #34345D, #151826);
-    background-size: 250px, auto;
+    background-color: #202641;
+    background-image: url('/noise.png');
+    background-size: 250px;
   }
 
   .services-process {
