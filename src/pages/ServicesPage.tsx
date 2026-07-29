@@ -3,6 +3,10 @@ import Cursor from "../components/Cursor";
 import CustomScrollbar from "../components/CustomScrollbar";
 import GravityLink from "../components/ui/GravityLink";
 import ServicesHeroTrail from "../components/ServicesHeroTrail";
+import slodkoSlonyImage from "../assets/projects/SlodkoSlony.png?w=1400&format=webp&quality=90";
+import riftPickImage from "../assets/projects/RiftPick.jpg?w=1400&format=webp&quality=90";
+import openStudioImage from "../assets/projects/OpenStudio.jpg?w=1400&format=webp&quality=90";
+import otakuVersusImage from "../assets/projects/OtakuVersus.jpg?w=1400&format=webp&quality=90";
 
 const email = "dstanisz.dev@gmail.com";
 const emailHref = `mailto:${email}?subject=Zapytanie%20o%20projekt`;
@@ -103,18 +107,36 @@ const examples = [
     description:
       "Projekt strony internetowej prezentującej ofertę lokalu, menu, najważniejsze informacje oraz dane kontaktowe. Strona została przygotowana jako propozycja demonstracyjna.",
     href: "https://slodko-slony.vercel.app/",
+    image: slodkoSlonyImage,
+    imageAlt: "Strona główna restauracji Słodko Słony",
+    status: "Projekt demonstracyjny",
   },
   {
     title: "RiftPick",
     description:
       "Rozbudowana platforma fantasy związana z rozgrywkami League of Legends. Użytkownicy mogą tworzyć składy, zbierać karty zawodników, zdobywać punkty i rywalizować w rankingach.",
     href: "https://riftpick.com",
+    image: riftPickImage,
+    imageAlt: "Strona główna aplikacji fantasy RiftPick",
+    status: "Dostępny online",
   },
   {
     title: "OpenStudio",
     description:
       "Internetowa aplikacja do tworzenia muzyki, umożliwiająca pracę z melodiami, ścieżkami, efektami oraz innymi elementami projektu muzycznego.",
     href: "https://github.com/808StaN/OpenStudio",
+    image: openStudioImage,
+    imageAlt: "Interfejs aplikacji do tworzenia muzyki OpenStudio",
+    status: "Aplikacja webowa",
+  },
+  {
+    title: "OtakuVersus",
+    description:
+      "Aplikacja webowa w stylistyce mangi, w której gracze rozpoznają anime na podstawie kadrów, zdobywają punkty i rywalizują w trybie jednoosobowym lub wieloosobowym.",
+    href: "https://github.com/808StaN/OtakuVersus",
+    image: otakuVersusImage,
+    imageAlt: "Ekran aplikacji do rozpoznawania anime OtakuVersus",
+    status: "Aplikacja webowa",
   },
 ];
 
@@ -260,7 +282,7 @@ export default function ServicesPage() {
           </div>
         </section>
 
-        <section className="services-section" aria-labelledby="services-process-heading">
+        <section className="services-section services-process-section" aria-labelledby="services-process-heading">
           <div className="services-wrap">
             <header className="services-section-heading">
               <p className="services-eyebrow">Prosty proces</p>
@@ -277,11 +299,10 @@ export default function ServicesPage() {
                 </li>
               ))}
             </ol>
-            <p className="services-process-summary">Nie musisz znać się na tworzeniu stron. Wystarczy, że opiszesz, czego potrzebujesz - pomogę uporządkować pomysł i dobrać odpowiednie rozwiązanie.</p>
           </div>
         </section>
 
-        <section id="realizacje" className="services-section services-section--surface" aria-labelledby="services-examples-heading">
+        <section id="realizacje" className="services-section services-examples-section" aria-labelledby="services-examples-heading">
           <div className="services-wrap">
             <header className="services-section-heading">
               <p className="services-eyebrow">Wybrane projekty</p>
@@ -289,21 +310,34 @@ export default function ServicesPage() {
               <p>Poniżej znajdują się wybrane projekty pokazujące różne rodzaje stron i aplikacji internetowych.</p>
             </header>
             <div className="services-examples">
-              {examples.map((example, index) => (
-                <article className="services-example" key={example.title}>
-                  <span className="services-card-index">0{index + 1}</span>
-                  <h3>{example.title}</h3>
-                  <p>{example.description}</p>
-                  <GravityLink
+              {examples.map((example) => (
+                <article className="services-project" key={example.title}>
+                  <a
+                    className="services-project-window"
                     href={example.href}
                     target="_blank"
                     rel="noopener noreferrer"
-                    text="Zobacz projekt"
-                    variant="project"
-                    icon="arrow-up-right"
-                    sizing={{ paddingX: 17, paddingY: 10, fontSize: 12.5 }}
-                    style={{ marginTop: "auto", alignSelf: "flex-start" }}
-                  />
+                    aria-label={`Otwórz projekt ${example.title}`}
+                  >
+                    <div className="services-project-image">
+                      <img src={example.image} alt={example.imageAlt} loading="lazy" />
+                    </div>
+                  </a>
+                  <div className="services-project-content">
+                    <p className="services-project-status">{example.status}</p>
+                    <h3>{example.title}</h3>
+                    <p>{example.description}</p>
+                    <GravityLink
+                      href={example.href}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      text="Zobacz projekt"
+                      variant="project"
+                      icon="arrow-up-right"
+                      sizing={{ paddingX: 17, paddingY: 10, fontSize: 12.5 }}
+                      style={{ marginTop: 12 }}
+                    />
+                  </div>
                 </article>
               ))}
             </div>
