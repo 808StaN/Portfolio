@@ -222,42 +222,41 @@ export default function ServicesPage() {
           </div>
         </section>
 
-        <section className="services-section" aria-labelledby="services-help-heading">
-          <div className="services-wrap">
-            <header className="services-section-heading">
-              <p className="services-eyebrow">Zakres usług</p>
-              <h2 id="services-help-heading">W czym mogę Ci pomóc?</h2>
-              <p>Każdy projekt przygotowuję indywidualnie, zależnie od celu strony, potrzeb użytkowników oraz planowanego budżetu.</p>
-            </header>
-            <div className="services-grid services-grid--three">
-              {services.map((service, index) => (
-                <article className="services-card" key={service.title}>
-                  <span className="services-card-index">0{index + 1}</span>
-                  <h3>{service.title}</h3>
-                  <p>{service.description}</p>
-                </article>
-              ))}
-            </div>
-          </div>
-        </section>
+        <section className="services-dual-section" aria-label="Usługi i korzyści ze współpracy">
+          <div className="services-wrap services-dual-grid">
+            <section className="services-dual-panel services-dual-panel--services" aria-labelledby="services-help-heading">
+              <header className="services-dual-heading">
+                <p className="services-eyebrow">Zakres usług</p>
+                <h2 id="services-help-heading">W czym mogę Ci pomóc?</h2>
+              </header>
+              <div className="services-service-list">
+                {services.map((service) => (
+                  <article className="services-service-row" key={service.title}>
+                    <div>
+                      <h3>{service.title}</h3>
+                      <p>{service.description}</p>
+                    </div>
+                  </article>
+                ))}
+              </div>
+            </section>
 
-        <section className="services-section services-section--surface" aria-labelledby="services-benefits-heading">
-          <div className="services-wrap">
-            <header className="services-section-heading">
-              <p className="services-eyebrow">W ramach współpracy</p>
-              <h2 id="services-benefits-heading">Co otrzymujesz?</h2>
-            </header>
-            <div className="services-grid services-grid--two">
-              {benefits.map((benefit) => (
-                <article className="services-benefit" key={benefit.title}>
-                  <span className="services-check" aria-hidden="true">+</span>
-                  <div>
-                    <h3>{benefit.title}</h3>
-                    <p>{benefit.description}</p>
-                  </div>
-                </article>
-              ))}
-            </div>
+            <section className="services-dual-panel services-dual-panel--benefits" aria-labelledby="services-benefits-heading">
+              <header className="services-dual-heading">
+                <p className="services-eyebrow">W ramach współpracy</p>
+                <h2 id="services-benefits-heading">Co otrzymujesz?</h2>
+              </header>
+              <div className="services-benefits-list">
+                {benefits.map((benefit) => (
+                  <article className="services-service-row" key={benefit.title}>
+                    <div>
+                      <h3>{benefit.title}</h3>
+                      <p>{benefit.description}</p>
+                    </div>
+                  </article>
+                ))}
+              </div>
+            </section>
           </div>
         </section>
 
