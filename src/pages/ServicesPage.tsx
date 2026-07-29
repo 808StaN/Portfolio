@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import Cursor from "../components/Cursor";
 import CustomScrollbar from "../components/CustomScrollbar";
@@ -178,6 +178,7 @@ const faq = [
 
 export default function ServicesPage() {
   const [openFaqs, setOpenFaqs] = useState<string[]>([]);
+  const servicesSectionRef = useRef<HTMLElement>(null);
 
   useEffect(() => {
     const previousTitle = document.title;
@@ -196,6 +197,32 @@ export default function ServicesPage() {
       document.title = previousTitle;
       document.documentElement.lang = previousLanguage;
       if (previousDescription) description?.setAttribute("content", previousDescription);
+    };
+  }, []);
+
+  useEffect(() => {
+    const section = servicesSectionRef.current;
+    if (!section) return;
+
+    let frame = 0;
+    const updateGradient = () => {
+      frame = 0;
+      const { top } = section.getBoundingClientRect();
+      const navbarHeight = document.querySelector(".services-nav")?.getBoundingClientRect().height ?? 0;
+      const progress = Math.min(Math.max((window.innerHeight - top) / (window.innerHeight - navbarHeight), 0), 1);
+      section.style.setProperty("--services-hero-gradient-opacity", `${1 - progress}`);
+    };
+    const requestUpdate = () => {
+      if (!frame) frame = window.requestAnimationFrame(updateGradient);
+    };
+
+    updateGradient();
+    window.addEventListener("scroll", requestUpdate, { passive: true });
+    window.addEventListener("resize", requestUpdate);
+    return () => {
+      window.removeEventListener("scroll", requestUpdate);
+      window.removeEventListener("resize", requestUpdate);
+      if (frame) window.cancelAnimationFrame(frame);
     };
   }, []);
 
@@ -223,8 +250,12 @@ export default function ServicesPage() {
         <section id="uslugi" className="services-hero" aria-labelledby="services-heading">
           <ServicesHeroTrail />
           <div className="services-wrap services-hero-content">
-            <p className="services-eyebrow">Dawid Stanisz</p>
-            <h1 id="services-heading">Nowoczesne strony internetowe dopasowane do Twojego biznesu</h1>
+            <h1 id="services-heading">
+              <span>Nowoczesne</span>
+              <span>strony internetowe</span>
+              <span>dopasowane do</span>
+              <span>Twojego biznesu</span>
+            </h1>
             <p className="services-hero-copy">
               Tworzę strony firmowe, sklepy internetowe oraz aplikacje webowe dostosowane do potrzeb klienta. Pomagam przejść przez cały proces - od ustalenia pomysłu i zakresu projektu aż po uruchomienie gotowej strony w internecie.
             </p>
@@ -247,41 +278,43 @@ export default function ServicesPage() {
           </div>
         </section>
 
-        <section className="services-dual-section" aria-label="Usługi i korzyści ze współpracy">
-          <div className="services-wrap services-dual-grid">
-            <section className="services-dual-panel services-dual-panel--services" aria-labelledby="services-help-heading">
-              <header className="services-dual-heading">
-                <p className="services-eyebrow">Zakres usług</p>
-                <h2 id="services-help-heading">W czym mogę Ci pomóc?</h2>
-              </header>
-              <div className="services-service-list">
-                {services.map((service) => (
-                  <article className="services-service-row" key={service.title}>
-                    <div>
-                      <h3>{service.title}</h3>
-                      <p>{service.description}</p>
-                    </div>
-                  </article>
-                ))}
-              </div>
-            </section>
+        <section ref={servicesSectionRef} className="services-section services-offerings-section services-offerings-section--services" aria-labelledby="services-help-heading">
+          <div className="services-wrap">
+            <header className="services-section-heading">
+              <p className="services-eyebrow">Zakres usług</p>
+              <h2 id="services-help-heading">W czym mogę Ci pomóc?</h2>
+            </header>
+            <div className="services-offerings-grid">
+              {services.map((service) => (
+                <article className="services-offering-card" key={service.title}>
+                  <div className="services-offering-card-head">
+                    <span className="services-offering-dot" aria-hidden="true" />
+                    <h3>{service.title}</h3>
+                  </div>
+                  <p>{service.description}</p>
+                </article>
+              ))}
+            </div>
+          </div>
+        </section>
 
-            <section className="services-dual-panel services-dual-panel--benefits" aria-labelledby="services-benefits-heading">
-              <header className="services-dual-heading">
-                <p className="services-eyebrow">W ramach współpracy</p>
-                <h2 id="services-benefits-heading">Co otrzymujesz?</h2>
-              </header>
-              <div className="services-benefits-list">
-                {benefits.map((benefit) => (
-                  <article className="services-service-row" key={benefit.title}>
-                    <div>
-                      <h3>{benefit.title}</h3>
-                      <p>{benefit.description}</p>
-                    </div>
-                  </article>
-                ))}
-              </div>
-            </section>
+        <section className="services-section services-offerings-section services-offerings-section--benefits" aria-labelledby="services-benefits-heading">
+          <div className="services-wrap">
+            <header className="services-section-heading">
+              <p className="services-eyebrow">W ramach współpracy</p>
+              <h2 id="services-benefits-heading">Co otrzymujesz?</h2>
+            </header>
+            <div className="services-offerings-grid">
+              {benefits.map((benefit) => (
+                <article className="services-offering-card" key={benefit.title}>
+                  <div className="services-offering-card-head">
+                    <span className="services-offering-dot" aria-hidden="true" />
+                    <h3>{benefit.title}</h3>
+                  </div>
+                  <p>{benefit.description}</p>
+                </article>
+              ))}
+            </div>
           </div>
         </section>
 
