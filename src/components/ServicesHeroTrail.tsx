@@ -49,23 +49,23 @@ export default function ServicesHeroTrail() {
             id="trailFlow"
             intensity={1.4}
             radius={2.9}
-            baseColor="#1652B3"
-            upColor="#9FC5FF"
-            downColor="#5C9FFF"
-            leftColor="#0D3B90"
-            rightColor="#DDEBFF"
+            baseColor="#2E4BC7"
+            upColor="#9EAEFF"
+            downColor="#7087ED"
+            leftColor="#1D3296"
+            rightColor="#E1E6FF"
             visible={false}
           />
           <LinearGradient
-            colorA="#1652B3"
-            colorB="#0A2457"
+            colorA="#2E4BC7"
+            colorB="#2E4BC7"
             colorSpace="hsl"
             end={{ x: 1, y: 0 }}
             start={{ x: 0, y: 1 }}
           />
           <LinearGradient
-            colorA="#08265C"
-            colorB="#DDEBFF"
+            colorA="#20379F"
+            colorB="#E1E6FF"
             colorSpace="hsl"
             end={{ x: 1, y: 0 }}
             maskSource="trailDots"

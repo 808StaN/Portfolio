@@ -1357,7 +1357,7 @@ html.custom-scrollbar-dragging * {
   min-height: 100vh;
   overflow: hidden;
   color: var(--services-text);
-  background: #071931;
+  background: #1C1035;
 }
 
 .services-page main {
@@ -1470,8 +1470,7 @@ html.custom-scrollbar-dragging * {
   align-items: center;
   padding: clamp(112px, 14vw, 176px) 0 clamp(80px, 10vw, 132px);
   overflow: hidden;
-  background: linear-gradient(to top right, #1652B3, #0A2457);
-  background: linear-gradient(to top right in hsl, #1652B3, #0A2457);
+  background: #2E4BC7;
 }
 
 .services-hero-shader {
@@ -1623,13 +1622,17 @@ html.custom-scrollbar-dragging * {
 
 .services-section {
   padding: clamp(76px, 10vw, 132px) 0;
-  background-color: #071931;
+  background-color: #201A61;
   background-image: url('/noise.png');
   background-size: 250px;
 }
 
 .services-examples-section {
-  background-color: #17254A;
+  background-color: #1A315C;
+}
+
+.services-faq-section {
+  background-color: #1E4E71;
 }
 
 .services-process-section {
@@ -1645,69 +1648,11 @@ html.custom-scrollbar-dragging * {
 }
 
 .services-offerings-section--services {
-  background-color: #292E43;
-}
-
-.services-scroll-color-transition {
-  position: relative;
-  isolation: isolate;
-  overflow: hidden;
-}
-
-.services-scroll-color-transition::before,
-.services-scroll-color-transition::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  z-index: 0;
-  pointer-events: none;
-  opacity: var(--services-scroll-color-opacity, 1);
-}
-
-.services-scroll-color-transition::before {
-  background: var(--services-scroll-start-color);
-}
-
-.services-scroll-color-transition::after {
-  background: url('/noise.png');
-  background-size: 250px;
-}
-
-.services-scroll-color-transition > .services-wrap {
-  position: relative;
-  z-index: 1;
-}
-
-.services-scroll-color-transition--hero {
-  --services-scroll-start-color: #1652B3;
-}
-
-.services-scroll-color-transition--services {
-  --services-scroll-start-color: #292E43;
-}
-
-.services-scroll-color-transition--benefits {
-  --services-scroll-start-color: #202641;
-}
-
-.services-scroll-color-transition--process {
-  --services-scroll-start-color: #071931;
-}
-
-.services-scroll-color-transition--examples {
-  --services-scroll-start-color: #17254A;
-}
-
-.services-scroll-color-transition--faq {
-  --services-scroll-start-color: #071931;
-}
-
-.services-scroll-color-transition--contact {
-  --services-scroll-start-color: #102f5f;
+  background-color: #1E4E71;
 }
 
 .services-offerings-section--benefits {
-  background-color: #202641;
+  background-color: #1E6371;
 }
 
 .services-offerings-section h2 {
@@ -1750,8 +1695,8 @@ html.custom-scrollbar-dragging * {
   margin-top: 0.45em;
   flex: 0 0 auto;
   border-radius: 999px;
-  background: #5C9FFF;
-  box-shadow: 0 0 18px #5C9FFF;
+  background: #85C4FF;
+  box-shadow: 0 0 18px #85C4FF;
 }
 
 .services-offering-card h3 {
@@ -1789,6 +1734,38 @@ html.custom-scrollbar-dragging * {
   font-size: 1rem;
   line-height: 1.7;
   color: var(--services-muted);
+}
+
+.services-cool-section {
+  --services-border: rgba(222, 232, 255, 0.2);
+  --services-muted: rgba(232, 239, 255, 0.72);
+  color: #F6F8FF;
+}
+
+.services-cool-section h2,
+.services-cool-section .services-process h3 {
+  color: #F6F8FF;
+}
+
+.services-cool-section .services-eyebrow {
+  color: rgba(226, 236, 255, 0.62);
+}
+
+.services-cool-section .services-process li > span {
+  background: rgba(133, 196, 255, 0.14);
+  color: #85C4FF;
+}
+
+.services-cool-section .services-process-summary {
+  color: rgba(238, 244, 255, 0.8);
+}
+
+.services-cool-section .services-faq-toggle {
+  color: #F6F8FF;
+}
+
+.services-cool-section .services-faq-toggle span {
+  color: #85C4FF;
 }
 
 .services-grid {
@@ -1910,7 +1887,7 @@ html.custom-scrollbar-dragging * {
   max-width: 810px;
   margin: clamp(40px, 6vw, 72px) 0 0;
   padding-left: 18px;
-  border-left: 2px solid rgba(178, 204, 255, 0.65);
+  border-left: 2px solid #85C4FF;
   font-size: clamp(1rem, 1.5vw, 1.16rem);
   line-height: 1.65;
   color: rgba(242, 247, 255, 0.78);
@@ -1932,7 +1909,7 @@ html.custom-scrollbar-dragging * {
   display: block;
   min-width: 0;
   overflow: hidden;
-  border: 6px solid rgba(6, 13, 31, 0.50);
+  border: 6px solid rgba(9, 12, 35, 0.55);
   border-radius: 18px;
   color: #EEF4FF;
   text-decoration: none;
@@ -1958,19 +1935,19 @@ html.custom-scrollbar-dragging * {
 }
 
 .services-project-window:focus-visible {
-  outline: 2px solid #5C9FFF;
+  outline: 2px solid #85C4FF;
   outline-offset: 4px;
 }
 
 .services-project-content {
   min-width: 0;
   padding: 2px 0 2px clamp(18px, 2.4vw, 36px);
-  border-left: 1px solid rgba(92, 159, 255, 0.6);
+  border-left: 1px solid rgba(133, 196, 255, 0.65);
 }
 
 .services-project-status {
   margin: 0 0 15px;
-  color: #5C9FFF;
+  color: #85C4FF;
   font-family: var(--font-sans);
   font-size: 0.65rem;
   font-weight: 600;
@@ -2056,7 +2033,7 @@ html.custom-scrollbar-dragging * {
 
 .services-contact {
   padding: clamp(80px, 11vw, 144px) 0;
-  background-color: #102f5f;
+  background-color: #381F84;
   background-image: url('/noise.png');
   background-size: 250px;
 }
@@ -2102,7 +2079,7 @@ html.custom-scrollbar-dragging * {
 
 .services-final-cta {
   padding: clamp(66px, 9vw, 112px) 0;
-  background-color: #071931;
+  background-color: #1C1035;
   background-image: url('/noise.png');
   background-size: 250px;
 }
