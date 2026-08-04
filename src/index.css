@@ -1391,7 +1391,6 @@ html.custom-scrollbar-dragging * {
   border-bottom: 0px;
   background: rgba(3, 15, 38, 0.15);
   backdrop-filter: blur(16px) brightness(0.95);
-  -webkit-backdrop-filter: blur(16px) brightness(0.9);
 }
 
 .services-nav::after {
