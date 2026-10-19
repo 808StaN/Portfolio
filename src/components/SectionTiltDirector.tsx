@@ -173,6 +173,9 @@ export default function SectionTiltDirector() {
 
           const tl = gsap.timeline({
             scrollTrigger: {
+              id: incomingSection.id
+                ? `section-target-${incomingSection.id}`
+                : undefined,
               trigger: section,
               start: "top top",
               end: "+=300%",
