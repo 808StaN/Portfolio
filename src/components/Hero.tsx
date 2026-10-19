@@ -144,7 +144,7 @@ export default function Hero() {
                 onClick={handleProjectsClick}
               />
               <GravityLink
-                href="/Dawid_Stanisz_CV.pdf"
+                href="https://ziianpdcwxtnkuojaxtp.supabase.co/storage/v1/object/public/Portfolio/Dawid_Stanisz_CV.pdf"
                 download
                 text="Download CV"
                 variant="secondary"

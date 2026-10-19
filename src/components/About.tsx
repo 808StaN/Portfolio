@@ -62,7 +62,7 @@ export default function About() {
               transition={{ duration: 0.8, delay: 0.28, ease: easeOut }}
             >
               <GravityLink
-                href="/Dawid_Stanisz_CV.pdf"
+                href="https://ziianpdcwxtnkuojaxtp.supabase.co/storage/v1/object/public/Portfolio/Dawid_Stanisz_CV.pdf"
                 download
                 text="Download CV"
                 variant="secondary"
