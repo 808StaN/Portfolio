@@ -418,12 +418,15 @@ html.custom-scrollbar-dragging * {
 
 .nav-section-transition .nav-bg-layer {
   view-transition-name: site-nav-bg;
+}
+
+.nav-capture-ready .nav-bg-layer {
   background: transparent;
   -webkit-backdrop-filter: none;
   backdrop-filter: none;
 }
 
-.nav-section-transition .nav-bg-layer::after {
+.nav-capture-ready .nav-bg-layer::after {
   opacity: 1;
 }
 
@@ -457,6 +460,14 @@ html.custom-scrollbar-dragging * {
   pointer-events: none;
 }
 
+[data-nav-source] {
+  background-color: var(--nav-outgoing-color);
+}
+
+.nav-section-transition {
+  --nav-section-duration: 1.2s;
+}
+
 .nav-section-transition::view-transition-group(*),
 .nav-section-transition::view-transition-new(*) {
   animation: none;
@@ -481,7 +492,7 @@ html.custom-scrollbar-dragging * {
 }
 
 .nav-section-transition::view-transition-group(nav-section) {
-  animation: nav-section-enter 1.2s cubic-bezier(0.22, 1, 0.36, 1) both;
+  animation: nav-section-enter var(--nav-section-duration) cubic-bezier(0.22, 1, 0.36, 1) both;
   transform-origin: bottom left;
   clip-path: inset(0 round var(--nav-section-top-left-radius) var(--nav-section-top-right-radius) 0 0);
   background-color: var(--nav-section-start-color);
@@ -503,6 +514,42 @@ html.custom-scrollbar-dragging * {
 
 .nav-section-transition::view-transition-new(site-nav-bg) {
   opacity: var(--nav-start-grain);
+}
+
+.nav-back-transition::view-transition-old(root) {
+  opacity: 0;
+}
+
+.nav-back-transition::view-transition-new(root) {
+  opacity: 1;
+  mix-blend-mode: normal;
+}
+
+.nav-back-transition::view-transition-group(nav-section) {
+  animation-name: nav-section-return;
+}
+
+.nav-back-transition::view-transition-old(nav-section) {
+  animation: none;
+  mix-blend-mode: normal;
+}
+
+.nav-back-transition::view-transition-group(site-nav-bg) {
+  background: var(--nav-bg-color);
+}
+
+.nav-back-transition::view-transition-new(site-nav-bg) {
+  opacity: var(--nav-grain-opacity, 1);
+}
+
+.nav-back-root-transition::view-transition-group(root) {
+  z-index: 2;
+}
+
+.nav-back-root-transition::view-transition-old(root) {
+  animation: nav-section-return var(--nav-section-duration) cubic-bezier(0.22, 1, 0.36, 1) both;
+  transform-origin: 0 var(--nav-section-travel);
+  opacity: 1;
 }
 
 .nav-home-transition::view-transition-old(root),
@@ -553,8 +600,13 @@ html.custom-scrollbar-dragging * {
 }
 
 @keyframes nav-section-enter {
-  from { transform: translateY(100%) rotate(var(--nav-section-start-angle)); }
+  from { transform: translateY(var(--nav-section-travel)) rotate(var(--nav-section-start-angle)); }
   to { transform: translateY(0) rotate(0deg); }
+}
+
+@keyframes nav-section-return {
+  from { transform: var(--nav-section-source-transform) translateY(0) rotate(0deg); }
+  to { transform: var(--nav-section-source-transform) translateY(var(--nav-section-travel)) rotate(var(--nav-section-start-angle)); }
 }
 
 .site-nav,

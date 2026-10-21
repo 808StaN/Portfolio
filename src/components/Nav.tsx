@@ -109,12 +109,20 @@ export default function Nav() {
     const returningHome = el.id === 'home';
     const top = getSectionTargetTop(el);
     if (Math.abs(window.scrollY - top) < 2) return;
+    const goingBack = !returningHome && top < window.scrollY;
     const panel = el.querySelector<HTMLElement>('.section-tilt-panel');
     const targetColor = panel?.closest<HTMLElement>('[data-section-color]')?.dataset.sectionColor;
+    let outgoingPanel: HTMLElement | null = null;
+    let outgoingSection: HTMLElement | null = null;
     let captureSnapshot = false;
 
     const jump = () => {
       if (request !== navigationRequest.current || !el.isConnected) return;
+      outgoingPanel?.removeAttribute('data-nav-capture');
+      outgoingSection?.removeAttribute('data-nav-source');
+      if (document.documentElement.classList.contains('nav-section-transition')) {
+        document.documentElement.classList.add('nav-capture-ready');
+      }
       if (lenis) {
         lenis.scrollTo(top, { immediate: true, force: true });
       } else {
@@ -140,10 +148,29 @@ export default function Nav() {
     }
 
     const root = document.documentElement;
+    if (goingBack) {
+      for (const section of document.querySelectorAll<HTMLElement>('[data-section-tilt]')) {
+        const candidate = section.querySelector<HTMLElement>(':scope > .section-tilt-panel');
+        if (!candidate) continue;
+        const rect = candidate.getBoundingClientRect();
+        const sectionRect = section.getBoundingClientRect();
+        if (sectionRect.top < window.innerHeight && sectionRect.bottom > 0
+          && rect.top < window.innerHeight && rect.bottom > 0) outgoingPanel = candidate;
+      }
+    }
+    const outgoingRect = outgoingPanel?.getBoundingClientRect();
+    outgoingSection = outgoingPanel?.parentElement ?? null;
+    const outgoingStyle = outgoingPanel ? getComputedStyle(outgoingPanel) : null;
+    const outgoingMatrix = new DOMMatrix(outgoingStyle?.transform === 'none' ? undefined : outgoingStyle?.transform);
+    // Preserve the whole frame if multiple tilted cards are visible during an overlap.
+    const useRootSnapshot = goingBack && (!outgoingRect
+      || Math.abs(outgoingMatrix.b) > 0.00001 || Math.abs(outgoingMatrix.a - 1) > 0.00001
+      || outgoingRect.top > 1 || outgoingRect.bottom < window.innerHeight - 1);
     const startProgress = Number(getComputedStyle(root).getPropertyValue('--nav-hero-progress'));
     const wasStopped = lenis?.isStopped;
-    const panelStyle = getComputedStyle(panel);
+    const panelStyle = goingBack && outgoingStyle ? outgoingStyle : getComputedStyle(panel);
     const panelRadius = panelStyle.getPropertyValue('--section-base-radius').trim() || '0px';
+    const panelHeight = goingBack && !outgoingPanel ? window.innerHeight : parseFloat(panelStyle.height);
     const sourceColor = root.style.getPropertyValue('--nav-bg-color').trim();
     const fromHsl = hexToHsl(sourceColor.startsWith('#') ? sourceColor : targetColor);
     const toHsl = hexToHsl(targetColor);
@@ -152,10 +179,21 @@ export default function Nav() {
     root.style.setProperty('--nav-section-start-angle', `${incomingAngles[0]}deg`);
     root.style.setProperty('--nav-section-top-left-radius', panelRadius);
     root.style.setProperty('--nav-section-top-right-radius', panelRadius);
+    root.style.setProperty('--nav-section-travel', `${panelHeight}px`);
+    root.style.setProperty('--nav-section-source-transform', goingBack && !useRootSnapshot && outgoingRect
+      ? `translate(${outgoingRect.left}px, ${outgoingRect.top}px)` : 'translate(0px, 0px)');
     root.classList.toggle('nav-home-transition', returningHome);
+    root.classList.toggle('nav-back-transition', goingBack);
+    root.classList.toggle('nav-back-root-transition', useRootSnapshot);
     root.classList.add('nav-section-transition');
     lenis?.stop();
-    captureSnapshot = !returningHome;
+    captureSnapshot = !returningHome && !goingBack;
+    if (goingBack && !useRootSnapshot && outgoingStyle) {
+      // Keep the visible card unchanged while capturing its background separately.
+      root.style.setProperty('--nav-outgoing-color', outgoingStyle.backgroundColor);
+      outgoingSection?.setAttribute('data-nav-source', '');
+      outgoingPanel?.setAttribute('data-nav-capture', '');
+    }
     const animations: Animation[] = [];
     let released = false;
     const release = () => {
@@ -163,13 +201,18 @@ export default function Nav() {
       released = true;
       captureSnapshot = false;
       panel.removeAttribute('data-nav-capture');
+      outgoingPanel?.removeAttribute('data-nav-capture');
+      outgoingSection?.removeAttribute('data-nav-source');
       animations.forEach(animation => animation.cancel());
-      root.classList.remove('nav-section-transition', 'nav-home-transition');
+      root.classList.remove('nav-section-transition', 'nav-home-transition', 'nav-back-transition', 'nav-back-root-transition', 'nav-capture-ready');
       root.style.removeProperty('--nav-section-start-color');
       root.style.removeProperty('--nav-start-grain');
       root.style.removeProperty('--nav-section-start-angle');
       root.style.removeProperty('--nav-section-top-left-radius');
       root.style.removeProperty('--nav-section-top-right-radius');
+      root.style.removeProperty('--nav-section-source-transform');
+      root.style.removeProperty('--nav-section-travel');
+      root.style.removeProperty('--nav-outgoing-color');
       if (!wasStopped) lenis?.start();
       window.removeEventListener('wheel', interrupt, true);
       window.removeEventListener('touchstart', interrupt, true);
@@ -217,10 +260,11 @@ export default function Nav() {
         }
         return;
       }
-      // The new snapshot is live; its panel stays transparent until release().
-      const style = getComputedStyle(root, '::view-transition-group(nav-section)');
+      const animatedSnapshot = useRootSnapshot
+        ? '::view-transition-old(root)' : '::view-transition-group(nav-section)';
+      const style = getComputedStyle(root, animatedSnapshot);
       const entryAnimation = document.getAnimations().find(animation =>
-        animation instanceof CSSAnimation && animation.animationName === 'nav-section-enter');
+        animation instanceof CSSAnimation && animation.animationName === (goingBack ? 'nav-section-return' : 'nav-section-enter'));
       const timing = {
         duration: parseFloat(style.animationDuration) * 1000,
         easing: style.animationTimingFunction,
@@ -234,15 +278,17 @@ export default function Nav() {
       }
       animations.push(root.animate(Array.from({ length: 61 }, (_, index) => {
         const progress = index / 60;
-        const radius = `calc(${panelRadius} * ${getSectionCornerScale(progress)})`;
+        const radius = `calc(${panelRadius} * ${getSectionCornerScale(goingBack ? 1 - progress : progress)})`;
         return {
           offset: progress,
-          backgroundColor: blendSectionColor(fromHsl, toHsl, progress),
+          ...(!useRootSnapshot && {
+            backgroundColor: blendSectionColor(fromHsl, toHsl, progress),
+          }),
           clipPath: `inset(0 round ${radius} ${radius} 0 0)`,
         };
       }), {
         ...timing,
-        pseudoElement: '::view-transition-group(nav-section)',
+        pseudoElement: animatedSnapshot,
       }));
       if (entryAnimation?.startTime != null) {
         for (const animation of animations) {
