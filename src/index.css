@@ -491,13 +491,28 @@ html.custom-scrollbar-dragging * {
   to { transform: translateY(0) rotate(0deg); }
 }
 
+.site-nav,
+.nav-bg-layer {
+  left: 0;
+  right: 0;
+  width: calc(40% + var(--nav-hero-progress, 0) * 60%);
+  margin-inline: auto;
+}
+
+@media (max-width: 767px) {
+  .site-nav,
+  .nav-bg-layer {
+    width: calc(60% + var(--nav-hero-progress, 0) * 40%);
+  }
+}
+
 .nav-bg-layer {
   position: fixed;
   top: 0;
-  left: 0;
-  right: 0;
   height: 3.5rem;
-  background: var(--nav-bg-color);
+  background: color-mix(in srgb, var(--nav-bg-color) calc(35% + var(--nav-hero-progress, 0) * 65%), transparent);
+  -webkit-backdrop-filter: blur(calc(20px * (1 - var(--nav-hero-progress, 0))));
+  backdrop-filter: blur(calc(20px * (1 - var(--nav-hero-progress, 0))));
   z-index: var(--nav-bg-z);
   pointer-events: none;
   overflow: hidden;
@@ -524,6 +539,7 @@ html.custom-scrollbar-dragging * {
   position: relative;
   overflow: hidden;
   border-bottom: 1px solid rgba(255, 255, 255, 0.33);
+  border-inline: 1px solid rgba(255, 255, 255, 0.33);
   border-radius: 0 0 var(--panel-radius) var(--panel-radius);
 }
 

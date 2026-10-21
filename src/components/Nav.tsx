@@ -46,8 +46,17 @@ export default function Nav() {
 
   useEffect(() => {
     const ids = links.map(link => link.href.slice(1));
+    const root = document.documentElement;
+    const hero = document.getElementById('home');
 
-    const updateActiveSection = () => {
+    const updateNavigation = () => {
+      // Use the pin's actual end so expansion finishes with the hero tilt.
+      const heroTransition = ScrollTrigger.getAll().find(trigger =>
+        trigger.trigger === hero && trigger.vars.pin);
+      const heroEnd = heroTransition?.end ?? hero?.offsetHeight ?? window.innerHeight;
+      const progress = Math.max(0, Math.min(1, window.scrollY / Math.max(1, heroEnd)));
+      root.style.setProperty('--nav-hero-progress', progress.toFixed(4));
+
       const sections = ids
         .map(id => document.getElementById(id) as HTMLElement | null)
         .filter((section): section is HTMLElement => Boolean(section));
@@ -66,18 +75,21 @@ export default function Nav() {
       setActiveSection(nextActiveSection);
     };
 
-    updateActiveSection();
-    const unsubscribeLenis = lenis?.on('scroll', updateActiveSection);
+    updateNavigation();
+    const unsubscribeLenis = lenis?.on('scroll', updateNavigation);
     if (!lenis) {
-      window.addEventListener('scroll', updateActiveSection, { passive: true });
+      window.addEventListener('scroll', updateNavigation, { passive: true });
     }
-    window.addEventListener('resize', updateActiveSection);
+    window.addEventListener('resize', updateNavigation);
+    ScrollTrigger.addEventListener('refresh', updateNavigation);
     return () => {
       unsubscribeLenis?.();
       if (!lenis) {
-        window.removeEventListener('scroll', updateActiveSection);
+        window.removeEventListener('scroll', updateNavigation);
       }
-      window.removeEventListener('resize', updateActiveSection);
+      window.removeEventListener('resize', updateNavigation);
+      ScrollTrigger.removeEventListener('refresh', updateNavigation);
+      root.style.removeProperty('--nav-hero-progress');
     };
   }, [lenis]);
 
@@ -200,8 +212,7 @@ export default function Nav() {
     <>
       <div className="nav-bg-layer" aria-hidden="true" />
       <motion.header
-        className="site-nav fixed top-0 left-0 right-0 z-[9996]"
-        style={{ top: 0, left: 0, right: 0 }}
+        className="site-nav fixed top-0 z-[9996]"
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
