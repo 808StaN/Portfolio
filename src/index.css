@@ -440,6 +440,7 @@ html.custom-scrollbar-dragging * {
 .nav-section-transition::view-transition-new(root) {
   animation: nav-section-enter 0.9s cubic-bezier(0.22, 1, 0.36, 1) both;
   transform-origin: bottom left;
+  clip-path: inset(0 round var(--nav-section-top-left-radius) var(--nav-section-top-right-radius) 0 0);
   mix-blend-mode: normal;
   z-index: 2;
 }
@@ -453,7 +454,7 @@ html.custom-scrollbar-dragging * {
 }
 
 @keyframes nav-section-enter {
-  from { transform: translateY(100%) rotate(8deg); }
+  from { transform: translateY(100%) rotate(var(--nav-section-start-angle)); }
   to { transform: translateY(0) rotate(0deg); }
 }
 

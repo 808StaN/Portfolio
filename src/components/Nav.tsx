@@ -3,6 +3,7 @@ import { flushSync } from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { scrollToY, useLenis } from './LenisScroll';
+import { incomingAngles } from '../utils/tilt';
 
 const links = [
   { label: 'Projects', href: '#work' },
@@ -31,7 +32,11 @@ export default function Nav() {
     );
     const transitionTarget = ScrollTrigger.getById(`section-target-${section.id}`);
     const navHeight = document.querySelector('header')?.getBoundingClientRect().height ?? 64;
-    const targetCorrection = section.id === 'about' ? navHeight : 0;
+    // A tall outgoing panel finishes tilting before the incoming panel reaches the top.
+    const overlapCorrection = transitionTarget?.trigger instanceof HTMLElement
+      ? Math.max(0, transitionTarget.trigger.offsetHeight - window.innerHeight)
+      : 0;
+    const targetCorrection = overlapCorrection + (section.id === 'about' ? navHeight : 0);
     const top =
       transitionTarget?.end !== undefined
         ? transitionTarget.end + targetCorrection
@@ -115,6 +120,11 @@ export default function Nav() {
 
     const root = document.documentElement;
     const wasStopped = lenis?.isStopped;
+    const panel = el.querySelector<HTMLElement>('.section-tilt-panel');
+    const panelStyle = panel ? getComputedStyle(panel) : null;
+    root.style.setProperty('--nav-section-start-angle', `${incomingAngles[0]}deg`);
+    root.style.setProperty('--nav-section-top-left-radius', panelStyle?.borderTopLeftRadius ?? '0px');
+    root.style.setProperty('--nav-section-top-right-radius', panelStyle?.borderTopRightRadius ?? '0px');
     root.classList.add('nav-section-transition');
     lenis?.stop();
     let released = false;
@@ -122,6 +132,9 @@ export default function Nav() {
       if (released) return;
       released = true;
       root.classList.remove('nav-section-transition');
+      root.style.removeProperty('--nav-section-start-angle');
+      root.style.removeProperty('--nav-section-top-left-radius');
+      root.style.removeProperty('--nav-section-top-right-radius');
       if (!wasStopped) lenis?.start();
       window.removeEventListener('wheel', interrupt, true);
       window.removeEventListener('touchstart', interrupt, true);
