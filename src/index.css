@@ -393,6 +393,70 @@ html.custom-scrollbar-dragging * {
 }
 
 /* Nav */
+.nav-section-transition .site-nav {
+  view-transition-name: site-nav;
+}
+
+.nav-section-transition .custom-scrollbar {
+  view-transition-name: site-scrollbar;
+}
+
+.nav-section-transition .custom-cursor-dot {
+  view-transition-name: cursor-dot;
+}
+
+.nav-section-transition .custom-cursor-ring {
+  view-transition-name: cursor-ring;
+}
+
+.nav-section-transition .mobile-menu-backdrop {
+  visibility: hidden;
+}
+
+[data-nav-revealed] {
+  opacity: 1 !important;
+  transform: none !important;
+}
+
+.nav-section-transition::view-transition {
+  pointer-events: none;
+}
+
+.nav-section-transition::view-transition-group(*),
+.nav-section-transition::view-transition-new(*) {
+  animation: none;
+}
+
+.nav-section-transition::view-transition-image-pair(root) {
+  isolation: isolate;
+}
+
+.nav-section-transition::view-transition-old(root) {
+  animation: none;
+  mix-blend-mode: normal;
+  z-index: 1;
+}
+
+.nav-section-transition::view-transition-new(root) {
+  animation: nav-section-enter 0.9s cubic-bezier(0.22, 1, 0.36, 1) both;
+  transform-origin: bottom left;
+  mix-blend-mode: normal;
+  z-index: 2;
+}
+
+.nav-section-transition::view-transition-old(site-nav),
+.nav-section-transition::view-transition-old(site-scrollbar),
+.nav-section-transition::view-transition-old(cursor-dot),
+.nav-section-transition::view-transition-old(cursor-ring) {
+  animation: none;
+  opacity: 0;
+}
+
+@keyframes nav-section-enter {
+  from { transform: translateY(100%) rotate(8deg); }
+  to { transform: translateY(0) rotate(0deg); }
+}
+
 .nav-bg-layer {
   position: fixed;
   top: 0;

@@ -1,4 +1,5 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
+import { flushSync } from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { scrollToY, useLenis } from './LenisScroll';
@@ -14,6 +15,14 @@ export default function Nav() {
   const lenis = useLenis();
   const [menuOpen, setMenuOpen] = useState(false);
   const [activeSection, setActiveSection] = useState('');
+  const navigationRequest = useRef(0);
+  const navigation = useRef<{ transition: ViewTransition; release: () => void } | null>(null);
+
+  useEffect(() => () => {
+    navigationRequest.current += 1;
+    navigation.current?.transition.skipTransition();
+    navigation.current?.release();
+  }, []);
 
   const getSectionTargetTop = (section: HTMLElement) => {
     const maxScrollTop = Math.max(
@@ -67,18 +76,87 @@ export default function Nav() {
     };
   }, [lenis]);
 
-  const handleLink = (href: string) => {
+  const handleLink = async (href: string) => {
     setMenuOpen(false);
+    const request = ++navigationRequest.current;
+    const previous = navigation.current;
+    if (previous) {
+      previous.transition.skipTransition();
+      await previous.transition.finished.catch(() => {});
+    }
+    if (request !== navigationRequest.current) return;
+
     const el = document.querySelector(href) as HTMLElement | null;
     if (!el) return;
-    scrollToY(getSectionTargetTop(el), lenis, { duration: 1.15 });
+    const top = getSectionTargetTop(el);
+    if (Math.abs(window.scrollY - top) < 2) return;
+
+    const jump = () => {
+      if (request !== navigationRequest.current || !el.isConnected) return;
+      if (lenis) {
+        lenis.scrollTo(top, { immediate: true, force: true });
+      } else {
+        scrollToY(top, null, { immediate: true });
+      }
+      ScrollTrigger.update();
+      // Include content in the snapshot instead of its initial Framer Motion opacity.
+      el.querySelectorAll<HTMLElement>('.section-tilt-container [style*="opacity"]')
+        .forEach(node => node.setAttribute('data-nav-revealed', ''));
+      flushSync(() => setActiveSection(el.id));
+      if (!el.hasAttribute('tabindex')) el.setAttribute('tabindex', '-1');
+      el.focus({ preventScroll: true });
+    };
+
+    if (typeof document.startViewTransition !== 'function'
+      || window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      jump();
+      return;
+    }
+
+    const root = document.documentElement;
+    const wasStopped = lenis?.isStopped;
+    root.classList.add('nav-section-transition');
+    lenis?.stop();
+    let released = false;
+    const release = () => {
+      if (released) return;
+      released = true;
+      root.classList.remove('nav-section-transition');
+      if (!wasStopped) lenis?.start();
+      window.removeEventListener('wheel', interrupt, true);
+      window.removeEventListener('touchstart', interrupt, true);
+      window.removeEventListener('keydown', interrupt, true);
+      window.removeEventListener('resize', interrupt);
+    };
+    const interrupt = (event: Event) => {
+      if (event instanceof KeyboardEvent
+        && !['ArrowUp', 'ArrowDown', 'PageUp', 'PageDown', 'Home', 'End', ' ', 'Escape', 'Tab'].includes(event.key)) return;
+      transition.skipTransition();
+      release();
+    };
+    const transition = document.startViewTransition(jump);
+    navigation.current = { transition, release };
+    window.addEventListener('wheel', interrupt, { capture: true, passive: true });
+    window.addEventListener('touchstart', interrupt, { capture: true, passive: true });
+    window.addEventListener('keydown', interrupt, true);
+    window.addEventListener('resize', interrupt);
+    void transition.ready.catch(() => {});
+    try {
+      await transition.finished;
+    } catch {
+      // Snapshot failures must not prevent navigation to the requested section.
+      if (request === navigationRequest.current) jump();
+    } finally {
+      release();
+      if (navigation.current?.transition === transition) navigation.current = null;
+    }
   };
 
   return (
     <>
       <div className="nav-bg-layer" aria-hidden="true" />
       <motion.header
-        className="fixed top-0 left-0 right-0 z-[9996]"
+        className="site-nav fixed top-0 left-0 right-0 z-[9996]"
         style={{ top: 0, left: 0, right: 0 }}
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
@@ -166,8 +244,8 @@ export default function Nav() {
           <motion.div
             className="mobile-menu-backdrop fixed inset-0 z-[10000] flex flex-col justify-center items-center"
             initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
+            animate={{ opacity: 1, pointerEvents: 'auto' }}
+            exit={{ opacity: 0, pointerEvents: 'none', transition: { duration: 0 } }}
             transition={{ duration: 0.3 }}
           >
             <button
