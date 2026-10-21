@@ -136,28 +136,31 @@ export default function Nav() {
     }
 
     const root = document.documentElement;
+    const startProgress = Number(getComputedStyle(root).getPropertyValue('--nav-hero-progress'));
     const wasStopped = lenis?.isStopped;
     const panelStyle = getComputedStyle(panel);
     const sourceColor = root.style.getPropertyValue('--nav-bg-color').trim();
     const fromHsl = hexToHsl(sourceColor.startsWith('#') ? sourceColor : targetColor);
     const toHsl = hexToHsl(targetColor);
     root.style.setProperty('--nav-section-start-color', blendSectionColor(fromHsl, toHsl, 0));
+    root.style.setProperty('--nav-start-grain', root.style.getPropertyValue('--nav-grain-opacity') || '1');
     root.style.setProperty('--nav-section-start-angle', `${incomingAngles[0]}deg`);
     root.style.setProperty('--nav-section-top-left-radius', panelStyle?.borderTopLeftRadius ?? '0px');
     root.style.setProperty('--nav-section-top-right-radius', panelStyle?.borderTopRightRadius ?? '0px');
     root.classList.add('nav-section-transition');
     lenis?.stop();
     captureSnapshot = true;
-    let colorAnimation: Animation | undefined;
+    const animations: Animation[] = [];
     let released = false;
     const release = () => {
       if (released) return;
       released = true;
       captureSnapshot = false;
       panel.removeAttribute('data-nav-capture');
-      colorAnimation?.cancel();
+      animations.forEach(animation => animation.cancel());
       root.classList.remove('nav-section-transition');
       root.style.removeProperty('--nav-section-start-color');
+      root.style.removeProperty('--nav-start-grain');
       root.style.removeProperty('--nav-section-start-angle');
       root.style.removeProperty('--nav-section-top-left-radius');
       root.style.removeProperty('--nav-section-top-right-radius');
@@ -186,16 +189,30 @@ export default function Nav() {
       const style = getComputedStyle(root, '::view-transition-group(nav-section)');
       const entryAnimation = document.getAnimations().find(animation =>
         animation instanceof CSSAnimation && animation.animationName === 'nav-section-enter');
-      colorAnimation = root.animate(Array.from({ length: 61 }, (_, index) => ({
+      const endProgress = Number(root.style.getPropertyValue('--nav-hero-progress'));
+      const timing = {
+        duration: parseFloat(style.animationDuration) * 1000,
+        easing: style.animationTimingFunction,
+        fill: 'both' as const,
+      };
+      if (startProgress < endProgress) {
+        animations.push(root.animate([
+          { '--nav-hero-progress': startProgress },
+          { '--nav-hero-progress': endProgress },
+        ], timing));
+      }
+      animations.push(root.animate(Array.from({ length: 61 }, (_, index) => ({
         offset: index / 60,
         backgroundColor: blendSectionColor(fromHsl, toHsl, index / 60),
       })), {
-        duration: parseFloat(style.animationDuration) * 1000,
-        easing: style.animationTimingFunction,
-        fill: 'both',
+        ...timing,
         pseudoElement: '::view-transition-group(nav-section)',
-      });
-      if (entryAnimation?.startTime != null) colorAnimation.startTime = entryAnimation.startTime;
+      }));
+      if (entryAnimation?.startTime != null) {
+        for (const animation of animations) {
+          animation.startTime = entryAnimation.startTime;
+        }
+      }
     }).catch(() => transition.skipTransition());
     try {
       await transition.finished;

@@ -393,8 +393,25 @@ html.custom-scrollbar-dragging * {
 }
 
 /* Nav */
+@property --nav-hero-progress {
+  syntax: '<number>';
+  inherits: true;
+  initial-value: 0;
+}
+
 .nav-section-transition .site-nav {
   view-transition-name: site-nav;
+}
+
+.nav-section-transition .nav-bg-layer {
+  view-transition-name: site-nav-bg;
+  background: transparent;
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+}
+
+.nav-section-transition .nav-bg-layer::after {
+  opacity: 1;
 }
 
 .nav-section-transition .custom-scrollbar {
@@ -455,23 +472,40 @@ html.custom-scrollbar-dragging * {
   transform-origin: bottom left;
   clip-path: inset(0 round var(--nav-section-top-left-radius) var(--nav-section-top-right-radius) 0 0);
   background-color: var(--nav-section-start-color);
-  z-index: 1;
-}
-
-.nav-section-transition::view-transition-group(site-nav) {
   z-index: 2;
 }
 
-.nav-section-transition::view-transition-group(site-scrollbar) {
+.nav-section-transition::view-transition-group(site-nav),
+.nav-section-transition::view-transition-group(site-nav-bg) {
+  top: 0;
+  transform: none;
+}
+
+.nav-section-transition::view-transition-group(site-nav-bg) {
+  background: color-mix(in srgb, var(--nav-section-start-color) calc(35% + var(--nav-hero-progress) * 65%), transparent);
+  backdrop-filter: blur(calc(20px * (1 - var(--nav-hero-progress))));
+  clip-path: inset(0 round 0 0 var(--panel-radius) var(--panel-radius));
+  z-index: 1;
+}
+
+.nav-section-transition::view-transition-new(site-nav-bg) {
+  opacity: var(--nav-start-grain);
+}
+
+.nav-section-transition::view-transition-group(site-nav) {
   z-index: 3;
 }
 
-.nav-section-transition::view-transition-group(cursor-ring) {
+.nav-section-transition::view-transition-group(site-scrollbar) {
   z-index: 4;
 }
 
-.nav-section-transition::view-transition-group(cursor-dot) {
+.nav-section-transition::view-transition-group(cursor-ring) {
   z-index: 5;
+}
+
+.nav-section-transition::view-transition-group(cursor-dot) {
+  z-index: 6;
 }
 
 .nav-section-transition::view-transition-new(nav-section) {
@@ -479,6 +513,7 @@ html.custom-scrollbar-dragging * {
 }
 
 .nav-section-transition::view-transition-old(site-nav),
+.nav-section-transition::view-transition-old(site-nav-bg),
 .nav-section-transition::view-transition-old(site-scrollbar),
 .nav-section-transition::view-transition-old(cursor-dot),
 .nav-section-transition::view-transition-old(cursor-ring) {
@@ -492,7 +527,9 @@ html.custom-scrollbar-dragging * {
 }
 
 .site-nav,
-.nav-bg-layer {
+.nav-bg-layer,
+.nav-section-transition::view-transition-group(site-nav),
+.nav-section-transition::view-transition-group(site-nav-bg) {
   left: 0;
   right: 0;
   width: calc(40% + var(--nav-hero-progress, 0) * 60%);
@@ -501,7 +538,9 @@ html.custom-scrollbar-dragging * {
 
 @media (max-width: 767px) {
   .site-nav,
-  .nav-bg-layer {
+  .nav-bg-layer,
+  .nav-section-transition::view-transition-group(site-nav),
+  .nav-section-transition::view-transition-group(site-nav-bg) {
     width: calc(60% + var(--nav-hero-progress, 0) * 40%);
   }
 }
