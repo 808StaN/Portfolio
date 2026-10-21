@@ -412,6 +412,7 @@ html.custom-scrollbar-dragging * {
   inset: 0;
   background: url('/noise.png');
   background-size: 250px;
+  opacity: var(--nav-grain-opacity, 1);
   pointer-events: none;
 }
 

@@ -22,10 +22,11 @@ const getOverlapStart = (section: HTMLElement) =>
 const getOverlapEnd = (section: HTMLElement) =>
   isTallerThanViewport(section) ? "+=100%" : "bottom top";
 
-const setNavBackground = (color: string, z: number) => {
+const setNavBackground = (color: string, z: number, showGrain: boolean) => {
   const root = document.documentElement;
   root.style.setProperty("--nav-bg-color", color);
   root.style.setProperty("--nav-bg-z", String(z));
+  root.style.setProperty("--nav-grain-opacity", showGrain ? "1" : "0");
 };
 
 export default function SectionTiltDirector() {
@@ -37,12 +38,13 @@ export default function SectionTiltDirector() {
     );
     if (sections.length === 0) return;
 
-    setNavBackground(sections[0].dataset.sectionColor || "transparent", 15);
+    setNavBackground(sections[0].dataset.sectionColor || "transparent", 15, sections[0].id !== "home");
 
     const cleanupNavBackground = () => {
       const root = document.documentElement;
       root.style.removeProperty("--nav-bg-color");
       root.style.removeProperty("--nav-bg-z");
+      root.style.removeProperty("--nav-grain-opacity");
     };
 
     const reducedMotion = window.matchMedia(
@@ -68,6 +70,7 @@ export default function SectionTiltDirector() {
     const syncNavBackground = () => {
       let bestColor = 'transparent';
       let bestZ = -1;
+      let showGrain = true;
 
       for (const { section, panel, color, z } of sectionData) {
         if (!panel) continue;
@@ -80,11 +83,12 @@ export default function SectionTiltDirector() {
         if (z > bestZ) {
           bestZ = z;
           bestColor = color;
+          showGrain = section.id !== "home";
         }
       }
 
       if (bestZ >= 0) {
-        setNavBackground(bestColor, bestZ + 5);
+        setNavBackground(bestColor, bestZ + 5, showGrain);
       }
     };
 
