@@ -150,6 +150,7 @@ export default function Nav() {
     root.style.setProperty('--nav-section-start-angle', `${incomingAngles[0]}deg`);
     root.style.setProperty('--nav-section-top-left-radius', panelStyle?.borderTopLeftRadius ?? '0px');
     root.style.setProperty('--nav-section-top-right-radius', panelStyle?.borderTopRightRadius ?? '0px');
+    root.classList.toggle('nav-home-transition', el.id === 'home');
     root.classList.add('nav-section-transition');
     lenis?.stop();
     captureSnapshot = true;
@@ -161,7 +162,7 @@ export default function Nav() {
       captureSnapshot = false;
       panel.removeAttribute('data-nav-capture');
       animations.forEach(animation => animation.cancel());
-      root.classList.remove('nav-section-transition');
+      root.classList.remove('nav-section-transition', 'nav-home-transition');
       root.style.removeProperty('--nav-section-start-color');
       root.style.removeProperty('--nav-start-grain');
       root.style.removeProperty('--nav-section-start-angle');

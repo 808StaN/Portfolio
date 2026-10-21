@@ -505,6 +505,25 @@ html.custom-scrollbar-dragging * {
   opacity: var(--nav-start-grain);
 }
 
+/* Returning to the hero needs glass above its live snapshot, unlike incoming sections. */
+.nav-home-transition::view-transition-group(nav-section) {
+  z-index: 1;
+}
+
+.nav-home-transition::view-transition-group(site-nav-bg) {
+  background: color-mix(
+    in srgb,
+    color-mix(in srgb, var(--nav-section-start-color) calc(var(--nav-hero-progress) * 100%), var(--nav-bg-color))
+      calc(35% + var(--nav-hero-progress) * 65%),
+    transparent
+  );
+  z-index: 2;
+}
+
+.nav-home-transition::view-transition-new(site-nav-bg) {
+  opacity: calc(var(--nav-start-grain) * var(--nav-hero-progress));
+}
+
 .nav-section-transition::view-transition-group(site-nav) {
   z-index: 3;
 }
