@@ -26,6 +26,7 @@ export default function Nav() {
   }, []);
 
   const getSectionTargetTop = (section: HTMLElement) => {
+    if (section.id === 'home') return 0;
     const maxScrollTop = Math.max(
       0,
       document.documentElement.scrollHeight - window.innerHeight,
@@ -120,9 +121,11 @@ export default function Nav() {
       }
       ScrollTrigger.update();
       if (captureSnapshot) panel?.setAttribute('data-nav-capture', '');
-      // Include content in the snapshot instead of its initial Framer Motion opacity.
-      el.querySelectorAll<HTMLElement>('.section-tilt-container [style*="opacity"]')
-        .forEach(node => node.setAttribute('data-nav-revealed', ''));
+      // Reveal scroll-triggered content, but leave the hero's looping animation alone.
+      if (el.id !== 'home') {
+        el.querySelectorAll<HTMLElement>('.section-tilt-container [style*="opacity"]')
+          .forEach(node => node.setAttribute('data-nav-revealed', ''));
+      }
       flushSync(() => setActiveSection(el.id));
       if (!el.hasAttribute('tabindex')) el.setAttribute('tabindex', '-1');
       el.focus({ preventScroll: true });
@@ -195,7 +198,7 @@ export default function Nav() {
         easing: style.animationTimingFunction,
         fill: 'both' as const,
       };
-      if (startProgress < endProgress) {
+      if (startProgress !== endProgress) {
         animations.push(root.animate([
           { '--nav-hero-progress': startProgress },
           { '--nav-hero-progress': endProgress },
@@ -235,13 +238,23 @@ export default function Nav() {
         transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
       >
         <nav className="relative h-14 md:h-16 nav-blur">
-          <div
-            className="hero-inner relative z-10 h-full flex items-center justify-between"
-            style={{ width: 'min(1600px, calc(100% - (var(--page-gutter) * 1.2)))' }}
-          >
-            <div className="hidden md:block w-[84px]" aria-hidden="true" />
+          <div className="site-nav-inner relative z-10 h-full flex items-center justify-between">
+            <button
+              type="button"
+              onClick={() => handleLink('#home')}
+              className="group relative inline-flex h-11 shrink-0 items-center text-sm text-white cursor-pointer bg-transparent border-none focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-white"
+              style={{ fontFamily: 'var(--font-sans)' }}
+            >
+              <span className="relative inline-flex items-center gap-2">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                  <path d="M12 3 2 11h3v10h5v-6h4v6h5V11h3L12 3Z" />
+                </svg>
+                Home
+                <span className="absolute -bottom-0.5 left-0 h-px w-0 bg-white transition-all duration-300 group-hover:w-full group-focus-visible:w-full" />
+              </span>
+            </button>
 
-            <div className="hidden lg:flex items-center gap-8">
+            <div className="site-nav-links hidden lg:flex items-center gap-8">
               {links.map(link => (
                 <button
                   key={link.href}

@@ -393,6 +393,19 @@ html.custom-scrollbar-dragging * {
 }
 
 /* Nav */
+.site-nav {
+  container-type: inline-size;
+}
+
+.site-nav .site-nav-inner {
+  width: min(1600px, calc(100% - min(var(--page-gutter) * 1.2, max(24px, 40cqw - 152px))));
+  margin-inline: auto;
+}
+
+.site-nav .site-nav-links {
+  gap: clamp(8px, calc(40cqw - 184px), 32px);
+}
+
 @property --nav-hero-progress {
   syntax: '<number>';
   inherits: true;
