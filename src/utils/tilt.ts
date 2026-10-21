@@ -1,5 +1,11 @@
 export const incomingAngles = [14, 12, 10, 8, 6, 4, 3, 2, 1, 0];
 
+export const getSectionCornerScale = (progress: number): number => {
+  // Flatten the corners smoothly over the final tenth of the arrival.
+  const t = Math.max(0, Math.min(1, (progress - 0.9) / 0.1));
+  return 1 - t * t * (3 - 2 * t);
+};
+
 export type Hsl = { h: number; s: number; l: number };
 
 export const hexToHsl = (hex: string): Hsl => {

@@ -7,6 +7,7 @@ import {
   hexToHsl,
   blendSectionColor,
   getTiltDrop,
+  getSectionCornerScale,
 } from "../utils/tilt";
 
 gsap.registerPlugin(ScrollTrigger);
@@ -128,6 +129,7 @@ export default function SectionTiltDirector() {
 
         const applyBlend = (p: number) => {
           incomingPanel.style.backgroundColor = blendSectionColor(prevHsl, incomingHsl, p);
+          incomingPanel.style.setProperty('--section-corner-scale', String(getSectionCornerScale(p)));
         };
 
         if (sameGroup) {
@@ -246,6 +248,7 @@ export default function SectionTiltDirector() {
       });
       cleanupNavBackground();
       ctx.revert();
+      clipTargets.forEach(({ panel }) => panel.style.removeProperty('--section-corner-scale'));
     };
   }, [lenis]);
 

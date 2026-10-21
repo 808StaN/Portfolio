@@ -481,7 +481,7 @@ html.custom-scrollbar-dragging * {
 }
 
 .nav-section-transition::view-transition-group(nav-section) {
-  animation: nav-section-enter 0.9s cubic-bezier(0.22, 1, 0.36, 1) both;
+  animation: nav-section-enter 1.2s cubic-bezier(0.22, 1, 0.36, 1) both;
   transform-origin: bottom left;
   clip-path: inset(0 round var(--nav-section-top-left-radius) var(--nav-section-top-right-radius) 0 0);
   background-color: var(--nav-section-start-color);
@@ -653,6 +653,7 @@ html.custom-scrollbar-dragging * {
 }
 
 .section-tilt-panel {
+  --section-base-radius: 0px;
   position: relative;
   width: 100%;
   max-width: 100%;
@@ -662,6 +663,18 @@ html.custom-scrollbar-dragging * {
   will-change: transform;
   backface-visibility: hidden;
   pointer-events: none;
+  border-radius: calc(var(--section-base-radius) * var(--section-corner-scale, 1)) calc(var(--section-base-radius) * var(--section-corner-scale, 1)) 0 0;
+}
+
+.section-shell.section-tilt-section > .section-tilt-panel,
+[data-project-id="riftpick"] > .section-tilt-panel {
+  --section-base-radius: var(--panel-radius);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .section-tilt-panel {
+    --section-corner-scale: 0;
+  }
 }
 
 .section-shell.section-tilt-section > .section-tilt-panel {
@@ -670,7 +683,6 @@ html.custom-scrollbar-dragging * {
   justify-content: flex-start;
   padding-top: clamp(88px, 10vh, 116px);
   padding-bottom: var(--section-space-y);
-  border-radius: var(--panel-radius) var(--panel-radius) 0 0;
 }
 
 .section-tilt-panel::after {
@@ -777,12 +789,6 @@ html.custom-scrollbar-dragging * {
 [data-section-group="projects"] > .section-tilt-panel {
   will-change: auto;
   backface-visibility: visible;
-  border-radius: 0;
-}
-
-/* Pierwszy projekt (RiftPick) wjeżdża z Hero tilt-em — zaokrąglone tylko górne rogi */
-[data-project-id="riftpick"] > .section-tilt-panel {
-  border-radius: var(--panel-radius) var(--panel-radius) 0 0;
 }
 
 .projects-project-panel {

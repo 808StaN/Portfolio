@@ -3,7 +3,7 @@ import { flushSync } from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { scrollToY, useLenis } from './LenisScroll';
-import { blendSectionColor, hexToHsl, incomingAngles } from '../utils/tilt';
+import { blendSectionColor, getSectionCornerScale, hexToHsl, incomingAngles } from '../utils/tilt';
 
 const links = [
   { label: 'Projects', href: '#work' },
@@ -143,14 +143,15 @@ export default function Nav() {
     const startProgress = Number(getComputedStyle(root).getPropertyValue('--nav-hero-progress'));
     const wasStopped = lenis?.isStopped;
     const panelStyle = getComputedStyle(panel);
+    const panelRadius = panelStyle.getPropertyValue('--section-base-radius').trim() || '0px';
     const sourceColor = root.style.getPropertyValue('--nav-bg-color').trim();
     const fromHsl = hexToHsl(sourceColor.startsWith('#') ? sourceColor : targetColor);
     const toHsl = hexToHsl(targetColor);
     root.style.setProperty('--nav-section-start-color', blendSectionColor(fromHsl, toHsl, 0));
     root.style.setProperty('--nav-start-grain', root.style.getPropertyValue('--nav-grain-opacity') || '1');
     root.style.setProperty('--nav-section-start-angle', `${incomingAngles[0]}deg`);
-    root.style.setProperty('--nav-section-top-left-radius', panelStyle?.borderTopLeftRadius ?? '0px');
-    root.style.setProperty('--nav-section-top-right-radius', panelStyle?.borderTopRightRadius ?? '0px');
+    root.style.setProperty('--nav-section-top-left-radius', panelRadius);
+    root.style.setProperty('--nav-section-top-right-radius', panelRadius);
     root.classList.toggle('nav-home-transition', returningHome);
     root.classList.add('nav-section-transition');
     lenis?.stop();
@@ -193,7 +194,7 @@ export default function Nav() {
       const endProgress = Number(root.style.getPropertyValue('--nav-hero-progress'));
       if (returningHome) {
         const timing = {
-          duration: 450,
+          duration: 600,
           easing: 'ease-in-out',
           fill: 'both' as const,
         };
@@ -231,10 +232,15 @@ export default function Nav() {
           { '--nav-hero-progress': endProgress },
         ], timing));
       }
-      animations.push(root.animate(Array.from({ length: 61 }, (_, index) => ({
-        offset: index / 60,
-        backgroundColor: blendSectionColor(fromHsl, toHsl, index / 60),
-      })), {
+      animations.push(root.animate(Array.from({ length: 61 }, (_, index) => {
+        const progress = index / 60;
+        const radius = `calc(${panelRadius} * ${getSectionCornerScale(progress)})`;
+        return {
+          offset: progress,
+          backgroundColor: blendSectionColor(fromHsl, toHsl, progress),
+          clipPath: `inset(0 round ${radius} ${radius} 0 0)`,
+        };
+      }), {
         ...timing,
         pseudoElement: '::view-transition-group(nav-section)',
       }));
