@@ -5,8 +5,7 @@ import { useLenis } from "./LenisScroll";
 import {
   incomingAngles,
   hexToHsl,
-  hslToHex,
-  lerpHsl,
+  blendSectionColor,
   getTiltDrop,
 } from "../utils/tilt";
 
@@ -128,11 +127,7 @@ export default function SectionTiltDirector() {
         gsap.set(incomingPanel, { backgroundColor: prevColor });
 
         const applyBlend = (p: number) => {
-          const eased = p < 0.5
-            ? 2 * p * p
-            : 1 - Math.pow(-2 * p + 2, 2) / 2;
-          const blended = lerpHsl(prevHsl, incomingHsl, eased);
-          incomingPanel.style.backgroundColor = hslToHex(blended.h, blended.s, blended.l);
+          incomingPanel.style.backgroundColor = blendSectionColor(prevHsl, incomingHsl, p);
         };
 
         if (sameGroup) {

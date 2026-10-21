@@ -418,6 +418,11 @@ html.custom-scrollbar-dragging * {
   transform: none !important;
 }
 
+[data-nav-capture] {
+  view-transition-name: nav-section;
+  background-color: transparent !important;
+}
+
 .nav-section-transition::view-transition {
   pointer-events: none;
 }
@@ -437,12 +442,40 @@ html.custom-scrollbar-dragging * {
   z-index: 1;
 }
 
+.nav-section-transition::view-transition-group(root) {
+  z-index: 0;
+}
+
 .nav-section-transition::view-transition-new(root) {
+  opacity: 0;
+}
+
+.nav-section-transition::view-transition-group(nav-section) {
   animation: nav-section-enter 0.9s cubic-bezier(0.22, 1, 0.36, 1) both;
   transform-origin: bottom left;
   clip-path: inset(0 round var(--nav-section-top-left-radius) var(--nav-section-top-right-radius) 0 0);
-  mix-blend-mode: normal;
+  background-color: var(--nav-section-start-color);
+  z-index: 1;
+}
+
+.nav-section-transition::view-transition-group(site-nav) {
   z-index: 2;
+}
+
+.nav-section-transition::view-transition-group(site-scrollbar) {
+  z-index: 3;
+}
+
+.nav-section-transition::view-transition-group(cursor-ring) {
+  z-index: 4;
+}
+
+.nav-section-transition::view-transition-group(cursor-dot) {
+  z-index: 5;
+}
+
+.nav-section-transition::view-transition-new(nav-section) {
+  mix-blend-mode: normal;
 }
 
 .nav-section-transition::view-transition-old(site-nav),

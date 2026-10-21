@@ -61,6 +61,14 @@ export const lerpHsl = (a: Hsl, b: Hsl, t: number): Hsl => {
   };
 };
 
+export const blendSectionColor = (from: Hsl, to: Hsl, progress: number): string => {
+  const eased = progress < 0.5
+    ? 2 * progress * progress
+    : 1 - Math.pow(-2 * progress + 2, 2) / 2;
+  const { h, s, l } = lerpHsl(from, to, eased);
+  return hslToHex(h, s, l);
+};
+
 export const getViewportWidth = () =>
   document.documentElement.clientWidth || window.visualViewport?.width || window.innerWidth;
 

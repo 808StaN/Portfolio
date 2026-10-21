@@ -3,7 +3,7 @@ import { flushSync } from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { scrollToY, useLenis } from './LenisScroll';
-import { incomingAngles } from '../utils/tilt';
+import { blendSectionColor, hexToHsl, incomingAngles } from '../utils/tilt';
 
 const links = [
   { label: 'Projects', href: '#work' },
@@ -95,6 +95,9 @@ export default function Nav() {
     if (!el) return;
     const top = getSectionTargetTop(el);
     if (Math.abs(window.scrollY - top) < 2) return;
+    const panel = el.querySelector<HTMLElement>('.section-tilt-panel');
+    const targetColor = panel?.closest<HTMLElement>('[data-section-color]')?.dataset.sectionColor;
+    let captureSnapshot = false;
 
     const jump = () => {
       if (request !== navigationRequest.current || !el.isConnected) return;
@@ -104,6 +107,7 @@ export default function Nav() {
         scrollToY(top, null, { immediate: true });
       }
       ScrollTrigger.update();
+      if (captureSnapshot) panel?.setAttribute('data-nav-capture', '');
       // Include content in the snapshot instead of its initial Framer Motion opacity.
       el.querySelectorAll<HTMLElement>('.section-tilt-container [style*="opacity"]')
         .forEach(node => node.setAttribute('data-nav-revealed', ''));
@@ -113,25 +117,35 @@ export default function Nav() {
     };
 
     if (typeof document.startViewTransition !== 'function'
-      || window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      || window.matchMedia('(prefers-reduced-motion: reduce)').matches
+      || !panel || !targetColor) {
       jump();
       return;
     }
 
     const root = document.documentElement;
     const wasStopped = lenis?.isStopped;
-    const panel = el.querySelector<HTMLElement>('.section-tilt-panel');
-    const panelStyle = panel ? getComputedStyle(panel) : null;
+    const panelStyle = getComputedStyle(panel);
+    const sourceColor = root.style.getPropertyValue('--nav-bg-color').trim();
+    const fromHsl = hexToHsl(sourceColor.startsWith('#') ? sourceColor : targetColor);
+    const toHsl = hexToHsl(targetColor);
+    root.style.setProperty('--nav-section-start-color', blendSectionColor(fromHsl, toHsl, 0));
     root.style.setProperty('--nav-section-start-angle', `${incomingAngles[0]}deg`);
     root.style.setProperty('--nav-section-top-left-radius', panelStyle?.borderTopLeftRadius ?? '0px');
     root.style.setProperty('--nav-section-top-right-radius', panelStyle?.borderTopRightRadius ?? '0px');
     root.classList.add('nav-section-transition');
     lenis?.stop();
+    captureSnapshot = true;
+    let colorAnimation: Animation | undefined;
     let released = false;
     const release = () => {
       if (released) return;
       released = true;
+      captureSnapshot = false;
+      panel.removeAttribute('data-nav-capture');
+      colorAnimation?.cancel();
       root.classList.remove('nav-section-transition');
+      root.style.removeProperty('--nav-section-start-color');
       root.style.removeProperty('--nav-section-start-angle');
       root.style.removeProperty('--nav-section-top-left-radius');
       root.style.removeProperty('--nav-section-top-right-radius');
@@ -153,7 +167,24 @@ export default function Nav() {
     window.addEventListener('touchstart', interrupt, { capture: true, passive: true });
     window.addEventListener('keydown', interrupt, true);
     window.addEventListener('resize', interrupt);
-    void transition.ready.catch(() => {});
+    void transition.ready.then(() => {
+      captureSnapshot = false;
+      if (released) return;
+      // The new snapshot is live; its panel stays transparent until release().
+      const style = getComputedStyle(root, '::view-transition-group(nav-section)');
+      const entryAnimation = document.getAnimations().find(animation =>
+        animation instanceof CSSAnimation && animation.animationName === 'nav-section-enter');
+      colorAnimation = root.animate(Array.from({ length: 61 }, (_, index) => ({
+        offset: index / 60,
+        backgroundColor: blendSectionColor(fromHsl, toHsl, index / 60),
+      })), {
+        duration: parseFloat(style.animationDuration) * 1000,
+        easing: style.animationTimingFunction,
+        fill: 'both',
+        pseudoElement: '::view-transition-group(nav-section)',
+      });
+      if (entryAnimation?.startTime != null) colorAnimation.startTime = entryAnimation.startTime;
+    }).catch(() => transition.skipTransition());
     try {
       await transition.finished;
     } catch {
