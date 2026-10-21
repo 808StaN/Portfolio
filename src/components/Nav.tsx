@@ -106,6 +106,7 @@ export default function Nav() {
 
     const el = document.querySelector(href) as HTMLElement | null;
     if (!el) return;
+    const returningHome = el.id === 'home';
     const top = getSectionTargetTop(el);
     if (Math.abs(window.scrollY - top) < 2) return;
     const panel = el.querySelector<HTMLElement>('.section-tilt-panel');
@@ -122,7 +123,7 @@ export default function Nav() {
       ScrollTrigger.update();
       if (captureSnapshot) panel?.setAttribute('data-nav-capture', '');
       // Reveal scroll-triggered content, but leave the hero's looping animation alone.
-      if (el.id !== 'home') {
+      if (!returningHome) {
         el.querySelectorAll<HTMLElement>('.section-tilt-container [style*="opacity"]')
           .forEach(node => node.setAttribute('data-nav-revealed', ''));
       }
@@ -150,10 +151,10 @@ export default function Nav() {
     root.style.setProperty('--nav-section-start-angle', `${incomingAngles[0]}deg`);
     root.style.setProperty('--nav-section-top-left-radius', panelStyle?.borderTopLeftRadius ?? '0px');
     root.style.setProperty('--nav-section-top-right-radius', panelStyle?.borderTopRightRadius ?? '0px');
-    root.classList.toggle('nav-home-transition', el.id === 'home');
+    root.classList.toggle('nav-home-transition', returningHome);
     root.classList.add('nav-section-transition');
     lenis?.stop();
-    captureSnapshot = true;
+    captureSnapshot = !returningHome;
     const animations: Animation[] = [];
     let released = false;
     const release = () => {
@@ -189,11 +190,36 @@ export default function Nav() {
     void transition.ready.then(() => {
       captureSnapshot = false;
       if (released) return;
+      const endProgress = Number(root.style.getPropertyValue('--nav-hero-progress'));
+      if (returningHome) {
+        const timing = {
+          duration: 450,
+          easing: 'ease-in-out',
+          fill: 'both' as const,
+        };
+        for (const [snapshot, from, to] of [['old', 1, 0], ['new', 0, 1]] as const) {
+          animations.push(root.animate([
+            { opacity: from },
+            { opacity: to },
+          ], {
+            ...timing,
+            pseudoElement: `::view-transition-${snapshot}(root)`,
+          }));
+        }
+        animations.push(root.animate([
+          { '--nav-hero-progress': startProgress },
+          { '--nav-hero-progress': endProgress },
+        ], timing));
+        const startTime = document.timeline.currentTime;
+        if (startTime != null) {
+          animations.forEach(animation => { animation.startTime = startTime; });
+        }
+        return;
+      }
       // The new snapshot is live; its panel stays transparent until release().
       const style = getComputedStyle(root, '::view-transition-group(nav-section)');
       const entryAnimation = document.getAnimations().find(animation =>
         animation instanceof CSSAnimation && animation.animationName === 'nav-section-enter');
-      const endProgress = Number(root.style.getPropertyValue('--nav-hero-progress'));
       const timing = {
         duration: parseFloat(style.animationDuration) * 1000,
         easing: style.animationTimingFunction,

@@ -505,9 +505,9 @@ html.custom-scrollbar-dragging * {
   opacity: var(--nav-start-grain);
 }
 
-/* Returning to the hero needs glass above its live snapshot, unlike incoming sections. */
-.nav-home-transition::view-transition-group(nav-section) {
-  z-index: 1;
+.nav-home-transition::view-transition-old(root),
+.nav-home-transition::view-transition-new(root) {
+  mix-blend-mode: plus-lighter;
 }
 
 .nav-home-transition::view-transition-group(site-nav-bg) {
@@ -517,7 +517,6 @@ html.custom-scrollbar-dragging * {
       calc(35% + var(--nav-hero-progress) * 65%),
     transparent
   );
-  z-index: 2;
 }
 
 .nav-home-transition::view-transition-new(site-nav-bg) {
