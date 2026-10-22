@@ -68,22 +68,27 @@ export default function App() {
       <SectionTiltDirector />
 
       {/* Main content */}
-      <main className="pb-10 md:pb-16">
-        {/* 1. Hero */}
-        <Hero />
+      <div className="page-transition-layout">
+        <div id="page-transition-scope" className="page-transition-scope">
+          <div className="nav-bg-layer" aria-hidden="true" />
+          <main className="pb-10 md:pb-16">
+            {/* 1. Hero */}
+            <Hero />
 
-        {/* 2. Projects */}
-        <Projects />
+            {/* 2. Projects */}
+            <Projects />
 
-        {/* 3. About */}
-        <About />
+            {/* 3. About */}
+            <About />
 
-        {/* 4. Stack */}
-        <Stack />
+            {/* 4. Stack */}
+            <Stack />
 
-        {/* 5. Contact */}
-        <Contact />
-      </main>
+            {/* 5. Contact */}
+            <Contact />
+          </main>
+        </div>
+      </div>
 
 
     </div>
