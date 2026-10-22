@@ -147,15 +147,21 @@ export default function Nav() {
       el.focus({ preventScroll: true });
     };
 
+    const root = document.documentElement;
     const scope = document.querySelector<TransitionScope>('#page-transition-scope');
-    if (typeof scope?.startViewTransition !== 'function'
+    const useScopedTransition = typeof scope?.startViewTransition === 'function';
+    const host = useScopedTransition ? scope : root;
+    // Keep native card animations when only document-wide transitions are available.
+    const startTransition = useScopedTransition
+      ? scope.startViewTransition!.bind(scope)
+      : document.startViewTransition?.bind(document);
+    if (!startTransition
       || window.matchMedia('(prefers-reduced-motion: reduce)').matches
       || !panel || !targetColor) {
       jump();
       return;
     }
 
-    const root = document.documentElement;
     if (goingBack) {
       for (const section of document.querySelectorAll<HTMLElement>('[data-section-tilt]')) {
         const candidate = section.querySelector<HTMLElement>(':scope > .section-tilt-panel');
@@ -190,17 +196,18 @@ export default function Nav() {
     root.style.setProperty('--nav-section-travel', `${panelHeight}px`);
     root.style.setProperty('--nav-section-source-transform', goingBack && !useRootSnapshot && outgoingRect
       ? `translate(${outgoingRect.left}px, ${outgoingRect.top}px)` : 'translate(0px, 0px)');
-    // Preserve the scroll range while the scoped scene stays fixed to the viewport.
+    // Preserve the scroll range while the scene stays fixed to the viewport.
     root.style.setProperty('--nav-page-height', `${root.scrollHeight}px`);
     root.style.setProperty('--nav-page-scroll', `${window.scrollY}px`);
     root.classList.toggle('nav-home-transition', returningHome);
     root.classList.toggle('nav-back-transition', goingBack);
     root.classList.toggle('nav-back-root-transition', useRootSnapshot);
+    root.classList.toggle('nav-document-transition', !useScopedTransition);
     root.classList.add('nav-section-transition');
-    scope.classList.toggle('nav-home-transition', returningHome);
-    scope.classList.toggle('nav-back-transition', goingBack);
-    scope.classList.toggle('nav-back-root-transition', useRootSnapshot);
-    scope.classList.add('nav-section-transition');
+    scope?.classList.toggle('nav-home-transition', returningHome);
+    scope?.classList.toggle('nav-back-transition', goingBack);
+    scope?.classList.toggle('nav-back-root-transition', useRootSnapshot);
+    scope?.classList.add('nav-section-transition');
     lenis?.stop();
     captureSnapshot = !returningHome && !goingBack;
     if (goingBack && !useRootSnapshot && outgoingStyle) {
@@ -211,6 +218,12 @@ export default function Nav() {
     }
     const animations: Animation[] = [];
     let released = false;
+    let finishRequested = false;
+    const finishDocumentTransition = () => {
+      const snapshots = host.getAnimations({ subtree: true }).filter(animation =>
+        animation.effect instanceof KeyframeEffect && animation.effect.pseudoElement);
+      [...snapshots, ...animations].forEach(animation => animation.finish());
+    };
     const release = () => {
       if (released) return;
       released = true;
@@ -219,8 +232,8 @@ export default function Nav() {
       outgoingPanel?.removeAttribute('data-nav-capture');
       outgoingSection?.removeAttribute('data-nav-source');
       animations.forEach(animation => animation.cancel());
-      root.classList.remove('nav-section-transition', 'nav-home-transition', 'nav-back-transition', 'nav-back-root-transition', 'nav-capture-ready');
-      scope.classList.remove('nav-section-transition', 'nav-home-transition', 'nav-back-transition', 'nav-back-root-transition');
+      root.classList.remove('nav-section-transition', 'nav-home-transition', 'nav-back-transition', 'nav-back-root-transition', 'nav-capture-ready', 'nav-document-transition');
+      scope?.classList.remove('nav-section-transition', 'nav-home-transition', 'nav-back-transition', 'nav-back-root-transition');
       root.style.removeProperty('--nav-section-start-color');
       root.style.removeProperty('--nav-start-grain');
       root.style.removeProperty('--nav-section-start-angle');
@@ -243,13 +256,19 @@ export default function Nav() {
         && event.target.closest('.site-nav, .mobile-menu-backdrop')) return;
       if (event instanceof KeyboardEvent
         && !['ArrowUp', 'ArrowDown', 'PageUp', 'PageDown', 'Home', 'End', ' ', 'Escape', 'Tab'].includes(event.key)) return;
-      transition.skipTransition();
-      release();
+      if (useScopedTransition) {
+        transition.skipTransition();
+        release();
+      } else {
+        // Finish document snapshots before releasing their captured layout.
+        finishRequested = true;
+        finishDocumentTransition();
+      }
     };
     const onScroll = (event: Event) => {
       if (Math.abs(window.scrollY - expectedScroll) > 2) interrupt(event);
     };
-    const transition = scope.startViewTransition(jump);
+    const transition = startTransition(jump);
     navigation.current = { transition, release };
     window.addEventListener('wheel', interrupt, { capture: true, passive: true });
     window.addEventListener('touchstart', interrupt, { capture: true, passive: true });
@@ -267,7 +286,7 @@ export default function Nav() {
           fill: 'both' as const,
         };
         for (const [snapshot, from, to] of [['old', 1, 0], ['new', 0, 1]] as const) {
-          animations.push(scope.animate([
+          animations.push(host.animate([
             { opacity: from },
             { opacity: to },
           ], {
@@ -283,12 +302,13 @@ export default function Nav() {
         if (startTime != null) {
           animations.forEach(animation => { animation.startTime = startTime; });
         }
+        if (finishRequested) finishDocumentTransition();
         return;
       }
       const animatedSnapshot = useRootSnapshot
         ? '::view-transition-old(root)' : '::view-transition-group(nav-section)';
-      const style = getComputedStyle(scope, animatedSnapshot);
-      const entryAnimation = scope.getAnimations({ subtree: true }).find(animation =>
+      const style = getComputedStyle(host, animatedSnapshot);
+      const entryAnimation = host.getAnimations({ subtree: true }).find(animation =>
         animation instanceof CSSAnimation && animation.animationName === (goingBack ? 'nav-section-return' : 'nav-section-enter'));
       const timing = {
         duration: parseFloat(style.animationDuration) * 1000,
@@ -301,7 +321,7 @@ export default function Nav() {
           { '--nav-hero-progress': endProgress },
         ], timing));
       }
-      animations.push(scope.animate(Array.from({ length: 61 }, (_, index) => {
+      animations.push(host.animate(Array.from({ length: 61 }, (_, index) => {
         const progress = index / 60;
         const radius = `calc(${panelRadius} * ${getSectionCornerScale(goingBack ? 1 - progress : progress)})`;
         return {
@@ -320,6 +340,7 @@ export default function Nav() {
           animation.startTime = entryAnimation.startTime;
         }
       }
+      if (finishRequested) finishDocumentTransition();
     }).catch(() => transition.skipTransition());
     try {
       await transition.finished;

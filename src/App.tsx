@@ -59,12 +59,14 @@ export default function App() {
       <div className="app-ambient" aria-hidden="true" />
       <div className="app-vignette" aria-hidden="true" />
 
-      {/* Custom cursor (desktop only) */}
-      <Cursor />
-      <CustomScrollbar />
+      <div className="site-ui">
+        {/* Custom cursor (desktop only) */}
+        <Cursor />
+        <CustomScrollbar />
 
-      {/* Navigation */}
-      <Nav />
+        {/* Navigation */}
+        <Nav />
+      </div>
       <SectionTiltDirector />
 
       {/* Main content */}

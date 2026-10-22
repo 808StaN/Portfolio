@@ -442,6 +442,42 @@ html.custom-scrollbar-dragging * {
   opacity: 1;
 }
 
+html.nav-document-transition {
+  view-transition-name: none;
+}
+
+html.nav-document-transition .page-transition-scope {
+  contain: layout;
+  view-transition-name: root;
+}
+
+/* Keep live captures self-contained instead of reusing detached composited layers. */
+html.nav-document-transition::view-transition-new(*) {
+  overflow: clip;
+}
+
+.site-ui {
+  display: contents;
+}
+
+html.nav-document-transition .site-ui {
+  display: block;
+  position: fixed;
+  inset: 0;
+  contain: layout;
+  z-index: 9996;
+  pointer-events: none;
+  view-transition-name: site-ui;
+}
+
+html.nav-document-transition .site-nav {
+  pointer-events: auto;
+}
+
+html.nav-document-transition .mobile-menu-backdrop {
+  visibility: hidden;
+}
+
 [data-nav-revealed] {
   opacity: 1 !important;
   transform: none !important;
@@ -569,10 +605,15 @@ html.custom-scrollbar-dragging * {
   opacity: calc(var(--nav-start-grain) * var(--nav-hero-progress));
 }
 
+.nav-section-transition::view-transition-group(site-ui) {
+  z-index: 3;
+}
+
 .nav-section-transition::view-transition-new(nav-section) {
   mix-blend-mode: normal;
 }
 
+.nav-section-transition::view-transition-old(site-ui),
 .nav-section-transition::view-transition-old(site-nav-bg) {
   animation: none;
   opacity: 0;
