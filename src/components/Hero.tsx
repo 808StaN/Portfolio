@@ -147,9 +147,9 @@ export default function Hero() {
                 href="https://ziianpdcwxtnkuojaxtp.supabase.co/storage/v1/object/public/Portfolio/Dawid_Stanisz_CV.pdf"
                 download
                 text="Download CV"
-                variant="secondary"
+                variant="primary"
                 icon="download"
-                sizing={{ paddingX: 24, paddingY: 14, fontSize: 14 }}
+                sizing={{ paddingX: 28, paddingY: 14, fontSize: 14 }}
               />
             </motion.div>
           </div>
