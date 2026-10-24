@@ -95,7 +95,9 @@ export default function ProjectTitleStretch({
         }}
       >
         <h2 className="projects-title" style={{ fontSize: `${STRETCH_START}em` }}>
-          {title}
+          {title === "RiftPick" ? (
+            <>Ri<span style={{ paddingInlineEnd: "0.04em" }}>f</span>tPick</>
+          ) : title}
         </h2>
       </div>
     </div>

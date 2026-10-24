@@ -1,6 +1,14 @@
 @import "tailwindcss";
 
-/* Self-hosted variable fonts. Satoshi includes Latin Extended. */
+/* Self-hosted variable fonts. */
+@font-face {
+  font-family: 'Chillax';
+  font-style: normal;
+  font-weight: 200 700;
+  font-display: swap;
+  src: url('/fonts/chillax-variable.woff2') format('woff2');
+}
+
 @font-face {
   font-family: 'Satoshi';
   font-style: normal;
@@ -60,6 +68,13 @@
   --carousel-radius: calc(var(--carousel-width) * 0.5955);
   --carousel-depth: calc(var(--carousel-width) * -0.6547);
   --projects-gallery-height: min(64vh, 866px);
+}
+
+/* Portfolio typography; services retain their existing font families. */
+:root[data-site="portfolio"] {
+  --font-sans: 'Chillax', system-ui, sans-serif;
+  --font-display: var(--font-sans);
+  --font-ui-weight: 500;
 }
 
 html.lenis,
@@ -274,17 +289,19 @@ html.custom-scrollbar-dragging * {
 .hero-headline-reveal {
   font-size: clamp(2.5rem, 7.4vw, 6.5rem);
   overflow: hidden;
-  /* Keep Satoshi descenders inside the reveal mask without widening line gaps. */
-  padding-bottom: 0.12em;
-  margin-bottom: -0.12em;
+  /* Keep descenders inside the reveal mask without widening line gaps. */
+  padding-bottom: 0.26em;
+  margin-bottom: -0.26em;
 }
 
 .hero-headline {
   font-family: var(--font-display);
   font-size: inherit;
-  font-weight: 750;
+  font-weight: 700;
   line-height: 1.04;
   letter-spacing: -0.045em;
+  /* Leave room for glyph overhang inside the gradient and reveal mask. */
+  padding-inline: 0.1em;
 }
 
 .hero-headline-gradient {
@@ -757,7 +774,7 @@ html.nav-document-transition .mobile-menu-backdrop {
 
 .section-title {
   font-family: var(--font-display);
-  font-weight: 650;
+  font-weight: 600;
   letter-spacing: -0.035em;
   line-height: 1.08;
 }

@@ -57,7 +57,7 @@ html[data-page-loading] {
   bottom: 3px;
   font-family: var(--font-display);
   font-size: clamp(20px, 2vw, 28px);
-  font-weight: 700;
+  font-weight: 600;
   line-height: 1.2;
   letter-spacing: -0.015em;
   text-transform: uppercase;

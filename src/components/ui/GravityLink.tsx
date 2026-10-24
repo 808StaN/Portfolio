@@ -260,7 +260,7 @@ export default function GravityLink({
           color: palette.text,
           fontFamily: buttonFont,
           fontSize,
-          fontWeight: 560,
+          fontWeight: 'var(--font-ui-weight, 560)',
           letterSpacing: '0.035em',
           lineHeight: 1,
           whiteSpace: 'nowrap',
