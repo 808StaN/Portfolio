@@ -77,10 +77,9 @@ export default function Hero({ ready }: { ready: boolean }) {
           </motion.div>
 
           {/* Main headline */}
-          <div className="overflow-hidden">
+          <div className="hero-headline-reveal">
             <motion.h1
               className="hero-headline hero-headline-gradient"
-              style={{ fontSize: 'clamp(2.05rem, 6.7vw, 6rem)' }}
               initial={{ opacity: 0, y: 28 }}
               animate={{ opacity: ready ? 1 : 0, y: ready ? 0 : 28 }}
               transition={{ duration: prefersReduced ? 0 : 0.9, delay: prefersReduced ? 0 : 0.52, ease: easeOut }}
@@ -89,10 +88,10 @@ export default function Hero({ ready }: { ready: boolean }) {
             </motion.h1>
           </div>
 
-          <div className="overflow-hidden">
+          <div className="hero-headline-reveal">
             <motion.h1
               className="hero-headline"
-              style={{ fontSize: 'clamp(2.05rem, 6.7vw, 6rem)', color: 'rgba(255,255,255,0.88)' }}
+              style={{ color: 'rgba(255,255,255,0.88)' }}
               initial={{ opacity: 0, y: 28 }}
               animate={{ opacity: ready ? 1 : 0, y: ready ? 0 : 28 }}
               transition={{ duration: prefersReduced ? 0 : 0.9, delay: prefersReduced ? 0 : 0.64, ease: easeOut }}
@@ -109,10 +108,9 @@ export default function Hero({ ready }: { ready: boolean }) {
             </motion.h1>
           </div>
 
-          <div className="overflow-hidden">
+          <div className="hero-headline-reveal">
             <motion.h1
               className="hero-headline hero-headline-gradient"
-              style={{ fontSize: 'clamp(2.05rem, 6.7vw, 6rem)' }}
               initial={{ opacity: 0, y: 28 }}
               animate={{ opacity: ready ? 1 : 0, y: ready ? 0 : 28 }}
               transition={{ duration: prefersReduced ? 0 : 0.9, delay: prefersReduced ? 0 : 0.76, ease: easeOut }}
@@ -122,7 +120,7 @@ export default function Hero({ ready }: { ready: boolean }) {
           </div>
 
           {/* Sub */}
-          <div className="mt-8 flex flex-col items-center gap-6 md:gap-7">
+          <div className="hero-copy flex flex-col items-center gap-6 md:gap-7">
             <motion.p
               className="max-w-[46rem] text-sm md:text-base leading-relaxed"
               style={{ color: 'rgba(255,255,255,0.54)', fontFamily: 'var(--font-sans)' }}

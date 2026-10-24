@@ -6,3 +6,6 @@ dist/
 .env.*
 !.env.example
 *.code-workspace
+
+# Fontshare allows self-hosting Satoshi, not redistribution in public repos.
+public/fonts/satoshi-variable.woff2

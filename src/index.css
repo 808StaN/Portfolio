@@ -1,103 +1,30 @@
 @import "tailwindcss";
 
-/* Self-hosted fonts */
+/* Self-hosted variable fonts. Satoshi includes Latin Extended. */
 @font-face {
-  font-family: 'Inter';
+  font-family: 'Satoshi';
   font-style: normal;
-  font-weight: 300;
+  font-weight: 300 900;
   font-display: swap;
-  src: url('/fonts/inter-latin-300-normal.woff2') format('woff2');
+  src: url('/fonts/satoshi-variable.woff2') format('woff2');
+}
+
+@font-face {
+  font-family: 'Geist';
+  font-style: normal;
+  font-weight: 100 900;
+  font-display: swap;
+  src: url('/fonts/geist-latin-variable.woff2') format('woff2');
   unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+2074, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
 }
 
 @font-face {
-  font-family: 'Inter';
+  font-family: 'Geist';
   font-style: normal;
-  font-weight: 400;
+  font-weight: 100 900;
   font-display: swap;
-  src: url('/fonts/inter-latin-400-normal.woff2') format('woff2');
-  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+2074, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
-}
-
-@font-face {
-  font-family: 'Inter';
-  font-style: normal;
-  font-weight: 500;
-  font-display: swap;
-  src: url('/fonts/inter-latin-500-normal.woff2') format('woff2');
-  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+2074, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
-}
-
-@font-face {
-  font-family: 'Inter';
-  font-style: normal;
-  font-weight: 600;
-  font-display: swap;
-  src: url('/fonts/inter-latin-600-normal.woff2') format('woff2');
-  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+2074, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
-}
-
-@font-face {
-  font-family: 'Syne';
-  font-style: normal;
-  font-weight: 400;
-  font-display: swap;
-  src: url('/fonts/syne-latin-400-normal.woff2') format('woff2');
-  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+2074, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
-}
-
-@font-face {
-  font-family: 'Syne';
-  font-style: normal;
-  font-weight: 500;
-  font-display: swap;
-  src: url('/fonts/syne-latin-500-normal.woff2') format('woff2');
-  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+2074, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
-}
-
-@font-face {
-  font-family: 'Syne';
-  font-style: normal;
-  font-weight: 600;
-  font-display: swap;
-  src: url('/fonts/syne-latin-600-normal.woff2') format('woff2');
-  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+2074, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
-}
-
-@font-face {
-  font-family: 'Syne';
-  font-style: normal;
-  font-weight: 700;
-  font-display: swap;
-  src: url('/fonts/syne-latin-700-normal.woff2') format('woff2');
-  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+2074, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
-}
-
-@font-face {
-  font-family: 'Syne';
-  font-style: normal;
-  font-weight: 800;
-  font-display: swap;
-  src: url('/fonts/syne-latin-800-normal.woff2') format('woff2');
-  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+2074, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
-}
-
-@font-face {
-  font-family: 'Inter';
-  font-style: normal;
-  font-weight: 300 600;
-  font-display: swap;
-  src: url('/fonts/inter-latin-ext.woff2') format('woff2');
-  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
-}
-
-@font-face {
-  font-family: 'Syne';
-  font-style: normal;
-  font-weight: 400 800;
-  font-display: swap;
-  src: url('/fonts/syne-latin-ext.woff2') format('woff2');
-  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+  src: url('/fonts/geist-latin-ext-variable.woff2') format('woff2');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C4, U+2113, U+2C60-2C7F, U+A720-A7FF;
 }
 
 *, *::before, *::after {
@@ -125,8 +52,8 @@
   --content-max-width: 1520px;
   --section-space-y: clamp(58px, 9vw, 120px);
   --panel-radius: clamp(16px, 2.4vw, 28px);
-  --font-sans: 'Inter', system-ui, sans-serif;
-  --font-display: 'Syne', system-ui, sans-serif;
+  --font-sans: 'Geist', system-ui, sans-serif;
+  --font-display: 'Satoshi', 'Geist', system-ui, sans-serif;
   /* Karuzela 3D projektów (16:9, skalowana do viewportu) */
   --carousel-width: min(1039.5px, calc(100vw - 32px));
   --carousel-height: calc(var(--carousel-width) * 0.562);
@@ -344,11 +271,20 @@ html.custom-scrollbar-dragging * {
 }
 
 /* Hero typography */
+.hero-headline-reveal {
+  font-size: clamp(2.5rem, 7.4vw, 6.5rem);
+  overflow: hidden;
+  /* Keep Satoshi descenders inside the reveal mask without widening line gaps. */
+  padding-bottom: 0.12em;
+  margin-bottom: -0.12em;
+}
+
 .hero-headline {
   font-family: var(--font-display);
-  font-weight: 800;
-  line-height: 0.94;
-  letter-spacing: -0.03em;
+  font-size: inherit;
+  font-weight: 750;
+  line-height: 1.04;
+  letter-spacing: -0.045em;
 }
 
 .hero-headline-gradient {
@@ -356,6 +292,10 @@ html.custom-scrollbar-dragging * {
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
+}
+
+.hero-copy {
+  margin-top: clamp(24px, 2.3vw, 32px);
 }
 
 .hero-actions {
@@ -817,9 +757,9 @@ html.nav-document-transition .mobile-menu-backdrop {
 
 .section-title {
   font-family: var(--font-display);
-  font-weight: 700;
-  letter-spacing: -0.02em;
-  line-height: 1.06;
+  font-weight: 650;
+  letter-spacing: -0.035em;
+  line-height: 1.08;
 }
 
 /* Project cards */
@@ -1607,10 +1547,6 @@ html.nav-document-transition .mobile-menu-backdrop {
     letter-spacing: 0.12em;
   }
 
-  .hero-headline {
-    line-height: 0.92;
-  }
-
   .projects-description {
     font-size: 0.88rem;
     line-height: 1.5;
@@ -1850,7 +1786,7 @@ html.nav-document-transition .mobile-menu-backdrop {
 .services-final-cta h2 {
   margin: 0;
   font-family: var(--font-display);
-  font-weight: 700;
+  font-weight: 650;
   letter-spacing: -0.035em;
   color: #fff;
 }
@@ -1858,7 +1794,7 @@ html.nav-document-transition .mobile-menu-backdrop {
 .services-hero h1 {
   max-width: 970px;
   font-size: clamp(2.5rem, 5.7vw, 5.65rem);
-  line-height: 0.98;
+  line-height: 1.04;
 }
 
 .services-hero h1 span {
@@ -2003,7 +1939,7 @@ html.nav-document-transition .mobile-menu-backdrop {
 .services-contact h2,
 .services-final-cta h2 {
   font-size: clamp(2rem, 4.1vw, 4rem);
-  line-height: 1.03;
+  line-height: 1.08;
 }
 
 .services-section-heading > p:last-child {
@@ -2240,7 +2176,7 @@ html.nav-document-transition .mobile-menu-backdrop {
   font-size: clamp(1.8rem, 3vw, 3.15rem);
   font-weight: 700;
   letter-spacing: -0.05em;
-  line-height: 0.96;
+  line-height: 1.06;
 }
 
 .services-project-content > p:not(.services-project-status) {
