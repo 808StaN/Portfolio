@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { flushSync } from 'react-dom';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion, AnimatePresence, useReducedMotion } from 'framer-motion';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { scrollToY, useLenis } from './LenisScroll';
 import { blendSectionColor, getSectionCornerScale, hexToHsl, incomingAngles } from '../utils/tilt';
@@ -16,8 +16,9 @@ type TransitionScope = HTMLElement & {
   startViewTransition?: (update: () => void) => ViewTransition;
 };
 
-export default function Nav() {
+export default function Nav({ ready }: { ready: boolean }) {
   const lenis = useLenis();
+  const reducedMotion = useReducedMotion();
   const [menuOpen, setMenuOpen] = useState(false);
   const [activeSection, setActiveSection] = useState('');
   const navigationRequest = useRef(0);
@@ -358,8 +359,8 @@ export default function Nav() {
       <motion.header
         className="site-nav fixed top-0 z-[9996]"
         initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
+        animate={{ opacity: ready ? 1 : 0 }}
+        transition={{ duration: reducedMotion ? 0 : 0.5, ease: [0.16, 1, 0.3, 1] }}
       >
         <nav className="relative h-14 md:h-16 nav-blur">
           <div className="site-nav-inner relative z-10 h-full flex items-center justify-between">

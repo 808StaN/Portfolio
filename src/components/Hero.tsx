@@ -9,7 +9,7 @@ const words = ['fast', 'scalable', 'reliable', 'responsive', 'modern'];
 
 const easeOut = [0.16, 1, 0.3, 1] as const;
 
-export default function Hero() {
+export default function Hero({ ready }: { ready: boolean }) {
   const prefersReduced = useReducedMotion();
   const lenis = useLenis();
   const wordRef = useRef<HTMLSpanElement>(null);
@@ -28,16 +28,17 @@ export default function Hero() {
   };
 
   useEffect(() => {
-    if (prefersReduced || !wordRef.current) return;
+    if (!ready || prefersReduced || !wordRef.current) return;
     const el = wordRef.current;
     let idx = 0;
     el.style.transition = 'opacity 0.35s ease, transform 0.35s ease';
 
+    let timeout = 0;
     const cycle = () => {
       idx = (idx + 1) % words.length;
       el.style.opacity = '0';
       el.style.transform = 'translateY(8px)';
-      setTimeout(() => {
+      timeout = window.setTimeout(() => {
         el.textContent = words[idx];
         el.style.opacity = '1';
         el.style.transform = 'translateY(0)';
@@ -45,8 +46,11 @@ export default function Hero() {
     };
 
     const timer = setInterval(cycle, 2800);
-    return () => clearInterval(timer);
-  }, [prefersReduced]);
+    return () => {
+      clearInterval(timer);
+      clearTimeout(timeout);
+    };
+  }, [prefersReduced, ready]);
 
   return (
     <section
@@ -66,8 +70,8 @@ export default function Hero() {
           <motion.div
             className="flex items-center justify-center gap-3 mb-6"
             initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: 0.1, ease: easeOut }}
+            animate={{ opacity: ready ? 1 : 0, y: ready ? 0 : 20 }}
+            transition={{ duration: prefersReduced ? 0 : 0.8, delay: prefersReduced ? 0 : 0.3, ease: easeOut }}
           >
             <span className="section-label">Full-Stack Developer - Dawid Stanisz</span>
           </motion.div>
@@ -78,8 +82,8 @@ export default function Hero() {
               className="hero-headline hero-headline-gradient"
               style={{ fontSize: 'clamp(2.05rem, 6.7vw, 6rem)' }}
               initial={{ opacity: 0, y: 28 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.9, delay: 0.32, ease: easeOut }}
+              animate={{ opacity: ready ? 1 : 0, y: ready ? 0 : 28 }}
+              transition={{ duration: prefersReduced ? 0 : 0.9, delay: prefersReduced ? 0 : 0.52, ease: easeOut }}
             >
               I build
             </motion.h1>
@@ -90,8 +94,8 @@ export default function Hero() {
               className="hero-headline"
               style={{ fontSize: 'clamp(2.05rem, 6.7vw, 6rem)', color: 'rgba(255,255,255,0.88)' }}
               initial={{ opacity: 0, y: 28 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.9, delay: 0.44, ease: easeOut }}
+              animate={{ opacity: ready ? 1 : 0, y: ready ? 0 : 28 }}
+              transition={{ duration: prefersReduced ? 0 : 0.9, delay: prefersReduced ? 0 : 0.64, ease: easeOut }}
             >
               <span
                 ref={wordRef}
@@ -110,8 +114,8 @@ export default function Hero() {
               className="hero-headline hero-headline-gradient"
               style={{ fontSize: 'clamp(2.05rem, 6.7vw, 6rem)' }}
               initial={{ opacity: 0, y: 28 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.9, delay: 0.56, ease: easeOut }}
+              animate={{ opacity: ready ? 1 : 0, y: ready ? 0 : 28 }}
+              transition={{ duration: prefersReduced ? 0 : 0.9, delay: prefersReduced ? 0 : 0.76, ease: easeOut }}
             >
               web apps
             </motion.h1>
@@ -123,8 +127,8 @@ export default function Hero() {
               className="max-w-[46rem] text-sm md:text-base leading-relaxed"
               style={{ color: 'rgba(255,255,255,0.54)', fontFamily: 'var(--font-sans)' }}
               initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.9, delay: 0.7, ease: easeOut }}
+              animate={{ opacity: ready ? 1 : 0, y: ready ? 0 : 20 }}
+              transition={{ duration: prefersReduced ? 0 : 0.9, delay: prefersReduced ? 0 : 0.9, ease: easeOut }}
             >
               React, Next.js and Node.js Developer focused on building web apps and desktop tools. I care about speed, clean UX, and practical delivery from concept to release.
             </motion.p>
@@ -132,8 +136,8 @@ export default function Hero() {
             <motion.div
               className="hero-actions"
               initial={{ opacity: 0, y: 18 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.85, delay: 0.82, ease: easeOut }}
+              animate={{ opacity: ready ? 1 : 0, y: ready ? 0 : 18 }}
+              transition={{ duration: prefersReduced ? 0 : 0.85, delay: prefersReduced ? 0 : 1.02, ease: easeOut }}
             >
               <GravityLink
                 href="#work"
@@ -159,8 +163,8 @@ export default function Hero() {
         <motion.div
           className="relative flex items-center justify-center min-h-[68px]"
           initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 1.2, duration: 0.8 }}
+          animate={{ opacity: ready ? 1 : 0 }}
+          transition={{ delay: prefersReduced ? 0 : 1.4, duration: prefersReduced ? 0 : 0.8 }}
         >
           <div className="absolute left-1/2 -translate-x-1/2 bottom-5 md:bottom-6 flex flex-col items-center gap-2.5">
             <span

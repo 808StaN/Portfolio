@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import Nav from "./components/Nav";
 import Hero from "./components/Hero";
 import Projects from "./components/Projects";
@@ -9,9 +9,12 @@ import Cursor from "./components/Cursor";
 import SectionTiltDirector from "./components/SectionTiltDirector";
 import CustomScrollbar from "./components/CustomScrollbar";
 import { useLenis } from "./components/LenisScroll";
+import PageLoader, { type PageLoaderStage } from "./components/PageLoader";
 
 export default function App() {
   const lenis = useLenis();
+  const [loaderStage, setLoaderStage] = useState<PageLoaderStage>("intro");
+  const entranceReady = loaderStage !== "intro";
 
   useEffect(() => {
     const root = document.documentElement;
@@ -52,47 +55,49 @@ export default function App() {
   }, [lenis]);
 
   return (
-    <div
-      className="app-shell relative min-h-screen"
-      style={{ background: "var(--color-bg)", color: "var(--color-text)" }}
-    >
-      <div className="app-ambient" aria-hidden="true" />
-      <div className="app-vignette" aria-hidden="true" />
+    <>
+      {loaderStage !== "done" && <PageLoader onStageChange={setLoaderStage} />}
+      <div
+        className="app-shell relative min-h-screen"
+        inert={loaderStage !== "done"}
+        style={{ background: "var(--color-bg)", color: "var(--color-text)" }}
+      >
+        <div className="app-ambient" aria-hidden="true" />
+        <div className="app-vignette" aria-hidden="true" />
 
-      <div className="site-ui">
-        {/* Custom cursor (desktop only) */}
-        <Cursor />
-        <CustomScrollbar />
+        <div className="site-ui">
+          {/* Custom cursor (desktop only) */}
+          <Cursor />
+          <CustomScrollbar />
 
-        {/* Navigation */}
-        <Nav />
-      </div>
-      <SectionTiltDirector />
+          {/* Navigation */}
+          <Nav ready={entranceReady} />
+        </div>
+        <SectionTiltDirector />
 
-      {/* Main content */}
-      <div className="page-transition-layout">
-        <div id="page-transition-scope" className="page-transition-scope">
-          <div className="nav-bg-layer" aria-hidden="true" />
-          <main className="pb-10 md:pb-16">
-            {/* 1. Hero */}
-            <Hero />
+        {/* Main content */}
+        <div className="page-transition-layout">
+          <div id="page-transition-scope" className="page-transition-scope">
+            <div className="nav-bg-layer" aria-hidden="true" />
+            <main className="pb-10 md:pb-16">
+              {/* 1. Hero */}
+              <Hero ready={entranceReady} />
 
-            {/* 2. Projects */}
-            <Projects />
+              {/* 2. Projects */}
+              <Projects />
 
-            {/* 3. About */}
-            <About />
+              {/* 3. About */}
+              <About />
 
-            {/* 4. Stack */}
-            <Stack />
+              {/* 4. Stack */}
+              <Stack />
 
-            {/* 5. Contact */}
-            <Contact />
-          </main>
+              {/* 5. Contact */}
+              <Contact />
+            </main>
+          </div>
         </div>
       </div>
-
-
-    </div>
+    </>
   );
 }
