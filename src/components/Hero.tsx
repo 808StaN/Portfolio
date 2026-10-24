@@ -1,4 +1,4 @@
-import { useEffect, useRef, type MouseEvent } from 'react';
+import { useEffect, useId, useRef, type MouseEvent } from 'react';
 import { motion, useReducedMotion } from 'framer-motion';
 import HeroHoleBackground from './HeroHoleBackground';
 import { sectionColors } from '../constants/sectionColors';
@@ -13,6 +13,7 @@ export default function Hero({ ready }: { ready: boolean }) {
   const prefersReduced = useReducedMotion();
   const lenis = useLenis();
   const wordRef = useRef<HTMLSpanElement>(null);
+  const outlineFilterId = useId();
 
   const handleProjectsClick = (event: MouseEvent<HTMLAnchorElement>) => {
     event.preventDefault();
@@ -60,6 +61,18 @@ export default function Hero({ ready }: { ready: boolean }) {
       data-section-color={sectionColors.home}
       aria-label="Hero"
     >
+      <svg width="0" height="0" className="absolute pointer-events-none" aria-hidden="true" focusable="false">
+        <defs>
+          <filter id={outlineFilterId} x="-10%" y="-30%" width="120%" height="160%" colorInterpolationFilters="sRGB">
+            {/* Outline the merged text silhouette, not overlapping font paths. */}
+            <feMorphology in="SourceAlpha" operator="dilate" radius="1" result="outer" />
+            <feMorphology in="SourceAlpha" operator="erode" radius="1" result="inner" />
+            <feComposite in="outer" in2="inner" operator="out" result="outline" />
+            <feFlood floodColor="white" floodOpacity="0.88" />
+            <feComposite in2="outline" operator="in" />
+          </filter>
+        </defs>
+      </svg>
       <div className="section-tilt-panel hero-tilt-panel" style={{ background: sectionColors.home }}>
         <HeroHoleBackground />
 
@@ -100,7 +113,9 @@ export default function Hero({ ready }: { ready: boolean }) {
                 ref={wordRef}
                 style={{
                   display: 'inline-block',
-                  color: 'rgba(255,255,255,0.88)',
+                  letterSpacing: '0.01em',
+                  color: 'white',
+                  filter: `url(#${outlineFilterId})`,
                 }}
               >
                 {words[0]}
