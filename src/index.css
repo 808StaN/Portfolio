@@ -289,7 +289,9 @@ html.custom-scrollbar-dragging * {
 .hero-headline-reveal {
   font-size: clamp(2.5rem, 7.4vw, 6.5rem);
   overflow: hidden;
-  /* Keep descenders inside the reveal mask without widening line gaps. */
+  /* Keep glyphs and outlines inside the reveal mask without widening line gaps. */
+  padding-top: 0.12em;
+  margin-top: -0.12em;
   padding-bottom: 0.26em;
   margin-bottom: -0.26em;
 }
@@ -298,7 +300,7 @@ html.custom-scrollbar-dragging * {
   font-family: var(--font-display);
   font-size: inherit;
   font-weight: 700;
-  line-height: 1.04;
+  line-height: 0.90;
   letter-spacing: -0.045em;
   /* Leave room for glyph overhang inside the gradient and reveal mask. */
   padding-inline: 0.1em;

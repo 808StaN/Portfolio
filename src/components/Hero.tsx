@@ -79,16 +79,6 @@ export default function Hero({ ready }: { ready: boolean }) {
         {/* Content */}
         <div className="section-tilt-container hero-inner relative z-10 flex flex-col justify-between min-h-screen pt-24 md:pt-28 pb-12 md:pb-14">
         <div className="flex-1 flex flex-col items-center justify-center text-center pb-10 md:pb-14">
-          {/* Eyebrow */}
-          <motion.div
-            className="flex items-center justify-center gap-3 mb-6"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: ready ? 1 : 0, y: ready ? 0 : 20 }}
-            transition={{ duration: prefersReduced ? 0 : 0.8, delay: prefersReduced ? 0 : 0.3, ease: easeOut }}
-          >
-            <span className="section-label">Full-Stack Developer - Dawid Stanisz</span>
-          </motion.div>
-
           {/* Main headline */}
           <div className="hero-headline-reveal">
             <motion.h1
@@ -143,7 +133,7 @@ export default function Hero({ ready }: { ready: boolean }) {
               animate={{ opacity: ready ? 1 : 0, y: ready ? 0 : 20 }}
               transition={{ duration: prefersReduced ? 0 : 0.9, delay: prefersReduced ? 0 : 0.9, ease: easeOut }}
             >
-              React, Next.js and Node.js Developer focused on building web apps and desktop tools. I care about speed, clean UX, and practical delivery from concept to release.
+              Frontend-focused developer working with React, Next.js, and TypeScript. I turn ideas into fast, polished digital experiences with a focus on design, performance, and usability.
             </motion.p>
 
             <motion.div
