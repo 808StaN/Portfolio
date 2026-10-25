@@ -1,6 +1,6 @@
 import { useEffect, useId, useRef, type MouseEvent } from 'react';
 import { motion, useReducedMotion } from 'framer-motion';
-import HeroHoleBackground from './HeroHoleBackground';
+import HeroBandsBackground from './HeroBandsBackground';
 import { sectionColors } from '../constants/sectionColors';
 import { scrollToY, useLenis } from './LenisScroll';
 import GravityLink from './ui/GravityLink';
@@ -32,7 +32,7 @@ export default function Hero({ ready }: { ready: boolean }) {
     if (!ready || prefersReduced || !wordRef.current) return;
     const el = wordRef.current;
     let idx = 0;
-    el.style.transition = 'opacity 0.35s ease, transform 0.35s ease';
+    el.style.transition = 'opacity 0.35s cubic-bezier(0.16, 1, 0.3, 1), transform 0.35s cubic-bezier(0.16, 1, 0.3, 1)';
 
     let timeout = 0;
     const cycle = () => {
@@ -50,13 +50,15 @@ export default function Hero({ ready }: { ready: boolean }) {
     return () => {
       clearInterval(timer);
       clearTimeout(timeout);
+      el.style.opacity = '1';
+      el.style.transform = 'translateY(0)';
     };
   }, [prefersReduced, ready]);
 
   return (
     <section
       id="home"
-      className="section-tilt-section relative w-full min-h-screen flex flex-col justify-center overflow-hidden"
+      className="section-tilt-section"
       data-section-tilt
       data-section-color={sectionColors.home}
       aria-label="Hero"
@@ -74,108 +76,98 @@ export default function Hero({ ready }: { ready: boolean }) {
         </defs>
       </svg>
       <div className="section-tilt-panel hero-tilt-panel" style={{ background: sectionColors.home }}>
-        <HeroHoleBackground />
+        <HeroBandsBackground />
 
-        {/* Content */}
-        <div className="section-tilt-container hero-inner relative z-10 flex flex-col justify-between min-h-screen pt-24 md:pt-28 pb-12 md:pb-14">
-        <div className="flex-1 flex flex-col items-center justify-center text-center pb-10 md:pb-14">
-          {/* Main headline */}
-          <div className="hero-headline-reveal">
-            <motion.h1
-              className="hero-headline hero-headline-gradient"
-              initial={{ opacity: 0, y: 28 }}
-              animate={{ opacity: ready ? 1 : 0, y: ready ? 0 : 28 }}
-              transition={{ duration: prefersReduced ? 0 : 0.9, delay: prefersReduced ? 0 : 0.52, ease: easeOut }}
-            >
-              I build
-            </motion.h1>
-          </div>
-
-          <div className="hero-headline-reveal">
-            <motion.h1
-              className="hero-headline"
-              style={{ color: 'rgba(255,255,255,0.88)' }}
-              initial={{ opacity: 0, y: 28 }}
-              animate={{ opacity: ready ? 1 : 0, y: ready ? 0 : 28 }}
-              transition={{ duration: prefersReduced ? 0 : 0.9, delay: prefersReduced ? 0 : 0.64, ease: easeOut }}
-            >
-              <span
-                ref={wordRef}
-                style={{
-                  display: 'inline-block',
-                  letterSpacing: '0.01em',
-                  color: 'white',
-                  filter: `url(#${outlineFilterId})`,
-                }}
-              >
-                {words[0]}
+        <div className="section-tilt-container hero-inner">
+          <div className="hero-composition">
+            <h1 className="hero-title">
+              <span className="hero-headline-reveal">
+                <motion.span
+                  className="hero-headline hero-headline-gradient"
+                  initial={{ opacity: 0, y: 28 }}
+                  animate={{ opacity: ready ? 1 : 0, y: ready ? 0 : 28 }}
+                  transition={{ duration: prefersReduced ? 0 : 0.9, delay: prefersReduced ? 0 : 0.52, ease: easeOut }}
+                >
+                  I build
+                </motion.span>
               </span>
-            </motion.h1>
+
+              <span className="hero-headline-reveal">
+                <motion.span
+                  className="hero-headline hero-headline-rotating"
+                  initial={{ opacity: 0, y: 28 }}
+                  animate={{ opacity: ready ? 1 : 0, y: ready ? 0 : 28 }}
+                  transition={{ duration: prefersReduced ? 0 : 0.9, delay: prefersReduced ? 0 : 0.64, ease: easeOut }}
+                >
+                  <span
+                    ref={wordRef}
+                    style={{
+                      display: 'inline-block',
+                      letterSpacing: '0.01em',
+                      color: 'white',
+                      filter: `url(#${outlineFilterId})`,
+                    }}
+                  >
+                    {words[0]}
+                  </span>
+                </motion.span>
+              </span>
+
+              <span className="hero-headline-reveal">
+                <motion.span
+                  className="hero-headline hero-headline-gradient"
+                  initial={{ opacity: 0, y: 28 }}
+                  animate={{ opacity: ready ? 1 : 0, y: ready ? 0 : 28 }}
+                  transition={{ duration: prefersReduced ? 0 : 0.9, delay: prefersReduced ? 0 : 0.76, ease: easeOut }}
+                >
+                  web apps
+                </motion.span>
+              </span>
+            </h1>
+
+            <div className="hero-copy">
+              <motion.p
+                className="hero-description"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: ready ? 1 : 0, y: ready ? 0 : 20 }}
+                transition={{ duration: prefersReduced ? 0 : 0.9, delay: prefersReduced ? 0 : 0.9, ease: easeOut }}
+              >
+                Frontend-focused developer working with React, Next.js, and TypeScript. I turn ideas into fast, polished digital experiences with a focus on design, performance, and usability.
+              </motion.p>
+
+              <motion.div
+                className="hero-actions"
+                initial={{ opacity: 0, y: 18 }}
+                animate={{ opacity: ready ? 1 : 0, y: ready ? 0 : 18 }}
+                transition={{ duration: prefersReduced ? 0 : 0.85, delay: prefersReduced ? 0 : 1.02, ease: easeOut }}
+              >
+                <GravityLink
+                  href="#work"
+                  text="View projects"
+                  variant="primary"
+                  icon="arrow-down"
+                  sizing={{ paddingX: 28, paddingY: 14, fontSize: 14 }}
+                  onClick={handleProjectsClick}
+                />
+                <GravityLink
+                  href="https://ziianpdcwxtnkuojaxtp.supabase.co/storage/v1/object/public/Portfolio/Dawid_Stanisz_CV.pdf"
+                  download
+                  text="Download CV"
+                  variant="primary"
+                  icon="download"
+                  sizing={{ paddingX: 28, paddingY: 14, fontSize: 14 }}
+                />
+              </motion.div>
+            </div>
           </div>
 
-          <div className="hero-headline-reveal">
-            <motion.h1
-              className="hero-headline hero-headline-gradient"
-              initial={{ opacity: 0, y: 28 }}
-              animate={{ opacity: ready ? 1 : 0, y: ready ? 0 : 28 }}
-              transition={{ duration: prefersReduced ? 0 : 0.9, delay: prefersReduced ? 0 : 0.76, ease: easeOut }}
-            >
-              web apps
-            </motion.h1>
-          </div>
-
-          {/* Sub */}
-          <div className="hero-copy flex flex-col items-center gap-6 md:gap-7">
-            <motion.p
-              className="max-w-[46rem] text-sm md:text-base leading-relaxed"
-              style={{ color: 'rgba(255,255,255,0.54)', fontFamily: 'var(--font-sans)' }}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: ready ? 1 : 0, y: ready ? 0 : 20 }}
-              transition={{ duration: prefersReduced ? 0 : 0.9, delay: prefersReduced ? 0 : 0.9, ease: easeOut }}
-            >
-              Frontend-focused developer working with React, Next.js, and TypeScript. I turn ideas into fast, polished digital experiences with a focus on design, performance, and usability.
-            </motion.p>
-
-            <motion.div
-              className="hero-actions"
-              initial={{ opacity: 0, y: 18 }}
-              animate={{ opacity: ready ? 1 : 0, y: ready ? 0 : 18 }}
-              transition={{ duration: prefersReduced ? 0 : 0.85, delay: prefersReduced ? 0 : 1.02, ease: easeOut }}
-            >
-              <GravityLink
-                href="#work"
-                text="View projects"
-                variant="primary"
-                icon="arrow-down"
-                sizing={{ paddingX: 28, paddingY: 14, fontSize: 14 }}
-                onClick={handleProjectsClick}
-              />
-              <GravityLink
-                href="https://ziianpdcwxtnkuojaxtp.supabase.co/storage/v1/object/public/Portfolio/Dawid_Stanisz_CV.pdf"
-                download
-                text="Download CV"
-                variant="primary"
-                icon="download"
-                sizing={{ paddingX: 28, paddingY: 14, fontSize: 14 }}
-              />
-            </motion.div>
-          </div>
-        </div>
-
-        {/* Bottom meta row */}
-        <motion.div
-          className="relative flex items-center justify-center min-h-[68px]"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: ready ? 1 : 0 }}
-          transition={{ delay: prefersReduced ? 0 : 1.4, duration: prefersReduced ? 0 : 0.8 }}
-        >
-          <div className="absolute left-1/2 -translate-x-1/2 bottom-5 md:bottom-6 flex flex-col items-center gap-2.5">
-            <span
-              className="text-[10px] uppercase tracking-[0.18em]"
-              style={{ color: 'rgba(255,255,255,0.5)', fontFamily: 'var(--font-sans)' }}
-            >
-              Scroll
-            </span>
+          <motion.div
+            className="hero-footer"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: ready ? 1 : 0 }}
+            transition={{ delay: prefersReduced ? 0 : 1.4, duration: prefersReduced ? 0 : 0.8 }}
+          >
+            <span className="hero-scroll-label">Scroll</span>
             <div className="scroll-indicator" style={{ opacity: 0.8 }}>
               <svg width="14" height="20" viewBox="0 0 12 18" fill="none" aria-hidden="true">
                 <path
@@ -187,8 +179,7 @@ export default function Hero({ ready }: { ready: boolean }) {
                 />
               </svg>
             </div>
-          </div>
-        </motion.div>
+          </motion.div>
         </div>
       </div>
     </section>

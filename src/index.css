@@ -205,15 +205,17 @@ body {
   margin-top: calc(-1 * var(--nav-page-scroll));
 }
 
-.hero-hole-layer {
+.hero-bands-layer {
   position: absolute;
   inset: 0;
   z-index: 1;
   pointer-events: none;
-  background: transparent;
+  background:
+    repeating-linear-gradient(90deg, transparent 0%, rgba(8, 39, 95, 0.22) 16.4%, rgba(59, 120, 242, 0.12) 16.67%),
+    radial-gradient(ellipse at 75% 25%, #3b78f2, #1756d9 35%, #0d3b90 65%, #08275f);
 }
 
-.hero-hole-canvas {
+.hero-bands-canvas {
   display: block;
   width: 100% !important;
   height: 100% !important;
@@ -285,44 +287,125 @@ html.custom-scrollbar-dragging * {
   height: 100%;
 }
 
-/* Hero typography */
+/* Hero composition */
+.hero-composition {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  align-content: center;
+  flex: 1;
+  gap: clamp(36px, 5svh, 64px);
+  padding-block: 24px 32px;
+}
+
+.hero-title {
+  min-width: 0;
+  font-size: clamp(2.75rem, 15.5vw, 6rem);
+  text-align: left;
+}
+
 .hero-headline-reveal {
-  font-size: clamp(2.5rem, 7.4vw, 6.5rem);
+  display: block;
+  font-size: inherit;
   overflow: hidden;
   /* Keep glyphs and outlines inside the reveal mask without widening line gaps. */
   padding-top: 0.12em;
   margin-top: -0.12em;
   padding-bottom: 0.26em;
   margin-bottom: -0.26em;
+  padding-inline: 3px;
+  margin-inline: -3px;
 }
 
 .hero-headline {
+  display: block;
   font-family: var(--font-display);
   font-size: inherit;
   font-weight: 700;
-  line-height: 0.90;
+  line-height: 0.94;
   letter-spacing: -0.045em;
   /* Leave room for glyph overhang inside the gradient and reveal mask. */
   padding-inline: 0.1em;
+  margin-left: -0.1em;
+  white-space: nowrap;
+}
+
+.hero-headline-rotating {
+  min-height: 0.94em;
 }
 
 .hero-headline-gradient {
-  background: linear-gradient(135deg, #ffffff 0%, rgba(255,255,255,0.75) 100%);
+  background: linear-gradient(115deg, #f2f5fc 25%, #c4d7f9 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
 }
 
 .hero-copy {
-  margin-top: clamp(24px, 2.3vw, 32px);
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 24px;
+  max-width: 32rem;
+}
+
+.hero-description {
+  color: #d4e1f6;
+  font-family: var(--font-sans);
+  font-size: clamp(1rem, 1.15vw, 1.125rem);
+  font-weight: 400;
+  line-height: 1.7;
+  text-wrap: pretty;
 }
 
 .hero-actions {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
+  justify-content: flex-start;
+  gap: 12px;
+}
+
+.hero-footer {
+  display: flex;
+  align-items: center;
   justify-content: center;
   gap: 12px;
+  min-height: 32px;
+}
+
+.hero-scroll-label {
+  color: #b0c7ed;
+  font-family: var(--font-sans);
+  font-size: 10px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+}
+
+@media (min-width: 981px) {
+  .hero-composition {
+    grid-template-columns: repeat(12, minmax(0, 1fr));
+    grid-template-rows: 1fr auto;
+    gap: 24px;
+    align-content: stretch;
+    padding-block: 0 28px;
+  }
+
+  .hero-title {
+    grid-column: 1 / -1;
+    align-self: start;
+    font-size: clamp(5rem, min(9.4vw, calc(23svh - 72px)), 9.5rem);
+  }
+
+  .hero-copy {
+    grid-column: 8 / -1;
+    max-width: none;
+  }
+}
+
+@media (min-width: 981px) and (max-width: 1200px) {
+  .hero-copy {
+    grid-column: 7 / -1;
+  }
 }
 
 .hero-cta {
@@ -760,8 +843,15 @@ html.nav-document-transition .mobile-menu-backdrop {
 }
 
 .hero-inner {
-  width: min(var(--content-max-width), calc(100% - (var(--content-gutter) * 2)));
+  position: relative;
+  z-index: 10;
+  display: flex;
+  flex-direction: column;
+  width: min(var(--content-max-width), calc(100% - (clamp(24px, 5vw, 96px) * 2)));
+  min-height: 100svh;
   margin-inline: auto;
+  padding-top: clamp(136px, 17svh, 188px);
+  padding-bottom: 24px;
 }
 
 /* Section titles */
@@ -1452,9 +1542,9 @@ html.nav-document-transition .mobile-menu-backdrop {
   }
 
   .hero-inner {
-    min-height: 100svh;
-    padding-top: 88px;
-    padding-bottom: 28px;
+    width: calc(100% - (clamp(20px, 5vw, 48px) * 2));
+    padding-top: 112px;
+    padding-bottom: 20px;
   }
 
   .projects-layout {
