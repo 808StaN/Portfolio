@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import Nav from "./components/Nav";
 import Hero from "./components/Hero";
 import Projects from "./components/Projects";
@@ -7,55 +7,13 @@ import Stack from "./components/Stack";
 import Contact from "./components/Contact";
 import Cursor from "./components/Cursor";
 import SectionTiltDirector from "./components/SectionTiltDirector";
-import CustomScrollbar from "./components/CustomScrollbar";
-import { useLenis } from "./components/LenisScroll";
+import ScrollProgressFrame from "./components/ScrollProgressFrame";
 import PageLoader, { type PageLoaderStage } from "./components/PageLoader";
-import { getScrollMetrics, getScrollViewport } from "./utils/scroll";
 import { SectionShaderRenderer } from "./components/SectionBandsBackground";
 
 export default function App() {
-  const lenis = useLenis();
   const [loaderStage, setLoaderStage] = useState<PageLoaderStage>("intro");
   const entranceReady = loaderStage !== "intro";
-
-  useEffect(() => {
-    const root = document.documentElement;
-    const scrollTarget = getScrollViewport() ?? window;
-    let rafId = 0;
-
-    const updateScrollProgress = () => {
-      const metrics = getScrollMetrics();
-      const scrollable = lenis?.limit ?? metrics.limit;
-      const scroll = lenis?.scroll ?? metrics.scroll;
-      const progressRaw = scrollable > 0 ? scroll / scrollable : 0;
-      const progress = Math.max(0, Math.min(1, progressRaw));
-      root.style.setProperty("--scroll-progress", progress.toFixed(4));
-      rafId = 0;
-    };
-
-    const onScrollOrResize = () => {
-      if (!rafId) {
-        rafId = requestAnimationFrame(updateScrollProgress);
-      }
-    };
-
-    updateScrollProgress();
-    const unsubscribeLenis = lenis?.on("scroll", updateScrollProgress);
-    if (!lenis) {
-      scrollTarget.addEventListener("scroll", onScrollOrResize, { passive: true });
-    }
-    window.addEventListener("resize", onScrollOrResize);
-
-    return () => {
-      unsubscribeLenis?.();
-      if (!lenis) {
-        scrollTarget.removeEventListener("scroll", onScrollOrResize);
-      }
-      window.removeEventListener("resize", onScrollOrResize);
-      if (rafId) cancelAnimationFrame(rafId);
-      root.style.removeProperty("--scroll-progress");
-    };
-  }, [lenis]);
 
   return (
     <>
@@ -70,7 +28,6 @@ export default function App() {
           <div className="app-vignette" aria-hidden="true" />
           <div className="site-ui">
             <Cursor />
-            <CustomScrollbar />
             <Nav ready={entranceReady} />
           </div>
           <div className="portfolio-scene">
@@ -94,6 +51,7 @@ export default function App() {
             </div>
             <div className="nav-bg-layer" aria-hidden="true" />
           </div>
+          <ScrollProgressFrame />
         </div>
       </div>
     </>

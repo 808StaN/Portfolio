@@ -53,7 +53,6 @@
   --nav-glass-background: rgba(18, 26, 42, 0.1);
   --nav-glass-filter: blur(12px) saturate(110%);
   --nav-glass-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.16), inset 0 -1px 0 rgba(255, 255, 255, 0.06), 0 8px 28px rgba(5, 12, 28, 0.12);
-  --scroll-progress: 0;
   /* boczny navbar (Nav.tsx) — bez zmian przy szerszej treści */
   --page-gutter: clamp(20px, 4vw, 64px);
   /* marginesy i szerokość głównej zawartości sekcji */
@@ -183,6 +182,25 @@ html[data-site="portfolio"] body {
   overscroll-behavior: none;
   scroll-padding-top: 72px;
   scrollbar-width: none;
+}
+
+.scroll-progress-frame {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 9997;
+  pointer-events: none;
+  fill: none;
+  stroke-width: 10px;
+}
+
+.scroll-progress-frame__track {
+  stroke: rgba(166, 190, 232, 0.24);
+}
+
+.scroll-progress-frame__progress {
+  stroke: #e2edff;
 }
 
 .portfolio-scene {
@@ -640,9 +658,9 @@ html.nav-document-transition .nav-visual-contact { view-transition-name: nav-con
 html.nav-document-transition .nav-visual-github { view-transition-name: nav-github; }
 html.nav-document-transition .nav-visual-menu { view-transition-name: nav-menu; }
 html.nav-document-transition .nav-outline { view-transition-name: nav-outline; }
-html.nav-document-transition .custom-scrollbar-thumb-visual { view-transition-name: scrollbar-thumb; }
+html.nav-document-transition .scroll-progress-frame { view-transition-name: scroll-progress-frame; }
 
-html.nav-document-transition::view-transition-new(scrollbar-thumb) {
+html.nav-document-transition::view-transition-new(scroll-progress-frame) {
   overflow: visible;
 }
 
@@ -765,7 +783,7 @@ html.nav-document-transition::view-transition-group(nav-contact),
 html.nav-document-transition::view-transition-group(nav-github),
 html.nav-document-transition::view-transition-group(nav-menu),
 html.nav-document-transition::view-transition-group(nav-outline),
-html.nav-document-transition::view-transition-group(scrollbar-thumb) {
+html.nav-document-transition::view-transition-group(scroll-progress-frame) {
   z-index: 3;
 }
 
@@ -785,7 +803,7 @@ html.nav-document-transition::view-transition-old(nav-contact),
 html.nav-document-transition::view-transition-old(nav-github),
 html.nav-document-transition::view-transition-old(nav-menu),
 html.nav-document-transition::view-transition-old(nav-outline),
-html.nav-document-transition::view-transition-old(scrollbar-thumb),
+html.nav-document-transition::view-transition-old(scroll-progress-frame),
 html.nav-document-transition::view-transition-old(site-cursor),
 .nav-section-transition::view-transition-old(site-nav-bg) {
   animation: none;
