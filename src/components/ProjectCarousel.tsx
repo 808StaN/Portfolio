@@ -2,6 +2,8 @@ import { useEffect, useRef } from "react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { getProjectImages, type Project } from "../data/projects";
+import { getScrollMetrics, getScrollViewport } from "../utils/scroll";
+import { getProjectPinStart } from "../utils/tilt";
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -24,11 +26,10 @@ export default function ProjectCarousel({ project }: ProjectCarouselProps) {
     const section = scene.closest<HTMLElement>("[data-section-tilt]");
     if (!section) return;
 
-    const cells = carousel.querySelectorAll<HTMLElement>(".carousel__cell");
-    cells.forEach((cell, i) => {
-      const angle = i * ANGLE_STEP;
-      cell.style.transform = `rotateY(${angle}deg) translateZ(var(--carousel-radius))`;
-    });
+    const scroller = getScrollViewport() ?? window;
+    const reducedMotion = window.matchMedia(
+      "(prefers-reduced-motion: reduce)",
+    ).matches;
 
     // "Ostatni projekt" = ten, po którym następuje sekcja spoza grupy projektów
     // (OtakuVersus → About). Wtedy pin trwa dłużej (300%): 200% na rotację zdjęć,
@@ -42,12 +43,26 @@ export default function ProjectCarousel({ project }: ProjectCarouselProps) {
       !!nextSection && nextSection.dataset.sectionGroup !== "projects";
 
     const ctx = gsap.context(() => {
+      const cells = carousel.querySelectorAll<HTMLElement>(".carousel__cell");
+      const originalTransforms = Array.from(cells, (cell) => cell.style.transform);
+      const restoreCells = () => cells.forEach((cell, i) => {
+        cell.style.transform = originalTransforms[i];
+      });
+      cells.forEach((cell, i) => {
+        cell.style.transform = `rotateY(${i * ANGLE_STEP}deg) translateZ(var(--carousel-radius))`;
+      });
+      if (reducedMotion) return restoreCells;
+
       const tl = gsap.timeline({
         scrollTrigger: {
           id: `carousel-${project.id}`,
+          scroller,
+          // Enable document-order refreshes for pins mounted after the director.
+          refreshPriority: 0,
           trigger: section,
-          start: "top top",
-          end: isLastProject ? "+=300%" : "+=200%",
+          // Let tall projects scroll fully into view before pinning their lower content.
+          start: () => getProjectPinStart(section),
+          end: () => `+=${getScrollMetrics().height * (isLastProject ? 3 : 2)}`,
           scrub: true,
           pin: true,
           pinSpacing: true,
@@ -71,6 +86,7 @@ export default function ProjectCarousel({ project }: ProjectCarouselProps) {
       if (isLastProject) {
         tl.to({}, { duration: 1 });
       }
+      return restoreCells;
     }, scene);
 
     return () => ctx.revert();

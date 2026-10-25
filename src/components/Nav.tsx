@@ -4,6 +4,7 @@ import { motion, AnimatePresence, useReducedMotion } from 'framer-motion';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { scrollToY, useLenis } from './LenisScroll';
 import { blendSectionColor, getSectionCornerScale, hexToHsl, incomingAngles } from '../utils/tilt';
+import { getScrollMetrics, getScrollTargetTop, getScrollViewport } from '../utils/scroll';
 
 const links = [
   { label: 'Projects', href: '#work' },
@@ -32,35 +33,30 @@ export default function Nav({ ready }: { ready: boolean }) {
 
   const getSectionTargetTop = (section: HTMLElement) => {
     if (section.id === 'home') return 0;
-    const maxScrollTop = Math.max(
-      0,
-      document.documentElement.scrollHeight - window.innerHeight,
-    );
+    const { limit } = getScrollMetrics();
     const transitionTarget = ScrollTrigger.getById(`section-target-${section.id}`);
     const navHeight = document.querySelector('header')?.getBoundingClientRect().height ?? 64;
-    // A tall outgoing panel finishes tilting before the incoming panel reaches the top.
-    const overlapCorrection = transitionTarget?.trigger instanceof HTMLElement
-      ? Math.max(0, transitionTarget.trigger.offsetHeight - window.innerHeight)
-      : 0;
-    const targetCorrection = overlapCorrection + (section.id === 'about' ? navHeight : 0);
+    const targetCorrection = section.id === 'about' ? navHeight : 0;
     const top =
       transitionTarget?.end !== undefined
         ? transitionTarget.end + targetCorrection
-        : window.scrollY + section.getBoundingClientRect().top;
-    return Math.min(Math.max(0, top), maxScrollTop);
+        : getScrollTargetTop(section);
+    return Math.min(Math.max(0, top), limit);
   };
 
   useEffect(() => {
     const ids = links.map(link => link.href.slice(1));
     const root = document.documentElement;
     const hero = document.getElementById('home');
+    const scroller = getScrollViewport() ?? window;
 
     const updateNavigation = () => {
       // Use the pin's actual end so expansion finishes with the hero tilt.
       const heroTransition = ScrollTrigger.getAll().find(trigger =>
         trigger.trigger === hero && trigger.vars.pin);
-      const heroEnd = heroTransition?.end ?? hero?.offsetHeight ?? window.innerHeight;
-      const progress = Math.max(0, Math.min(1, window.scrollY / Math.max(1, heroEnd)));
+      const metrics = getScrollMetrics();
+      const heroEnd = heroTransition?.end ?? hero?.offsetHeight ?? metrics.height;
+      const progress = Math.max(0, Math.min(1, metrics.scroll / Math.max(1, heroEnd)));
       root.style.setProperty('--nav-hero-progress', progress.toFixed(4));
 
       const sections = ids
@@ -68,7 +64,7 @@ export default function Nav({ ready }: { ready: boolean }) {
         .filter((section): section is HTMLElement => Boolean(section));
       if (sections.length === 0) return;
 
-      const activationY = window.innerHeight * 0.5;
+      const activationY = metrics.top + metrics.height * 0.5;
       let nextActiveSection = '';
 
       sections.forEach(section => {
@@ -84,14 +80,14 @@ export default function Nav({ ready }: { ready: boolean }) {
     updateNavigation();
     const unsubscribeLenis = lenis?.on('scroll', updateNavigation);
     if (!lenis) {
-      window.addEventListener('scroll', updateNavigation, { passive: true });
+      scroller.addEventListener('scroll', updateNavigation, { passive: true });
     }
     window.addEventListener('resize', updateNavigation);
     ScrollTrigger.addEventListener('refresh', updateNavigation);
     return () => {
       unsubscribeLenis?.();
       if (!lenis) {
-        window.removeEventListener('scroll', updateNavigation);
+        scroller.removeEventListener('scroll', updateNavigation);
       }
       window.removeEventListener('resize', updateNavigation);
       ScrollTrigger.removeEventListener('refresh', updateNavigation);
@@ -113,14 +109,16 @@ export default function Nav({ ready }: { ready: boolean }) {
     if (!el) return;
     const returningHome = el.id === 'home';
     const top = getSectionTargetTop(el);
-    if (Math.abs(window.scrollY - top) < 2) return;
-    const goingBack = !returningHome && top < window.scrollY;
+    const metrics = getScrollMetrics();
+    const scroller = getScrollViewport() ?? window;
+    if (Math.abs(metrics.scroll - top) < 2) return;
+    const goingBack = !returningHome && top < metrics.scroll;
     const panel = el.querySelector<HTMLElement>('.section-tilt-panel');
     const targetColor = panel?.closest<HTMLElement>('[data-section-color]')?.dataset.sectionColor;
     let outgoingPanel: HTMLElement | null = null;
     let outgoingSection: HTMLElement | null = null;
     let captureSnapshot = false;
-    let expectedScroll = window.scrollY;
+    let expectedScroll = metrics.scroll;
 
     const jump = () => {
       if (request !== navigationRequest.current || !el.isConnected) return;
@@ -169,8 +167,8 @@ export default function Nav({ ready }: { ready: boolean }) {
         if (!candidate) continue;
         const rect = candidate.getBoundingClientRect();
         const sectionRect = section.getBoundingClientRect();
-        if (sectionRect.top < window.innerHeight && sectionRect.bottom > 0
-          && rect.top < window.innerHeight && rect.bottom > 0) outgoingPanel = candidate;
+        if (sectionRect.top < metrics.top + metrics.height && sectionRect.bottom > metrics.top
+          && rect.top < metrics.top + metrics.height && rect.bottom > metrics.top) outgoingPanel = candidate;
       }
     }
     const outgoingRect = outgoingPanel?.getBoundingClientRect();
@@ -180,12 +178,12 @@ export default function Nav({ ready }: { ready: boolean }) {
     // Preserve the whole frame if multiple tilted cards are visible during an overlap.
     const useRootSnapshot = goingBack && (!outgoingRect
       || Math.abs(outgoingMatrix.b) > 0.00001 || Math.abs(outgoingMatrix.a - 1) > 0.00001
-      || outgoingRect.top > 1 || outgoingRect.bottom < window.innerHeight - 1);
+      || outgoingRect.top > metrics.top + 1 || outgoingRect.bottom < metrics.top + metrics.height - 1);
     const startProgress = Number(getComputedStyle(root).getPropertyValue('--nav-hero-progress'));
     const wasStopped = lenis?.isStopped;
     const panelStyle = goingBack && outgoingStyle ? outgoingStyle : getComputedStyle(panel);
     const panelRadius = panelStyle.getPropertyValue('--section-base-radius').trim() || '0px';
-    const panelHeight = goingBack && !outgoingPanel ? window.innerHeight : parseFloat(panelStyle.height);
+    const panelHeight = goingBack && !outgoingPanel ? metrics.height : parseFloat(panelStyle.height);
     const sourceColor = root.style.getPropertyValue('--nav-bg-color').trim();
     const fromHsl = hexToHsl(sourceColor.startsWith('#') ? sourceColor : targetColor);
     const toHsl = hexToHsl(targetColor);
@@ -195,11 +193,16 @@ export default function Nav({ ready }: { ready: boolean }) {
     root.style.setProperty('--nav-section-top-left-radius', panelRadius);
     root.style.setProperty('--nav-section-top-right-radius', panelRadius);
     root.style.setProperty('--nav-section-travel', `${panelHeight}px`);
+    const snapshotX = useScopedTransition ? 0 : metrics.left;
+    const snapshotY = useScopedTransition ? 0 : metrics.top;
+    root.style.setProperty('--nav-snapshot-x', `${snapshotX}px`);
+    root.style.setProperty('--nav-snapshot-y', `${snapshotY}px`);
     root.style.setProperty('--nav-section-source-transform', goingBack && !useRootSnapshot && outgoingRect
-      ? `translate(${outgoingRect.left}px, ${outgoingRect.top}px)` : 'translate(0px, 0px)');
+      ? `translate(${outgoingRect.left - metrics.left + snapshotX}px, ${outgoingRect.top - metrics.top + snapshotY}px)`
+      : useRootSnapshot ? 'translate(0px, 0px)' : `translate(${snapshotX}px, ${snapshotY}px)`);
     // Preserve the scroll range while the scene stays fixed to the viewport.
-    root.style.setProperty('--nav-page-height', `${root.scrollHeight}px`);
-    root.style.setProperty('--nav-page-scroll', `${window.scrollY}px`);
+    root.style.setProperty('--nav-page-height', `${getScrollViewport()?.scrollHeight ?? root.scrollHeight}px`);
+    root.style.setProperty('--nav-page-scroll', `${metrics.scroll}px`);
     root.classList.toggle('nav-home-transition', returningHome);
     root.classList.toggle('nav-back-transition', goingBack);
     root.classList.toggle('nav-back-root-transition', useRootSnapshot);
@@ -245,19 +248,25 @@ export default function Nav({ ready }: { ready: boolean }) {
       root.style.removeProperty('--nav-outgoing-color');
       root.style.removeProperty('--nav-page-height');
       root.style.removeProperty('--nav-page-scroll');
+      root.style.removeProperty('--nav-snapshot-x');
+      root.style.removeProperty('--nav-snapshot-y');
       if (!wasStopped) lenis?.start();
       window.removeEventListener('wheel', interrupt, true);
+      window.removeEventListener('pointerdown', interrupt, true);
       window.removeEventListener('touchstart', interrupt, true);
       window.removeEventListener('keydown', interrupt, true);
       window.removeEventListener('resize', interrupt);
-      window.removeEventListener('scroll', onScroll);
+      scroller.removeEventListener('scroll', onScroll);
     };
     const interrupt = (event: Event) => {
+      if (event.type === 'pointerdown' && !(event.target instanceof Element
+        && event.target.closest('.custom-scrollbar-track'))) return;
       if (event.type === 'touchstart' && event.target instanceof Element
         && event.target.closest('.site-nav, .mobile-menu-backdrop')) return;
       if (event instanceof KeyboardEvent
         && !['ArrowUp', 'ArrowDown', 'PageUp', 'PageDown', 'Home', 'End', ' ', 'Escape', 'Tab'].includes(event.key)) return;
-      if (useScopedTransition) {
+      if (event.type === 'pointerdown') navigationRequest.current += 1;
+      if (useScopedTransition || event.type === 'pointerdown') {
         transition.skipTransition();
         release();
       } else {
@@ -267,15 +276,16 @@ export default function Nav({ ready }: { ready: boolean }) {
       }
     };
     const onScroll = (event: Event) => {
-      if (Math.abs(window.scrollY - expectedScroll) > 2) interrupt(event);
+      if (Math.abs(getScrollMetrics().scroll - expectedScroll) > 2) interrupt(event);
     };
     const transition = startTransition(jump);
     navigation.current = { transition, release };
     window.addEventListener('wheel', interrupt, { capture: true, passive: true });
+    window.addEventListener('pointerdown', interrupt, { capture: true, passive: true });
     window.addEventListener('touchstart', interrupt, { capture: true, passive: true });
     window.addEventListener('keydown', interrupt, true);
     window.addEventListener('resize', interrupt);
-    window.addEventListener('scroll', onScroll, { passive: true });
+    scroller.addEventListener('scroll', onScroll, { passive: true });
     void transition.ready.then(() => {
       captureSnapshot = false;
       if (released) return;
@@ -354,6 +364,17 @@ export default function Nav({ ready }: { ready: boolean }) {
     }
   };
 
+  const toggleMenu = async () => {
+    const request = ++navigationRequest.current;
+    const opening = !menuOpen;
+    const previous = navigation.current;
+    if (opening && previous) {
+      previous.transition.skipTransition();
+      await previous.transition.finished.catch(() => {});
+    }
+    if (request === navigationRequest.current) setMenuOpen(opening);
+  };
+
   return (
     <>
       <motion.header
@@ -363,6 +384,7 @@ export default function Nav({ ready }: { ready: boolean }) {
         transition={{ duration: reducedMotion ? 0 : 0.5, ease: [0.16, 1, 0.3, 1] }}
       >
         <nav className="relative h-14 md:h-16 nav-blur">
+          <div className="nav-outline" aria-hidden="true" />
           <div className="site-nav-inner relative z-10 h-full flex items-center justify-between">
             <button
               type="button"
@@ -370,12 +392,12 @@ export default function Nav({ ready }: { ready: boolean }) {
               className="group relative inline-flex h-11 shrink-0 items-center text-sm text-white cursor-pointer bg-transparent border-none focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-white"
               style={{ fontFamily: 'var(--font-sans)' }}
             >
-              <span className="relative inline-flex items-center gap-2">
+              <span className="nav-visual nav-visual-home relative inline-flex items-center gap-2">
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
                   <path d="M12 3 2 11h3v10h5v-6h4v6h5V11h3L12 3Z" />
                 </svg>
                 Home
-                <span className="absolute -bottom-0.5 left-0 h-px w-0 bg-white transition-all duration-300 group-hover:w-full group-focus-visible:w-full" />
+                <span className="absolute bottom-0 left-0 h-px w-0 bg-white transition-all duration-300 group-hover:w-full group-focus-visible:w-full" />
               </span>
             </button>
 
@@ -391,12 +413,14 @@ export default function Nav({ ready }: { ready: boolean }) {
                   }`}
                   style={{ fontFamily: 'var(--font-sans)', letterSpacing: '0.01em' }}
                 >
-                  {link.label}
-                  <span
-                    className={`absolute -bottom-0.5 left-0 h-px bg-white transition-all duration-300 ${
-                      activeSection === link.href.slice(1) ? 'w-full' : 'w-0 group-hover:w-full'
-                    }`}
-                  />
+                  <span className={`nav-visual nav-visual-${link.href.slice(1)} relative inline-block`}>
+                    {link.label}
+                    <span
+                      className={`absolute bottom-0 left-0 h-px bg-white transition-all duration-300 ${
+                        activeSection === link.href.slice(1) ? 'w-full' : 'w-0 group-hover:w-full'
+                      }`}
+                    />
+                  </span>
                 </button>
               ))}
             </div>
@@ -409,11 +433,13 @@ export default function Nav({ ready }: { ready: boolean }) {
                 className="group relative inline-flex items-center gap-2 text-sm text-white hover:text-white transition-colors duration-300"
                 style={{ fontFamily: 'var(--font-sans)' }}
               >
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                <span className="nav-visual nav-visual-github relative inline-flex items-center gap-2">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
                   <path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z" />
-                </svg>
-                GitHub
-                <span className="absolute -bottom-0.5 left-0 h-px w-0 bg-white transition-all duration-300 group-hover:w-full" />
+                  </svg>
+                  GitHub
+                  <span className="absolute bottom-0 left-0 h-px w-0 bg-white transition-all duration-300 group-hover:w-full" />
+                </span>
               </a>
             </div>
           </div>
@@ -426,25 +452,27 @@ export default function Nav({ ready }: { ready: boolean }) {
               zIndex: 9999,
               background: 'transparent',
             }}
-            onClick={() => setMenuOpen(v => !v)}
+            onClick={() => void toggleMenu()}
             aria-label="Toggle menu"
             aria-expanded={menuOpen}
           >
-            <motion.span
-            style={{ display: 'block', width: 24, height: 1, background: '#fff' }}
-            animate={{ rotate: menuOpen ? 45 : 0, y: menuOpen ? 5 : 0 }}
-            transition={{ duration: 0.3 }}
-          />
-          <motion.span
-            style={{ display: 'block', width: 24, height: 1, background: '#fff' }}
-            animate={{ opacity: menuOpen ? 0 : 1 }}
-            transition={{ duration: 0.3 }}
-          />
-          <motion.span
-            style={{ display: 'block', width: 24, height: 1, background: '#fff' }}
-              animate={{ rotate: menuOpen ? -45 : 0, y: menuOpen ? -5 : 0 }}
-              transition={{ duration: 0.3 }}
-            />
+            <span className="nav-visual nav-visual-menu flex flex-col items-center gap-1.5">
+              <motion.span
+                style={{ display: 'block', width: 24, height: 1, background: '#fff' }}
+                animate={{ rotate: menuOpen ? 45 : 0, y: menuOpen ? 5 : 0 }}
+                transition={{ duration: 0.3 }}
+              />
+              <motion.span
+                style={{ display: 'block', width: 24, height: 1, background: '#fff' }}
+                animate={{ opacity: menuOpen ? 0 : 1 }}
+                transition={{ duration: 0.3 }}
+              />
+              <motion.span
+                style={{ display: 'block', width: 24, height: 1, background: '#fff' }}
+                animate={{ rotate: menuOpen ? -45 : 0, y: menuOpen ? -5 : 0 }}
+                transition={{ duration: 0.3 }}
+              />
+            </span>
           </button>
         </nav>
       </motion.header>

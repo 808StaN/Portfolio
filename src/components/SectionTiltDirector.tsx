@@ -2,25 +2,18 @@ import { useEffect } from "react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { useLenis } from "./LenisScroll";
+import { getScrollMetrics, getScrollViewport } from "../utils/scroll";
 import {
   incomingAngles,
   hexToHsl,
   blendSectionColor,
   getTiltDrop,
   getSectionCornerScale,
+  getProjectPinStart,
 } from "../utils/tilt";
 
 gsap.registerPlugin(ScrollTrigger);
 ScrollTrigger.config({ ignoreMobileResize: true });
-
-const isTallerThanViewport = (section: HTMLElement) =>
-  section.offsetHeight > window.innerHeight + 2;
-
-const getOverlapStart = (section: HTMLElement) =>
-  isTallerThanViewport(section) ? "top top" : "bottom bottom";
-
-const getOverlapEnd = (section: HTMLElement) =>
-  isTallerThanViewport(section) ? "+=100%" : "bottom top";
 
 const setNavBackground = (color: string, z: number, showGrain: boolean) => {
   const root = document.documentElement;
@@ -38,6 +31,9 @@ export default function SectionTiltDirector() {
     );
     if (sections.length === 0) return;
 
+    const viewport = getScrollViewport();
+    const scroller = viewport ?? window;
+
     setNavBackground(sections[0].dataset.sectionColor || "transparent", 15, sections[0].id !== "home");
 
     const cleanupNavBackground = () => {
@@ -50,12 +46,11 @@ export default function SectionTiltDirector() {
     const reducedMotion = window.matchMedia(
       "(prefers-reduced-motion: reduce)",
     ).matches;
-    if (reducedMotion || sections.length < 2) return cleanupNavBackground;
-
     const clipTargets: Array<{
       section: HTMLElement;
       panel: HTMLElement;
     }> = [];
+    const overlapTargets: Array<{ section: HTMLElement; marginTop: string }> = [];
 
     const sectionData = sections.map((section, index) => {
       const panel = section.querySelector<HTMLElement>(':scope > .section-tilt-panel');
@@ -71,6 +66,7 @@ export default function SectionTiltDirector() {
       let bestColor = 'transparent';
       let bestZ = -1;
       let showGrain = true;
+      const { top } = getScrollMetrics();
 
       for (const { section, panel, color, z } of sectionData) {
         if (!panel) continue;
@@ -78,7 +74,7 @@ export default function SectionTiltDirector() {
         if (Math.abs(rotation) >= 0.05) continue;
 
         const rect = section.getBoundingClientRect();
-        if (rect.top > 0 || rect.bottom <= 0) continue;
+        if (rect.top > top || rect.bottom <= top) continue;
 
         if (z > bestZ) {
           bestZ = z;
@@ -105,7 +101,16 @@ export default function SectionTiltDirector() {
       lenis?.resize();
     };
 
+    const updateOverlaps = () => {
+      const { height } = getScrollMetrics();
+      overlapTargets.forEach(({ section }) => {
+        section.style.setProperty("--section-overlap-offset", `${-height}px`);
+      });
+    };
+
     const ctx = gsap.context(() => {
+      if (reducedMotion || sections.length < 2) return;
+
       sections.forEach((section, index) => {
         gsap.set(section, { zIndex: (index + 1) * 10 });
       });
@@ -137,6 +142,7 @@ export default function SectionTiltDirector() {
           updateTiltClip(incomingSection, incomingPanel);
 
           ScrollTrigger.create({
+            scroller,
             trigger: incomingSection,
             start: 'top bottom',
             end: 'top top',
@@ -163,23 +169,23 @@ export default function SectionTiltDirector() {
           applyBlend(this.progress());
         };
 
-        // Granica projekt→sekcja (OtakuVersus→About): pin należy do karuzeli
-        // (ProjectCarousel pinuje OtakuVersus na 300%). About wciągamy o 100vh w górę,
-        // by nakładał się na ostatnie 100% pinu, i odpalamy STANDARDOWY tilt (jak
-        // Stack/Contact) zmapowany na te ostatnie 100% przez pusty ogon timeline.
-        // Brak osobnego pinu tutaj — uniknięcie konfliktu dwóch pinów na sekcji-projekcie.
+        // Match the carousel's final viewport of pin time without adding another pin.
         const isOutgoingProject = section.dataset.sectionGroup === "projects";
         if (isOutgoingProject) {
-          gsap.set(incomingSection, { marginTop: "-100vh" });
+          overlapTargets.push({ section: incomingSection, marginTop: incomingSection.style.marginTop });
+          gsap.set(incomingSection, { "--section-overlap-offset": `${-getScrollMetrics().height}px` });
+          // Keep a live value in the margin that ScrollTrigger saves when pinning About.
+          incomingSection.style.marginTop = "var(--section-overlap-offset)";
 
           const tl = gsap.timeline({
             scrollTrigger: {
+              scroller,
               id: incomingSection.id
                 ? `section-target-${incomingSection.id}`
                 : undefined,
               trigger: section,
-              start: "top top",
-              end: "+=300%",
+              start: () => getProjectPinStart(section),
+              end: () => `+=${getScrollMetrics().height * 3}`,
               scrub: true,
             },
           });
@@ -198,56 +204,79 @@ export default function SectionTiltDirector() {
           ease: "none",
           onUpdate: onTiltUpdate,
           scrollTrigger: {
+            scroller,
             trigger: section,
-            start: () => getOverlapStart(section),
-            end: () => getOverlapEnd(section),
+            start: "bottom bottom",
+            end: "bottom top",
             scrub: true,
           },
         });
 
         ScrollTrigger.create({
+          scroller,
           id: incomingSection.id
             ? `section-target-${incomingSection.id}`
             : undefined,
           trigger: section,
-          start: () => getOverlapStart(section),
-          end: () => getOverlapEnd(section),
+          start: "bottom bottom",
+          end: "bottom top",
           pin: true,
           pinSpacing: false,
         });
       });
     });
 
+    ScrollTrigger.addEventListener("refreshInit", updateOverlaps);
+    ScrollTrigger.addEventListener("refresh", updateAllTiltClips);
+
+    let refreshFrame = 0;
+    const scheduleRefresh = () => {
+      if (refreshFrame) return;
+      refreshFrame = requestAnimationFrame(() => {
+        refreshFrame = 0;
+        lenis?.resize();
+        ScrollTrigger.refresh();
+      });
+    };
+
     ScrollTrigger.refresh();
-    // Drugi refresh po zamontowaniu karuzel (ProjectCarousel montuje się po tym
-    // efekcie i dodaje piny ze spacerami), aby zwykłe granice policzyły się względem
-    // ostatecznego layoutu.
-    requestAnimationFrame(() => {
-      ScrollTrigger.refresh();
-      syncNavBackground();
-    });
+    // Refresh again once carousel pins and their spacers have mounted.
+    scheduleRefresh();
+
+    let { width, height } = getScrollMetrics();
+    const observer = viewport ? new ResizeObserver(() => {
+      const metrics = getScrollMetrics();
+      if (metrics.width === width && metrics.height === height) return;
+      width = metrics.width;
+      height = metrics.height;
+      scheduleRefresh();
+    }) : null;
+    if (viewport) observer?.observe(viewport);
 
     const onScroll = () => {
       ScrollTrigger.update();
       syncNavBackground();
     };
     const unsubscribeLenis = lenis?.on("scroll", onScroll);
-    if (!lenis) {
-      window.addEventListener("scroll", onScroll, { passive: true });
-    }
-    window.addEventListener("resize", updateAllTiltClips);
+    scroller.addEventListener("scroll", onScroll, { passive: true });
+    window.addEventListener("resize", scheduleRefresh);
 
     return () => {
       unsubscribeLenis?.();
-      if (!lenis) {
-        window.removeEventListener("scroll", onScroll);
-      }
-      window.removeEventListener("resize", updateAllTiltClips);
+      scroller.removeEventListener("scroll", onScroll);
+      window.removeEventListener("resize", scheduleRefresh);
+      observer?.disconnect();
+      cancelAnimationFrame(refreshFrame);
+      ScrollTrigger.removeEventListener("refreshInit", updateOverlaps);
+      ScrollTrigger.removeEventListener("refresh", updateAllTiltClips);
       sections.forEach((section) => {
         section.style.removeProperty("--tilt-hit-drop");
       });
       cleanupNavBackground();
       ctx.revert();
+      overlapTargets.forEach(({ section, marginTop }) => {
+        section.style.marginTop = marginTop;
+      });
       clipTargets.forEach(({ panel }) => panel.style.removeProperty('--section-corner-scale'));
     };
   }, [lenis]);

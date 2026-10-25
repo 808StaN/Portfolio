@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import { getScrollMetrics, getScrollViewport } from "../utils/scroll";
 
 export default function Cursor() {
   const dotRef = useRef<HTMLDivElement>(null);
@@ -14,8 +15,9 @@ export default function Cursor() {
     if (window.matchMedia("(pointer: coarse)").matches) return;
 
     const updatePosition = (clientX: number, clientY: number) => {
-      pos.current = { x: clientX, y: clientY };
-      if (!visible) setVisible(true);
+      const { left, top, width, height } = getScrollMetrics();
+      pos.current = { x: clientX - left, y: clientY - top };
+      setVisible(clientX >= left && clientX <= left + width && clientY >= top && clientY <= top + height);
     };
 
     const onMove = (e: MouseEvent) => {
@@ -38,7 +40,7 @@ export default function Cursor() {
       const target = e.target as Element;
 
       const interactive = target.closest(
-        'a, button, [role="link"], [tabindex], .custom-scrollbar-track, .custom-scrollbar-thumb',
+        'a, button, [role="link"], [tabindex]:not([tabindex="-1"]), .custom-scrollbar-track, .custom-scrollbar-thumb',
       );
       const isDisabled =
         interactive instanceof HTMLButtonElement && interactive.disabled;
@@ -82,7 +84,9 @@ export default function Cursor() {
     if (window.matchMedia("(pointer: coarse)").matches) return;
 
     const style = document.createElement("style");
-    style.innerHTML = `*, *:hover { cursor: none !important; }`;
+    style.innerHTML = getScrollViewport()
+      ? `.portfolio-viewport, .portfolio-viewport *, .portfolio-viewport:hover, .portfolio-viewport *:hover { cursor: none !important; }`
+      : `*, *:hover { cursor: none !important; }`;
     document.head.appendChild(style);
 
     return () => {
@@ -98,7 +102,7 @@ export default function Cursor() {
   }
 
   return (
-    <>
+    <div className="cursor-layer" aria-hidden="true">
       {/* Dot */}
       <div
         ref={dotRef}
@@ -131,6 +135,6 @@ export default function Cursor() {
         }}
         aria-hidden="true"
       />
-    </>
+    </div>
   );
 }

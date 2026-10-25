@@ -2,6 +2,7 @@ import { useEffect, useRef } from "react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { useLenis } from "./LenisScroll";
+import { getScrollViewport } from "../utils/scroll";
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -54,6 +55,12 @@ export default function ProjectTitleStretch({
     const section = scaleEl.closest<HTMLElement>("[data-section-tilt]");
     if (!section) return;
 
+    const originalTransform = scaleEl.style.transform;
+    const originalOrigin = scaleEl.style.transformOrigin;
+    const restoreStyles = () => {
+      scaleEl.style.transform = originalTransform;
+      scaleEl.style.transformOrigin = originalOrigin;
+    };
     scaleEl.style.transformOrigin = transformOrigin;
 
     const reducedMotion = window.matchMedia(
@@ -61,11 +68,12 @@ export default function ProjectTitleStretch({
     ).matches;
     if (reducedMotion) {
       scaleEl.style.transform = `scale(${BASE_SCALE_X}, ${REST_SCALE_Y})`;
-      return;
+      return restoreStyles;
     }
 
     const trigger = ScrollTrigger.create({
       id: `title-stretch-${projectId}`,
+      scroller: getScrollViewport() ?? window,
       trigger: section,
       start: "top bottom",
       end: "top top",
@@ -79,6 +87,7 @@ export default function ProjectTitleStretch({
 
     return () => {
       trigger.kill();
+      restoreStyles();
     };
   }, [lenis, projectId, transformOrigin]);
 

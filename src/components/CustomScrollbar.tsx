@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState, type PointerEvent as ReactPointerEvent } from "react";
-import { useLenis } from "./LenisScroll";
+import { scrollToY, useLenis } from "./LenisScroll";
+import { getScrollMetrics, getScrollViewport } from "../utils/scroll";
 
 const MIN_THUMB_HEIGHT = 36;
 
@@ -10,9 +11,6 @@ type ScrollMetrics = {
   trackHeight: number;
 };
 
-const getScrollLimit = () =>
-  Math.max(0, document.documentElement.scrollHeight - window.innerHeight);
-
 export default function CustomScrollbar() {
   const lenis = useLenis();
   const trackRef = useRef<HTMLDivElement>(null);
@@ -20,6 +18,7 @@ export default function CustomScrollbar() {
     startY: number;
     startScroll: number;
   } | null>(null);
+  const stopDragRef = useRef<(() => void) | null>(null);
   const [metrics, setMetrics] = useState<ScrollMetrics>({
     scroll: 0,
     limit: 0,
@@ -29,19 +28,24 @@ export default function CustomScrollbar() {
 
   useEffect(() => {
     const root = document.documentElement;
+    const viewport = getScrollViewport();
+    const scrollElement = viewport ?? window;
+    const content = viewport
+      ? viewport.querySelector<HTMLElement>(".portfolio-scroll-content")
+      : document.body;
     root.classList.add("custom-scrollbar-enabled");
 
     let frame = 0;
     const readMetrics = () => {
       frame = 0;
-      const limit = getScrollLimit();
-      const scroll = Math.max(0, Math.min(limit, window.scrollY));
-      const trackHeight = trackRef.current?.clientHeight ?? window.innerHeight;
+      const { scroll: actualScroll, limit, height } = getScrollMetrics();
+      const scroll = Math.max(0, Math.min(limit, actualScroll));
+      const trackHeight = trackRef.current?.clientHeight ?? height;
 
       setMetrics({
         scroll,
         limit,
-        viewportHeight: window.innerHeight,
+        viewportHeight: height,
         trackHeight: Math.max(1, trackHeight),
       });
     };
@@ -54,11 +58,12 @@ export default function CustomScrollbar() {
 
     readMetrics();
     const unsubscribeLenis = lenis?.on("scroll", requestMetrics);
-    window.addEventListener("scroll", requestMetrics, { passive: true });
+    scrollElement.addEventListener("scroll", requestMetrics, { passive: true });
     window.addEventListener("resize", requestMetrics);
 
     const ro = new ResizeObserver(requestMetrics);
-    ro.observe(document.documentElement);
+    ro.observe(viewport ?? root);
+    if (content) ro.observe(content);
 
     let moTimeout: ReturnType<typeof setTimeout> | null = null;
     const mo = new MutationObserver(() => {
@@ -72,10 +77,11 @@ export default function CustomScrollbar() {
     });
 
     return () => {
+      stopDragRef.current?.();
       root.classList.remove("custom-scrollbar-enabled");
       root.classList.remove("custom-scrollbar-dragging");
       unsubscribeLenis?.();
-      window.removeEventListener("scroll", requestMetrics);
+      scrollElement.removeEventListener("scroll", requestMetrics);
       window.removeEventListener("resize", requestMetrics);
       ro.disconnect();
       mo.disconnect();
@@ -85,9 +91,9 @@ export default function CustomScrollbar() {
   }, [lenis]);
 
   const scrollTo = (targetScroll: number) => {
-    const limit = getScrollLimit();
+    const { limit } = getScrollMetrics();
     const nextScroll = Math.max(0, Math.min(limit, targetScroll));
-    window.scrollTo({ top: nextScroll, behavior: "auto" });
+    scrollToY(nextScroll, lenis, { immediate: true });
   };
 
   if (metrics.limit <= 1) return null;
@@ -113,6 +119,7 @@ export default function CustomScrollbar() {
 
   const startDrag = (event: ReactPointerEvent<HTMLDivElement>) => {
     event.preventDefault();
+    stopDragRef.current?.();
     dragRef.current = {
       startY: event.clientY,
       startScroll: metrics.scroll,
@@ -129,12 +136,14 @@ export default function CustomScrollbar() {
 
     const stopDrag = () => {
       dragRef.current = null;
+      stopDragRef.current = null;
       document.documentElement.classList.remove("custom-scrollbar-dragging");
       window.removeEventListener("pointermove", onPointerMove);
       window.removeEventListener("pointerup", stopDrag);
       window.removeEventListener("pointercancel", stopDrag);
     };
 
+    stopDragRef.current = stopDrag;
     window.addEventListener("pointermove", onPointerMove);
     window.addEventListener("pointerup", stopDrag);
     window.addEventListener("pointercancel", stopDrag);
@@ -159,7 +168,9 @@ export default function CustomScrollbar() {
             height: `${thumbHeight}px`,
             transform: `translate3d(0, ${thumbTop}px, 0)`,
           }}
-        />
+        >
+          <div className="custom-scrollbar-thumb-visual" />
+        </div>
       </div>
     </div>
   );

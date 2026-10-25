@@ -1,6 +1,7 @@
 import { useEffect, useRef } from 'react';
 import { sectionColors } from '../constants/sectionColors';
 import { useLenis } from './LenisScroll';
+import { getScrollViewport } from '../utils/scroll';
 import './PageLoader.css';
 
 export type PageLoaderStage = 'intro' | 'revealing' | 'done';
@@ -35,7 +36,8 @@ export default function PageLoader({ onStageChange }: { onStageChange: (stage: P
       window.removeEventListener('keydown', onKeyDown);
       reducedMotion.removeEventListener('change', onMotionChange);
       if (previousFocus instanceof HTMLElement && previousFocus.isConnected) {
-        previousFocus.focus({ preventScroll: true });
+        const focusTarget = previousFocus === document.body ? getScrollViewport() ?? previousFocus : previousFocus;
+        focusTarget.focus({ preventScroll: true });
       }
     };
   }, [onStageChange]);

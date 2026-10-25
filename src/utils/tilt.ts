@@ -1,3 +1,5 @@
+import { getScrollMetrics } from "./scroll";
+
 export const incomingAngles = [14, 12, 10, 8, 6, 4, 3, 2, 1, 0];
 
 export const getSectionCornerScale = (progress: number): number => {
@@ -75,8 +77,10 @@ export const blendSectionColor = (from: Hsl, to: Hsl, progress: number): string 
   return hslToHex(h, s, l);
 };
 
-export const getViewportWidth = () =>
-  document.documentElement.clientWidth || window.visualViewport?.width || window.innerWidth;
+export const getViewportWidth = () => getScrollMetrics().width;
+
+export const getProjectPinStart = (section: HTMLElement) =>
+  section.offsetHeight > getScrollMetrics().height + 2 ? "bottom bottom" : "top top";
 
 export const getTiltDrop = (rotation: number) => {
   const radians = (Math.abs(rotation) * Math.PI) / 180;

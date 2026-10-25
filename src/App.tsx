@@ -10,6 +10,7 @@ import SectionTiltDirector from "./components/SectionTiltDirector";
 import CustomScrollbar from "./components/CustomScrollbar";
 import { useLenis } from "./components/LenisScroll";
 import PageLoader, { type PageLoaderStage } from "./components/PageLoader";
+import { getScrollMetrics, getScrollViewport } from "./utils/scroll";
 
 export default function App() {
   const lenis = useLenis();
@@ -18,12 +19,13 @@ export default function App() {
 
   useEffect(() => {
     const root = document.documentElement;
+    const scrollTarget = getScrollViewport() ?? window;
     let rafId = 0;
 
     const updateScrollProgress = () => {
-      const scrollable =
-        lenis?.limit ?? Math.max(0, root.scrollHeight - window.innerHeight);
-      const scroll = lenis?.scroll ?? window.scrollY;
+      const metrics = getScrollMetrics();
+      const scrollable = lenis?.limit ?? metrics.limit;
+      const scroll = lenis?.scroll ?? metrics.scroll;
       const progressRaw = scrollable > 0 ? scroll / scrollable : 0;
       const progress = Math.max(0, Math.min(1, progressRaw));
       root.style.setProperty("--scroll-progress", progress.toFixed(4));
@@ -39,14 +41,14 @@ export default function App() {
     updateScrollProgress();
     const unsubscribeLenis = lenis?.on("scroll", updateScrollProgress);
     if (!lenis) {
-      window.addEventListener("scroll", onScrollOrResize, { passive: true });
+      scrollTarget.addEventListener("scroll", onScrollOrResize, { passive: true });
     }
     window.addEventListener("resize", onScrollOrResize);
 
     return () => {
       unsubscribeLenis?.();
       if (!lenis) {
-        window.removeEventListener("scroll", onScrollOrResize);
+        scrollTarget.removeEventListener("scroll", onScrollOrResize);
       }
       window.removeEventListener("resize", onScrollOrResize);
       if (rafId) cancelAnimationFrame(rafId);
@@ -60,41 +62,33 @@ export default function App() {
       <div
         className="app-shell relative min-h-screen"
         inert={loaderStage !== "done"}
-        style={{ background: "var(--color-bg)", color: "var(--color-text)" }}
+        style={{ background: "#f2f5fc", color: "var(--color-text)" }}
       >
-        <div className="app-ambient" aria-hidden="true" />
-        <div className="app-vignette" aria-hidden="true" />
-
-        <div className="site-ui">
-          {/* Custom cursor (desktop only) */}
-          <Cursor />
-          <CustomScrollbar />
-
-          {/* Navigation */}
-          <Nav ready={entranceReady} />
-        </div>
-        <SectionTiltDirector />
-
-        {/* Main content */}
-        <div className="page-transition-layout">
+        <div className="portfolio-viewport">
+          <div className="app-ambient" aria-hidden="true" />
+          <div className="app-vignette" aria-hidden="true" />
+          <div className="site-ui">
+            <Cursor />
+            <CustomScrollbar />
+            <Nav ready={entranceReady} />
+          </div>
           <div id="page-transition-scope" className="page-transition-scope">
             <div className="nav-bg-layer" aria-hidden="true" />
-            <main className="pb-10 md:pb-16">
-              {/* 1. Hero */}
-              <Hero ready={entranceReady} />
+            <SectionTiltDirector />
 
-              {/* 2. Projects */}
-              <Projects />
-
-              {/* 3. About */}
-              <About />
-
-              {/* 4. Stack */}
-              <Stack />
-
-              {/* 5. Contact */}
-              <Contact />
-            </main>
+            <div id="portfolio-scrollport" className="portfolio-scrollport" tabIndex={-1}>
+              <div className="page-transition-layout portfolio-scroll-content">
+                <div className="page-transition-content">
+                  <main>
+                    <Hero ready={entranceReady} />
+                    <Projects />
+                    <About />
+                    <Stack />
+                    <Contact />
+                  </main>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </div>

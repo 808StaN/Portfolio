@@ -4,6 +4,7 @@ import HeroBandsBackground from './HeroBandsBackground';
 import { sectionColors } from '../constants/sectionColors';
 import { scrollToY, useLenis } from './LenisScroll';
 import GravityLink from './ui/GravityLink';
+import { getScrollMetrics, getScrollTargetTop } from '../utils/scroll';
 
 const words = ['fast', 'scalable', 'reliable', 'responsive', 'modern'];
 
@@ -20,12 +21,8 @@ export default function Hero({ ready }: { ready: boolean }) {
     const work = document.getElementById('work');
     if (!work) return;
 
-    const maxScrollTop = Math.max(
-      0,
-      document.documentElement.scrollHeight - window.innerHeight,
-    );
-    const top = window.scrollY + work.getBoundingClientRect().top;
-    scrollToY(Math.min(Math.max(0, top), maxScrollTop), lenis, { duration: 1.15 });
+    const top = getScrollTargetTop(work);
+    scrollToY(Math.min(Math.max(0, top), getScrollMetrics().limit), lenis, { duration: 1.15 });
   };
 
   useEffect(() => {
@@ -75,8 +72,7 @@ export default function Hero({ ready }: { ready: boolean }) {
           </filter>
         </defs>
       </svg>
-      <div className="section-tilt-panel hero-tilt-panel">
-        <div className="hero-screen" style={{ background: sectionColors.home }}>
+      <div className="section-tilt-panel hero-tilt-panel" style={{ background: sectionColors.home }}>
         <HeroBandsBackground />
 
         <div className="section-tilt-container hero-inner">
@@ -181,7 +177,6 @@ export default function Hero({ ready }: { ready: boolean }) {
               </svg>
             </div>
           </motion.div>
-        </div>
         </div>
       </div>
     </section>

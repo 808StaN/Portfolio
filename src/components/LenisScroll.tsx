@@ -7,6 +7,7 @@ import {
 } from "react";
 import Lenis from "lenis";
 import "lenis/dist/lenis.css";
+import { getScrollViewport } from "../utils/scroll";
 
 const LenisContext = createContext<Lenis | null>(null);
 
@@ -27,19 +28,23 @@ export function scrollToY(
   lenis: Lenis | null,
   options?: ScrollToOptions,
 ) {
+  const immediate =
+    options?.immediate ||
+    window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
   if (lenis) {
     lenis.scrollTo(targetY, {
       duration: options?.duration ?? 1.1,
-      immediate: options?.immediate,
+      immediate,
       lock: options?.lock,
       onComplete: options?.onComplete,
     });
     return;
   }
 
-  window.scrollTo({
+  (getScrollViewport() ?? window).scrollTo({
     top: targetY,
-    behavior: options?.immediate ? "auto" : "smooth",
+    behavior: immediate ? "instant" : "smooth",
   });
   options?.onComplete?.();
 }
@@ -53,7 +58,12 @@ export default function LenisScroll({ children }: { children: ReactNode }) {
     ).matches;
     if (reducedMotion) return;
 
+    const viewport = getScrollViewport();
     const instance = new Lenis({
+      wrapper: viewport ?? window,
+      content: viewport
+        ? viewport.querySelector<HTMLElement>(".portfolio-scroll-content")!
+        : document.documentElement,
       autoRaf: true,
       lerp: 0.085,
       smoothWheel: true,
@@ -67,11 +77,9 @@ export default function LenisScroll({ children }: { children: ReactNode }) {
       anchors: true,
     });
 
-    document.documentElement.classList.add("lenis", "lenis-smooth");
     setLenis(instance);
 
     return () => {
-      document.documentElement.classList.remove("lenis", "lenis-smooth");
       instance.destroy();
       setLenis(null);
     };
