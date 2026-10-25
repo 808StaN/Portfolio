@@ -4,6 +4,7 @@ import { ScrollTrigger } from "gsap/ScrollTrigger";
 import ProjectCarousel from "./ProjectCarousel";
 import ProjectTitleStretch from "./ProjectTitleStretch";
 import GravityLink from "./ui/GravityLink";
+import SectionBandsBackground from "./SectionBandsBackground";
 import {
   featuredProjects,
   type Project,
@@ -99,6 +100,7 @@ export default function Projects() {
               data-project-id={project.id}
             >
               <div className="section-tilt-panel projects-project-panel" style={{ background: project.color }}>
+                <SectionBandsBackground palette={project.glowColor === 'riftpick' ? 'projectRiftPick' : project.glowColor === 'openstudio' ? 'projectOpenStudio' : 'projectOtakuVersus'} />
                 <div className="section-tilt-container section-inner projects-inner projects-project-inner relative z-10">
                   <div className={`projects-layout ${reversed ? "is-reversed" : ""}`}>
                     <motion.div

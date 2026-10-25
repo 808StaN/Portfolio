@@ -2,6 +2,7 @@ import { useRef } from 'react';
 import { motion, useInView } from 'framer-motion';
 import { sectionColors } from '../constants/sectionColors';
 import ProjectTitleStretch from './ProjectTitleStretch';
+import SectionBandsBackground from './SectionBandsBackground';
 
 const easeOut = [0.16, 1, 0.3, 1] as const;
 
@@ -51,6 +52,7 @@ export default function Contact() {
   return (
     <section id="contact" className="section-tilt-section section-shell relative overflow-hidden" data-section-tilt data-section-color={sectionColors.contact}>
       <div className="section-tilt-panel" style={{ background: sectionColors.contact }}>
+        <SectionBandsBackground palette="contact" />
         <div className="section-tilt-container section-inner contact-inner relative" ref={ref}>
         <div className="grid grid-cols-1 lg:grid-cols-[minmax(0,1.04fr)_minmax(0,0.96fr)] gap-14 lg:gap-24">
           <div>

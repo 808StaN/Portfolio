@@ -1,6 +1,6 @@
 import { useEffect, useId, useRef, type MouseEvent } from 'react';
 import { motion, useReducedMotion } from 'framer-motion';
-import HeroBandsBackground from './HeroBandsBackground';
+import SectionBandsBackground from './SectionBandsBackground';
 import { sectionColors } from '../constants/sectionColors';
 import { scrollToY, useLenis } from './LenisScroll';
 import GravityLink from './ui/GravityLink';
@@ -73,7 +73,7 @@ export default function Hero({ ready }: { ready: boolean }) {
         </defs>
       </svg>
       <div className="section-tilt-panel hero-tilt-panel" style={{ background: sectionColors.home }}>
-        <HeroBandsBackground />
+        <SectionBandsBackground palette="home" />
 
         <div className="section-tilt-container hero-inner">
           <div className="hero-composition">

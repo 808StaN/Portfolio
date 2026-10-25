@@ -2,6 +2,7 @@ import { useRef } from 'react';
 import { motion, useInView } from 'framer-motion';
 import { sectionColors } from '../constants/sectionColors';
 import ProjectTitleStretch from './ProjectTitleStretch';
+import SectionBandsBackground from './SectionBandsBackground';
 
 const easeOut = [0.16, 1, 0.3, 1] as const;
 
@@ -107,6 +108,7 @@ export default function Stack() {
   return (
     <section id="stack" className="section-tilt-section section-shell relative overflow-hidden" data-section-tilt data-section-color={sectionColors.stack}>
       <div className="section-tilt-panel" style={{ background: sectionColors.stack }}>
+        <SectionBandsBackground palette="stack" />
         <div className="section-tilt-container section-inner relative" ref={ref}>
         <div>
           <ProjectTitleStretch title="Tech I use" projectId="stack" />

@@ -130,10 +130,11 @@ export default function SectionTiltDirector() {
           section.dataset.sectionGroup &&
           section.dataset.sectionGroup === incomingSection.dataset.sectionGroup;
 
-        gsap.set(incomingPanel, { backgroundColor: prevColor });
+        gsap.set(incomingPanel, { backgroundColor: prevColor, '--section-shader-opacity': 0 });
 
         const applyBlend = (p: number) => {
           incomingPanel.style.backgroundColor = blendSectionColor(prevHsl, incomingHsl, p);
+          incomingPanel.style.setProperty('--section-shader-opacity', String(p));
           incomingPanel.style.setProperty('--section-corner-scale', String(getSectionCornerScale(p)));
         };
 

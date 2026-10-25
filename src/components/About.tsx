@@ -3,6 +3,7 @@ import { motion, useInView } from 'framer-motion';
 import { sectionColors } from '../constants/sectionColors';
 import ProjectTitleStretch from './ProjectTitleStretch';
 import GravityLink from './ui/GravityLink';
+import SectionBandsBackground from './SectionBandsBackground';
 
 const easeOut = [0.16, 1, 0.3, 1] as const;
 
@@ -26,6 +27,7 @@ export default function About() {
   return (
     <section id="about" className="section-tilt-section section-shell relative overflow-hidden" data-section-tilt data-section-color={sectionColors.about}>
       <div className="section-tilt-panel" style={{ background: sectionColors.about }}>
+        <SectionBandsBackground palette="about" />
         <div className="section-tilt-container section-inner relative" ref={ref}>
         <div className="grid grid-cols-1 lg:grid-cols-[minmax(0,1.08fr)_minmax(0,0.92fr)] gap-12 lg:gap-16">
           <div>

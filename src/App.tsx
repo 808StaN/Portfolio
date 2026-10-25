@@ -11,6 +11,7 @@ import CustomScrollbar from "./components/CustomScrollbar";
 import { useLenis } from "./components/LenisScroll";
 import PageLoader, { type PageLoaderStage } from "./components/PageLoader";
 import { getScrollMetrics, getScrollViewport } from "./utils/scroll";
+import { SectionShaderRenderer } from "./components/SectionBandsBackground";
 
 export default function App() {
   const lenis = useLenis();
@@ -75,6 +76,7 @@ export default function App() {
           <div id="page-transition-scope" className="page-transition-scope">
             <div className="nav-bg-layer" aria-hidden="true" />
             <SectionTiltDirector />
+            <SectionShaderRenderer />
 
             <div id="portfolio-scrollport" className="portfolio-scrollport" tabIndex={-1}>
               <div className="page-transition-layout portfolio-scroll-content">

@@ -310,6 +310,10 @@ export default function Nav({ ready }: { ready: boolean }) {
         easing: returningHome ? 'ease-in-out' : style.animationTimingFunction,
         fill: 'both' as const,
       };
+      const shaderBackground = panel.querySelector('.section-bands-layer');
+      if (shaderBackground && !returningHome && !goingBack) {
+        animations.push(shaderBackground.animate([{ opacity: 0 }, { opacity: 1 }], timing));
+      }
       if (startProgress !== endProgress) {
         animations.push(root.animate([
           { '--nav-hero-progress': startProgress },

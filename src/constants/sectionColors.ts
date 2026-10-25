@@ -12,3 +12,15 @@ export const sectionColors = {
 } as const;
 
 export type SectionKey = keyof typeof sectionColors;
+
+export const sectionShaderPalettes = {
+  home: ['#0D3B90', '#1756D9', '#3B78F2', '#6E9FF4'],
+  projectRiftPick: ['#08162E', '#102745', '#193B5D', '#2C5377'],
+  projectOpenStudio: ['#173D28', '#245837', '#2F7542', '#488556'],
+  projectOtakuVersus: ['#56152E', '#85203F', '#AC244B', '#C64266'],
+  about: ['#241E3D', '#3A315E', '#4B3D70', '#665482'],
+  stack: ['#16263D', '#263A59', '#334F6F', '#466681'],
+  contact: ['#17232D', '#24313D', '#304653', '#42606A'],
+} as const;
+
+export type ShaderPalette = keyof typeof sectionShaderPalettes;

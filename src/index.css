@@ -72,7 +72,7 @@
 
 /* Portfolio typography; services retain their existing font families. */
 :root[data-site="portfolio"] {
-  --hero-frame-inset: min(8vw, 8svh);
+  --hero-frame-inset: min(5vw, 5svh);
   --portfolio-width: calc(100vw - var(--hero-frame-inset) * 2);
   --portfolio-height: calc(100dvh - var(--hero-frame-inset) * 2);
   --portfolio-radius: clamp(24px, 3vw, 56px);
@@ -267,20 +267,52 @@ html.nav-section-transition .page-transition-content > main {
   margin-top: calc(-1 * var(--nav-page-scroll));
 }
 
-.hero-bands-layer {
+.section-bands-layer {
   position: absolute;
   inset: 0;
   z-index: 1;
   pointer-events: none;
+  opacity: var(--section-shader-opacity, 1);
+  overflow: hidden;
   background:
-    repeating-linear-gradient(90deg, transparent 0%, rgba(8, 39, 95, 0.22) 16.4%, rgba(59, 120, 242, 0.12) 16.67%),
-    radial-gradient(ellipse at 75% 25%, #3b78f2, #1756d9 35%, #0d3b90 65%, #08275f);
+    repeating-linear-gradient(90deg, transparent 0%, color-mix(in srgb, var(--shader-color-0) 22%, transparent) 16.4%, color-mix(in srgb, var(--shader-color-2) 12%, transparent) 16.67%),
+    radial-gradient(ellipse at 75% 25%, var(--shader-color-2), var(--shader-color-1) 35%, var(--shader-color-0) 65%, color-mix(in srgb, var(--shader-color-0) 70%, black));
 }
 
-.hero-bands-canvas {
+.section-shader-slot {
+  position: absolute;
+  inset: 0;
+}
+
+.section-shader-parking {
+  position: absolute;
+  top: 0;
+  left: -200%;
+  width: 100%;
+  height: 100%;
+  visibility: hidden;
+  pointer-events: none;
+}
+
+.section-bands-canvas {
   display: block;
   width: 100% !important;
   height: 100% !important;
+  opacity: 0;
+  transition: opacity 0.4s ease;
+}
+
+.section-shader-slot[data-shader-ready="true"] .section-bands-canvas {
+  opacity: 1;
+}
+
+@media (max-width: 767px) {
+  .section-bands-canvas {
+    width: 66.667% !important;
+    height: 66.667% !important;
+    transform: scale(1.5);
+    transform-origin: top left;
+  }
 }
 
 ::selection {
@@ -923,6 +955,8 @@ html.nav-document-transition::view-transition-group(site-nav-bg) {
 }
 
 .section-tilt-container {
+  position: relative;
+  z-index: 10;
   backface-visibility: hidden;
   pointer-events: none;
   margin-block: auto;
