@@ -50,8 +50,9 @@
   --color-accent-blue: #4f8ef7;
   --color-accent-teal: #14b8a6;
   --color-accent-orange: #f97316;
-  --nav-bg-color: transparent;
-  --nav-bg-z: 15;
+  --nav-glass-background: rgba(18, 26, 42, 0.1);
+  --nav-glass-filter: blur(12px) saturate(110%);
+  --nav-glass-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.16), inset 0 -1px 0 rgba(255, 255, 255, 0.06), 0 8px 28px rgba(5, 12, 28, 0.12);
   --scroll-progress: 0;
   /* boczny navbar (Nav.tsx) — bez zmian przy szerszej treści */
   --page-gutter: clamp(20px, 4vw, 64px);
@@ -182,6 +183,15 @@ html[data-site="portfolio"] body {
   overscroll-behavior: none;
   scroll-padding-top: 72px;
   scrollbar-width: none;
+}
+
+.portfolio-scene {
+  position: absolute;
+  inset: 0;
+  contain: layout paint;
+  /* Keep navbar backdrop sampling inside the rounded scene on compositor repaints. */
+  clip-path: inset(0 round var(--portfolio-radius));
+  z-index: 0;
 }
 
 .page-transition-scope {
@@ -569,18 +579,16 @@ html.custom-scrollbar-dragging * {
   initial-value: 0;
 }
 
-.nav-section-transition .nav-bg-layer {
+/* Scoped transitions keep the live glass; document transitions require a separate snapshot. */
+html.nav-document-transition .nav-bg-layer {
   view-transition-name: site-nav-bg;
 }
 
-.nav-capture-ready .nav-bg-layer {
+html.nav-document-transition.nav-capture-ready .nav-bg-layer {
   background: transparent;
   -webkit-backdrop-filter: none;
   backdrop-filter: none;
-}
-
-.nav-capture-ready .nav-bg-layer::after {
-  opacity: 1;
+  box-shadow: none;
 }
 
 html.nav-document-transition {
@@ -706,17 +714,12 @@ html.nav-document-transition .cursor-layer {
 .nav-section-transition::view-transition-group(site-nav-bg) {
   top: 0;
   transform: none;
-}
-
-.nav-section-transition::view-transition-group(site-nav-bg) {
-  background: color-mix(in srgb, var(--nav-section-start-color) calc(35% + var(--nav-start-hero-progress, 0) * 65%), transparent);
-  backdrop-filter: blur(calc(20px * (1 - var(--nav-start-hero-progress, 0))));
+  background: var(--nav-glass-background);
+  -webkit-backdrop-filter: var(--nav-glass-filter);
+  backdrop-filter: var(--nav-glass-filter);
+  box-shadow: var(--nav-glass-shadow);
   clip-path: inset(0 round 0 0 var(--panel-radius) var(--panel-radius));
-  z-index: 1;
-}
-
-.nav-section-transition::view-transition-new(site-nav-bg) {
-  opacity: var(--nav-start-grain);
+  z-index: 3;
 }
 
 .nav-back-transition::view-transition-old(root) {
@@ -822,10 +825,11 @@ html.nav-document-transition::view-transition-group(site-nav-bg) {
 .nav-bg-layer {
   position: fixed;
   height: 3.5rem;
-  background: color-mix(in srgb, var(--nav-bg-color) calc(35% + var(--nav-hero-progress, 0) * 65%), transparent);
-  -webkit-backdrop-filter: blur(calc(20px * (1 - var(--nav-hero-progress, 0))));
-  backdrop-filter: blur(calc(20px * (1 - var(--nav-hero-progress, 0))));
-  z-index: var(--nav-bg-z);
+  background: var(--nav-glass-background);
+  -webkit-backdrop-filter: var(--nav-glass-filter);
+  backdrop-filter: var(--nav-glass-filter);
+  box-shadow: var(--nav-glass-shadow);
+  z-index: 100;
   pointer-events: none;
   overflow: hidden;
   border-radius: 0 0 var(--panel-radius) var(--panel-radius);
@@ -837,7 +841,7 @@ html.nav-document-transition::view-transition-group(site-nav-bg) {
   inset: 0;
   background: url('/noise.png');
   background-size: 250px;
-  opacity: var(--nav-grain-opacity, 1);
+  opacity: 0.06;
   pointer-events: none;
 }
 
@@ -858,8 +862,8 @@ html.nav-document-transition::view-transition-group(site-nav-bg) {
 .nav-outline {
   position: absolute;
   inset: 0;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.33);
-  border-inline: 1px solid rgba(255, 255, 255, 0.33);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.26);
+  border-inline: 1px solid rgba(255, 255, 255, 0.2);
   border-radius: inherit;
   pointer-events: none;
 }

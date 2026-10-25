@@ -73,24 +73,26 @@ export default function App() {
             <CustomScrollbar />
             <Nav ready={entranceReady} />
           </div>
-          <div id="page-transition-scope" className="page-transition-scope">
-            <div className="nav-bg-layer" aria-hidden="true" />
-            <SectionTiltDirector />
-            <SectionShaderRenderer />
+          <div className="portfolio-scene">
+            <div id="page-transition-scope" className="page-transition-scope">
+              <SectionTiltDirector />
+              <SectionShaderRenderer />
 
-            <div id="portfolio-scrollport" className="portfolio-scrollport" tabIndex={-1}>
-              <div className="page-transition-layout portfolio-scroll-content">
-                <div className="page-transition-content">
-                  <main>
-                    <Hero ready={entranceReady} />
-                    <Projects />
-                    <About />
-                    <Stack />
-                    <Contact />
-                  </main>
+              <div id="portfolio-scrollport" className="portfolio-scrollport" tabIndex={-1}>
+                <div className="page-transition-layout portfolio-scroll-content">
+                  <div className="page-transition-content">
+                    <main>
+                      <Hero ready={entranceReady} />
+                      <Projects />
+                      <About />
+                      <Stack />
+                      <Contact />
+                    </main>
+                  </div>
                 </div>
               </div>
             </div>
+            <div className="nav-bg-layer" aria-hidden="true" />
           </div>
         </div>
       </div>

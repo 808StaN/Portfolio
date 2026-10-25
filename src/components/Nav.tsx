@@ -135,11 +135,6 @@ export default function Nav({ ready }: { ready: boolean }) {
         scrollToY(top, null, { immediate: true });
       }
       ScrollTrigger.update();
-      if (targetColor) {
-        // The destination may not receive another scroll update after the snapshot jump.
-        document.documentElement.style.setProperty('--nav-bg-color', targetColor);
-        document.documentElement.style.setProperty('--nav-grain-opacity', returningHome ? '0' : '1');
-      }
       if (captureSnapshot) panel?.setAttribute('data-nav-capture', '');
       // Reveal scroll-triggered content, but leave the hero's looping animation alone.
       if (!returningHome) {
@@ -185,19 +180,22 @@ export default function Nav({ ready }: { ready: boolean }) {
       || Math.abs(outgoingMatrix.b) > 0.00001 || Math.abs(outgoingMatrix.a - 1) > 0.00001
       || outgoingRect.top > metrics.top + 1 || outgoingRect.bottom < metrics.top + metrics.height - 1);
     const startProgress = Number(getComputedStyle(root).getPropertyValue('--nav-hero-progress'));
-    const startGrain = Number(root.style.getPropertyValue('--nav-grain-opacity') || '1');
     const wasStopped = lenis?.isStopped;
     const panelStyle = goingBack && outgoingStyle ? outgoingStyle : getComputedStyle(panel);
     const panelRadius = panelStyle.getPropertyValue('--section-base-radius').trim() || '0px';
     const panelHeight = goingBack && !outgoingPanel ? metrics.height : parseFloat(panelStyle.height);
-    const navHeight = document.querySelector('header')?.getBoundingClientRect().height ?? 64;
-    const arrivalSpan = Math.min(1, navHeight / Math.max(1, panelHeight));
-    const sourceColor = root.style.getPropertyValue('--nav-bg-color').trim();
-    const fromHsl = hexToHsl(sourceColor.startsWith('#') ? sourceColor : targetColor);
+    // Card transitions still blend scene colors, independently of the navbar glass.
+    const sourceSection = Array.from(document.querySelectorAll<HTMLElement>('[data-section-tilt]')).reverse().find(section => {
+      const candidate = section.querySelector(':scope > .section-tilt-panel');
+      if (!candidate) return false;
+      const rect = section.getBoundingClientRect();
+      const transform = getComputedStyle(candidate).transform;
+      return rect.top <= metrics.top + 1 && rect.bottom > metrics.top
+        && (transform === 'none' || Math.abs(new DOMMatrix(transform).b) < 0.001);
+    });
+    const fromHsl = hexToHsl(sourceSection?.dataset.sectionColor || targetColor);
     const toHsl = hexToHsl(targetColor);
     root.style.setProperty('--nav-section-start-color', blendSectionColor(fromHsl, toHsl, 0));
-    root.style.setProperty('--nav-start-hero-progress', String(startProgress));
-    root.style.setProperty('--nav-start-grain', String(startGrain));
     root.style.setProperty('--nav-section-start-angle', `${incomingAngles[0]}deg`);
     root.style.setProperty('--nav-section-top-left-radius', panelRadius);
     root.style.setProperty('--nav-section-top-right-radius', panelRadius);
@@ -248,8 +246,6 @@ export default function Nav({ ready }: { ready: boolean }) {
       root.classList.remove('nav-section-transition', 'nav-home-transition', 'nav-back-transition', 'nav-back-root-transition', 'nav-capture-ready', 'nav-document-transition');
       scope?.classList.remove('nav-section-transition', 'nav-home-transition', 'nav-back-transition', 'nav-back-root-transition');
       root.style.removeProperty('--nav-section-start-color');
-      root.style.removeProperty('--nav-start-hero-progress');
-      root.style.removeProperty('--nav-start-grain');
       root.style.removeProperty('--nav-section-start-angle');
       root.style.removeProperty('--nav-section-top-left-radius');
       root.style.removeProperty('--nav-section-top-right-radius');
@@ -320,27 +316,6 @@ export default function Nav({ ready }: { ready: boolean }) {
           { '--nav-hero-progress': endProgress },
         ], timing));
       }
-      // Match the color/glass change to the card crossing the navbar, not its width expansion.
-      const backgroundFrames = Array.from({ length: 61 }, (_, index) => {
-        const progress = index / 60;
-        const arrival = returningHome ? progress : Math.max(0, Math.min(1,
-          goingBack ? progress / arrivalSpan : (progress - (1 - arrivalSpan)) / arrivalSpan));
-        const glass = startProgress + (endProgress - startProgress) * arrival;
-        return {
-          offset: progress,
-          backgroundColor: `color-mix(in srgb, ${blendSectionColor(fromHsl, toHsl, arrival)} ${35 + glass * 65}%, transparent)`,
-          backdropFilter: `blur(${20 * (1 - glass)}px)`,
-          opacity: startGrain + ((returningHome ? 0 : 1) - startGrain) * arrival,
-        };
-      });
-      animations.push(host.animate(backgroundFrames.map(({ opacity: _opacity, ...frame }) => frame), {
-        ...timing,
-        pseudoElement: '::view-transition-group(site-nav-bg)',
-      }));
-      animations.push(host.animate(backgroundFrames.map(({ offset, opacity }) => ({ offset, opacity })), {
-        ...timing,
-        pseudoElement: '::view-transition-new(site-nav-bg)',
-      }));
       if (returningHome) {
         for (const [snapshot, from, to] of [['old', 1, 0], ['new', 0, 1]] as const) {
           animations.push(host.animate([

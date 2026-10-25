@@ -15,13 +15,6 @@ import {
 gsap.registerPlugin(ScrollTrigger);
 ScrollTrigger.config({ ignoreMobileResize: true });
 
-const setNavBackground = (color: string, z: number, showGrain: boolean) => {
-  const root = document.documentElement;
-  root.style.setProperty("--nav-bg-color", color);
-  root.style.setProperty("--nav-bg-z", String(z));
-  root.style.setProperty("--nav-grain-opacity", showGrain ? "1" : "0");
-};
-
 export default function SectionTiltDirector() {
   const lenis = useLenis();
 
@@ -34,15 +27,6 @@ export default function SectionTiltDirector() {
     const viewport = getScrollViewport();
     const scroller = viewport ?? window;
 
-    setNavBackground(sections[0].dataset.sectionColor || "transparent", 15, sections[0].id !== "home");
-
-    const cleanupNavBackground = () => {
-      const root = document.documentElement;
-      root.style.removeProperty("--nav-bg-color");
-      root.style.removeProperty("--nav-bg-z");
-      root.style.removeProperty("--nav-grain-opacity");
-    };
-
     const reducedMotion = window.matchMedia(
       "(prefers-reduced-motion: reduce)",
     ).matches;
@@ -51,42 +35,6 @@ export default function SectionTiltDirector() {
       panel: HTMLElement;
     }> = [];
     const overlapTargets: Array<{ section: HTMLElement; marginTop: string }> = [];
-
-    const sectionData = sections.map((section, index) => {
-      const panel = section.querySelector<HTMLElement>(':scope > .section-tilt-panel');
-      return {
-        section,
-        panel,
-        color: section.dataset.sectionColor || 'transparent',
-        z: (index + 1) * 10,
-      };
-    });
-
-    const syncNavBackground = () => {
-      let bestColor = 'transparent';
-      let bestZ = -1;
-      let showGrain = true;
-      const { top } = getScrollMetrics();
-
-      for (const { section, panel, color, z } of sectionData) {
-        if (!panel) continue;
-        const rotation = Number(gsap.getProperty(panel, 'rotation')) || 0;
-        if (Math.abs(rotation) >= 0.05) continue;
-
-        const rect = section.getBoundingClientRect();
-        if (rect.top > top || rect.bottom <= top) continue;
-
-        if (z > bestZ) {
-          bestZ = z;
-          bestColor = color;
-          showGrain = section.id !== "home";
-        }
-      }
-
-      if (bestZ >= 0) {
-        setNavBackground(bestColor, bestZ + 5, showGrain);
-      }
-    };
 
     const updateTiltClip = (section: HTMLElement, panel: HTMLElement) => {
       const rotation = Number(gsap.getProperty(panel, "rotation")) || 0;
@@ -97,7 +45,6 @@ export default function SectionTiltDirector() {
       clipTargets.forEach(({ section, panel }) => {
         updateTiltClip(section, panel);
       });
-      syncNavBackground();
       lenis?.resize();
     };
 
@@ -150,7 +97,6 @@ export default function SectionTiltDirector() {
             scrub: true,
             onUpdate: (self) => {
               applyBlend(self.progress);
-              syncNavBackground();
             },
           });
           return;
@@ -166,7 +112,6 @@ export default function SectionTiltDirector() {
         }));
         const onTiltUpdate = function (this: gsap.core.Tween) {
           updateTiltClip(incomingSection, incomingPanel);
-          syncNavBackground();
           applyBlend(this.progress());
         };
 
@@ -256,7 +201,6 @@ export default function SectionTiltDirector() {
 
     const onScroll = () => {
       ScrollTrigger.update();
-      syncNavBackground();
     };
     const unsubscribeLenis = lenis?.on("scroll", onScroll);
     scroller.addEventListener("scroll", onScroll, { passive: true });
@@ -273,7 +217,6 @@ export default function SectionTiltDirector() {
       sections.forEach((section) => {
         section.style.removeProperty("--tilt-hit-drop");
       });
-      cleanupNavBackground();
       ctx.revert();
       overlapTargets.forEach(({ section, marginTop }) => {
         section.style.marginTop = marginTop;
