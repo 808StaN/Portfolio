@@ -185,18 +185,23 @@ html[data-site="portfolio"] body {
 }
 
 .scroll-progress-frame {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
+  --scroll-frame-width: 10px;
+  --scroll-frame-gap: 0px;
+  --scroll-frame-outset: calc(var(--scroll-frame-gap) + var(--scroll-frame-width));
+  position: fixed;
+  top: calc(var(--hero-frame-inset) - var(--scroll-frame-outset));
+  left: calc(var(--hero-frame-inset) - var(--scroll-frame-outset));
+  width: calc(var(--portfolio-width) + var(--scroll-frame-outset) * 2);
+  height: calc(var(--portfolio-height) + var(--scroll-frame-outset) * 2);
+  border-radius: calc(var(--portfolio-radius) + var(--scroll-frame-outset));
   z-index: 9997;
   pointer-events: none;
   fill: none;
-  stroke-width: 10px;
+  stroke-width: var(--scroll-frame-width);
 }
 
 .scroll-progress-frame__track {
-  stroke: rgba(166, 190, 232, 0.24);
+  stroke: rgba(13, 36, 77, 0.28);
 }
 
 .scroll-progress-frame__progress {

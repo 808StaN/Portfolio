@@ -51,8 +51,8 @@ export default function App() {
             </div>
             <div className="nav-bg-layer" aria-hidden="true" />
           </div>
-          <ScrollProgressFrame />
         </div>
+        <ScrollProgressFrame />
       </div>
     </>
   );

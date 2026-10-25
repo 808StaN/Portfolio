@@ -19,8 +19,9 @@ export default function ScrollProgressFrame() {
 
     const updateGeometry = () => {
       const { width, height } = frame.getBoundingClientRect();
-      const inset = parseFloat(getComputedStyle(frame).strokeWidth) / 2;
-      const outerRadius = parseFloat(getComputedStyle(frame.parentElement!).borderTopLeftRadius);
+      const style = getComputedStyle(frame);
+      const inset = parseFloat(style.strokeWidth) / 2;
+      const outerRadius = parseFloat(style.borderTopLeftRadius);
       const radius = Math.max(0, Math.min(outerRadius, width / 2, height / 2) - inset);
       const right = width - inset;
       const bottom = height - inset;
