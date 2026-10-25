@@ -185,6 +185,8 @@ html[data-site="portfolio"] body {
 }
 
 .scroll-progress-frame {
+  --scroll-frame-track: hsl(219 29% 48%);
+  --scroll-frame-progress: hsl(219 83% 76%);
   --scroll-frame-width: 10px;
   --scroll-frame-gap: 0px;
   --scroll-frame-outset: calc(var(--scroll-frame-gap) + var(--scroll-frame-width));
@@ -201,11 +203,11 @@ html[data-site="portfolio"] body {
 }
 
 .scroll-progress-frame__track {
-  stroke: rgba(13, 36, 77, 0.28);
+  stroke: var(--scroll-frame-track);
 }
 
 .scroll-progress-frame__progress {
-  stroke: #e2edff;
+  stroke: var(--scroll-frame-progress);
 }
 
 .portfolio-scene {

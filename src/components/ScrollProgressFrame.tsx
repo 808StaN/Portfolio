@@ -1,7 +1,8 @@
-import { useEffect, useRef } from "react";
+import { useLayoutEffect, useRef } from "react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { getScrollViewport } from "../utils/scroll";
+import { hexToHsl, hslToHex } from "../utils/tilt";
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -10,12 +11,66 @@ export default function ScrollProgressFrame() {
   const trackRef = useRef<SVGPathElement>(null);
   const progressRef = useRef<SVGPathElement>(null);
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     const frame = frameRef.current;
     const track = trackRef.current;
     const progress = progressRef.current;
     const viewport = getScrollViewport();
     if (!frame || !track || !progress || !viewport) return;
+
+    const sections = Array.from(viewport.querySelectorAll<HTMLElement>("[data-section-color]")).reverse();
+    const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
+    let activeColor = "";
+    let colorTween: gsap.core.Tween | undefined;
+    let colorFrame = 0;
+
+    const updateColors = () => {
+      const rect = viewport.getBoundingClientRect();
+      const x = rect.left + rect.width / 2;
+      const y = rect.top + rect.height / 2;
+      const hit = document.elementFromPoint(x, y)?.closest<HTMLElement>("[data-section-color]");
+      // Panels ignore pointer events, and navigation snapshots can intercept hit testing.
+      let section = hit;
+      let closestDistance = Infinity;
+      if (!section) {
+        for (const candidate of sections) {
+          const panel = candidate.querySelector(":scope > .section-tilt-panel")?.getBoundingClientRect();
+          if (!panel) continue;
+          const distance = Math.max(panel.top - y, y - panel.bottom, 0);
+          if (distance < closestDistance) {
+            section = candidate;
+            closestDistance = distance;
+          }
+          if (distance === 0) break;
+        }
+      }
+      const color = section?.dataset.sectionColor;
+      if (!color || color === activeColor) return;
+
+      const { h, s } = hexToHsl(color);
+      colorTween?.kill();
+      colorTween = gsap.to(frame, {
+        "--scroll-frame-track": hslToHex(h, s * 0.35, 0.48),
+        "--scroll-frame-progress": hslToHex(h, Math.min(0.9, Math.max(0.45, s)), 0.76),
+        duration: reducedMotion.matches || !activeColor ? 0 : 0.45,
+        ease: "power2.out",
+      });
+      activeColor = color;
+    };
+
+    const scheduleColors = () => {
+      if (!colorFrame) colorFrame = requestAnimationFrame(() => {
+        // Read after ScrollTrigger has applied the destination's pins and tilt transforms.
+        colorFrame = requestAnimationFrame(() => {
+          colorFrame = 0;
+          updateColors();
+        });
+      });
+    };
+
+    const onMotionChange = () => {
+      if (reducedMotion.matches) colorTween?.progress(1);
+    };
 
     const updateGeometry = () => {
       const { width, height } = frame.getBoundingClientRect();
@@ -60,11 +115,26 @@ export default function ScrollProgressFrame() {
         scrub: true,
         // Measure the full range after section and carousel pins are refreshed.
         refreshPriority: -1,
+        onUpdate: scheduleColors,
       },
     });
 
+    updateColors();
+    viewport.addEventListener("scroll", scheduleColors, { passive: true });
+    ScrollTrigger.addEventListener("refresh", scheduleColors);
+    // Navigation changes snapshots without necessarily emitting another scroll event.
+    const navigationObserver = new MutationObserver(scheduleColors);
+    navigationObserver.observe(document.documentElement, { attributes: true, attributeFilter: ["class"] });
+    reducedMotion.addEventListener("change", onMotionChange);
+
     return () => {
       observer.disconnect();
+      navigationObserver.disconnect();
+      viewport.removeEventListener("scroll", scheduleColors);
+      ScrollTrigger.removeEventListener("refresh", scheduleColors);
+      reducedMotion.removeEventListener("change", onMotionChange);
+      if (colorFrame) cancelAnimationFrame(colorFrame);
+      colorTween?.kill();
       tween.scrollTrigger?.kill();
       tween.kill();
     };
