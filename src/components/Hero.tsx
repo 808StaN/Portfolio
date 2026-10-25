@@ -75,7 +75,8 @@ export default function Hero({ ready }: { ready: boolean }) {
           </filter>
         </defs>
       </svg>
-      <div className="section-tilt-panel hero-tilt-panel" style={{ background: sectionColors.home }}>
+      <div className="section-tilt-panel hero-tilt-panel">
+        <div className="hero-screen" style={{ background: sectionColors.home }}>
         <HeroBandsBackground />
 
         <div className="section-tilt-container hero-inner">
@@ -180,6 +181,7 @@ export default function Hero({ ready }: { ready: boolean }) {
               </svg>
             </div>
           </motion.div>
+        </div>
         </div>
       </div>
     </section>
