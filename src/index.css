@@ -677,8 +677,8 @@ html.nav-document-transition .cursor-layer {
 }
 
 .nav-section-transition::view-transition-group(site-nav-bg) {
-  background: color-mix(in srgb, var(--nav-section-start-color) calc(35% + var(--nav-hero-progress) * 65%), transparent);
-  backdrop-filter: blur(calc(20px * (1 - var(--nav-hero-progress))));
+  background: color-mix(in srgb, var(--nav-section-start-color) calc(35% + var(--nav-start-hero-progress, 0) * 65%), transparent);
+  backdrop-filter: blur(calc(20px * (1 - var(--nav-start-hero-progress, 0))));
   clip-path: inset(0 round 0 0 var(--panel-radius) var(--panel-radius));
   z-index: 1;
 }
@@ -705,14 +705,6 @@ html.nav-document-transition .cursor-layer {
   mix-blend-mode: normal;
 }
 
-.nav-back-transition::view-transition-group(site-nav-bg) {
-  background: var(--nav-bg-color);
-}
-
-.nav-back-transition::view-transition-new(site-nav-bg) {
-  opacity: var(--nav-grain-opacity, 1);
-}
-
 .nav-back-root-transition::view-transition-group(root) {
   z-index: 2;
 }
@@ -726,19 +718,6 @@ html.nav-document-transition .cursor-layer {
 .nav-home-transition::view-transition-old(root),
 .nav-home-transition::view-transition-new(root) {
   mix-blend-mode: plus-lighter;
-}
-
-.nav-home-transition::view-transition-group(site-nav-bg) {
-  background: color-mix(
-    in srgb,
-    color-mix(in srgb, var(--nav-section-start-color) calc(var(--nav-hero-progress) * 100%), var(--nav-bg-color))
-      calc(35% + var(--nav-hero-progress) * 65%),
-    transparent
-  );
-}
-
-.nav-home-transition::view-transition-new(site-nav-bg) {
-  opacity: calc(var(--nav-start-grain) * var(--nav-hero-progress));
 }
 
 html.nav-document-transition::view-transition-group(nav-home),
