@@ -13,11 +13,12 @@ import { SectionShaderRenderer } from "./components/SectionBandsBackground";
 
 export default function App() {
   const [loaderStage, setLoaderStage] = useState<PageLoaderStage>("intro");
+  const [shadersReady, setShadersReady] = useState(false);
   const entranceReady = loaderStage !== "intro";
 
   return (
     <>
-      {loaderStage !== "done" && <PageLoader onStageChange={setLoaderStage} />}
+      {loaderStage !== "done" && <PageLoader ready={shadersReady} onStageChange={setLoaderStage} />}
       <div
         className="app-shell relative min-h-screen"
         inert={loaderStage !== "done"}
@@ -33,7 +34,7 @@ export default function App() {
           <div className="portfolio-scene">
             <div id="page-transition-scope" className="page-transition-scope">
               <SectionTiltDirector />
-              <SectionShaderRenderer />
+              <SectionShaderRenderer onReady={setShadersReady} />
 
               <div id="portfolio-scrollport" className="portfolio-scrollport" tabIndex={-1}>
                 <div className="page-transition-layout portfolio-scroll-content">

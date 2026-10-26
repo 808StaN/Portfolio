@@ -25,7 +25,7 @@ html[data-page-loading] {
   position: absolute;
   inset: 0;
   background: #000;
-  animation: page-loader-fade-out 0.8s cubic-bezier(0.44, 0, 0.56, 1) 1.2s both;
+  animation: page-loader-fade-out 0.8s cubic-bezier(0.44, 0, 0.56, 1) both;
 }
 
 .page-loader__panel {
@@ -38,12 +38,16 @@ html[data-page-loading] {
 
 .page-loader__panel--top {
   top: 0;
-  animation: page-loader-top-out 0.8s cubic-bezier(0.44, 0, 0.56, 1) 1.2s both;
+  animation: page-loader-top-out 0.8s cubic-bezier(0.44, 0, 0.56, 1) both;
 }
 
 .page-loader__panel--bottom {
   bottom: 0;
-  animation: page-loader-bottom-out 0.8s cubic-bezier(0.44, 0, 0.56, 1) 1.2s both;
+  animation: page-loader-bottom-out 0.8s cubic-bezier(0.44, 0, 0.56, 1) both;
+}
+
+.page-loader[data-revealing="false"] :is(.page-loader__backdrop, .page-loader__panel) {
+  animation: none;
 }
 
 .page-loader__heading, .page-loader__subtitle {

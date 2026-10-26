@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { sectionColors } from '../constants/sectionColors';
 import { useLenis } from './LenisScroll';
 import { getScrollViewport } from '../utils/scroll';
@@ -6,10 +6,12 @@ import './PageLoader.css';
 
 export type PageLoaderStage = 'intro' | 'revealing' | 'done';
 
-export default function PageLoader({ onStageChange }: { onStageChange: (stage: PageLoaderStage) => void }) {
+export default function PageLoader({ ready, onStageChange }: { ready: boolean; onStageChange: (stage: PageLoaderStage) => void }) {
   const lenis = useLenis();
   const rootRef = useRef<HTMLDivElement>(null);
   const skipRef = useRef<HTMLButtonElement>(null);
+  const [introComplete, setIntroComplete] = useState(false);
+  const revealing = introComplete && ready;
 
   useEffect(() => {
     const previousFocus = document.activeElement;
@@ -28,9 +30,11 @@ export default function PageLoader({ onStageChange }: { onStageChange: (stage: P
     };
     window.addEventListener('keydown', onKeyDown);
     reducedMotion.addEventListener('change', onMotionChange);
-    // Do not leave the page locked if CSS animations are disabled or interrupted.
-    const timeout = window.setTimeout(() => onStageChange('done'), reducedMotion.matches ? 0 : 2300);
+    const intro = window.setTimeout(() => setIntroComplete(true), 1200);
+    // A failed or stalled GPU must never leave the page locked behind the intro.
+    const timeout = window.setTimeout(() => onStageChange('done'), reducedMotion.matches ? 0 : 10000);
     return () => {
+      clearTimeout(intro);
       clearTimeout(timeout);
       document.documentElement.removeAttribute('data-page-loading');
       window.removeEventListener('keydown', onKeyDown);
@@ -43,6 +47,13 @@ export default function PageLoader({ onStageChange }: { onStageChange: (stage: P
   }, [onStageChange]);
 
   useEffect(() => {
+    if (!revealing) return;
+    // CSS animations can be disabled or interrupted independently of WebGPU.
+    const timeout = window.setTimeout(() => onStageChange('done'), 1100);
+    return () => clearTimeout(timeout);
+  }, [revealing, onStageChange]);
+
+  useEffect(() => {
     lenis?.stop();
     return () => { lenis?.start(); };
   }, [lenis]);
@@ -51,6 +62,7 @@ export default function PageLoader({ onStageChange }: { onStageChange: (stage: P
     <div
       ref={rootRef}
       className="page-loader"
+      data-revealing={revealing}
       role="dialog"
       aria-modal="true"
       aria-label="Loading portfolio"
