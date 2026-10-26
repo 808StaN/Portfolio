@@ -646,7 +646,7 @@ html.nav-document-transition::view-transition-new(*) {
   padding-block: 2px;
 }
 
-/* Capture only decoration in the document fallback, never the interactive controls. */
+/* Capture only navbar decoration; controls and the outer scroll frame stay live. */
 html.nav-document-transition .nav-visual-home { view-transition-name: nav-home; }
 html.nav-document-transition .nav-visual-work { view-transition-name: nav-work; }
 html.nav-document-transition .nav-visual-about { view-transition-name: nav-about; }
@@ -654,12 +654,7 @@ html.nav-document-transition .nav-visual-stack { view-transition-name: nav-stack
 html.nav-document-transition .nav-visual-contact { view-transition-name: nav-contact; }
 html.nav-document-transition .nav-visual-github { view-transition-name: nav-github; }
 html.nav-document-transition .nav-visual-menu { view-transition-name: nav-menu; }
-html.nav-document-transition .nav-outline { view-transition-name: nav-outline; }
-html.nav-document-transition .scroll-progress-frame { view-transition-name: scroll-progress-frame; }
-
-html.nav-document-transition::view-transition-new(scroll-progress-frame) {
-  overflow: visible;
-}
+html.nav-document-transition .nav-outline { visibility: hidden; }
 
 html.nav-document-transition .cursor-layer {
   display: block;
@@ -740,6 +735,7 @@ html.nav-document-transition .cursor-layer {
 
 .nav-section-transition::view-transition-group(site-nav-bg) {
   top: 0;
+  height: 3.5rem;
   transform: none;
   background: var(--nav-glass-background);
   -webkit-backdrop-filter: var(--nav-glass-filter);
@@ -747,6 +743,18 @@ html.nav-document-transition .cursor-layer {
   box-shadow: var(--nav-glass-shadow);
   clip-path: inset(0 round 0 0 var(--panel-radius) var(--panel-radius));
   z-index: 3;
+}
+
+/* Draw the outline with the glass box instead of resizing a captured rounded border. */
+html.nav-document-transition::view-transition-new(site-nav-bg) {
+  box-sizing: border-box;
+  inset: 0 1px 1px;
+  width: calc(100% - 2px);
+  height: calc(100% - 1px);
+  object-fit: fill;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.26);
+  border-inline: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 0 0 var(--panel-radius) var(--panel-radius);
 }
 
 .nav-back-transition::view-transition-old(root) {
@@ -788,9 +796,7 @@ html.nav-document-transition::view-transition-group(nav-about),
 html.nav-document-transition::view-transition-group(nav-stack),
 html.nav-document-transition::view-transition-group(nav-contact),
 html.nav-document-transition::view-transition-group(nav-github),
-html.nav-document-transition::view-transition-group(nav-menu),
-html.nav-document-transition::view-transition-group(nav-outline),
-html.nav-document-transition::view-transition-group(scroll-progress-frame) {
+html.nav-document-transition::view-transition-group(nav-menu) {
   z-index: 3;
 }
 
@@ -809,8 +815,6 @@ html.nav-document-transition::view-transition-old(nav-stack),
 html.nav-document-transition::view-transition-old(nav-contact),
 html.nav-document-transition::view-transition-old(nav-github),
 html.nav-document-transition::view-transition-old(nav-menu),
-html.nav-document-transition::view-transition-old(nav-outline),
-html.nav-document-transition::view-transition-old(scroll-progress-frame),
 html.nav-document-transition::view-transition-old(site-cursor),
 .nav-section-transition::view-transition-old(site-nav-bg) {
   animation: none;
@@ -873,7 +877,8 @@ html.nav-document-transition::view-transition-group(site-nav-bg) {
 }
 
 @media (min-width: 768px) {
-  .nav-bg-layer {
+  .nav-bg-layer,
+  .nav-section-transition::view-transition-group(site-nav-bg) {
     height: 4rem;
   }
 }

@@ -112,6 +112,9 @@ export default function Nav({ ready }: { ready: boolean }) {
     const metrics = getScrollMetrics();
     const viewport = getScrollViewport();
     if (Math.abs(metrics.scroll - top) < 2) return;
+    const root = document.documentElement;
+    const startProgress = Number(getComputedStyle(root).getPropertyValue('--nav-hero-progress'));
+    let heroOffset = 0;
     const goingBack = !returningHome && top < metrics.scroll;
     const panel = el.querySelector<HTMLElement>('.section-tilt-panel');
     const targetColor = panel?.closest<HTMLElement>('[data-section-color]')?.dataset.sectionColor;
@@ -152,9 +155,13 @@ export default function Nav({ ready }: { ready: boolean }) {
         scrollToY(top, null, { immediate: true });
         ScrollTrigger.update();
       }
+      if (root.classList.contains('nav-section-transition')) {
+        // Capture the navbar at its source width, before starting its independent expansion.
+        heroOffset = startProgress - Number(root.style.getPropertyValue('--nav-hero-progress'));
+        root.style.setProperty('--nav-hero-offset', String(heroOffset));
+      }
     };
 
-    const root = document.documentElement;
     const scope = document.querySelector<TransitionScope>('#page-transition-scope');
     const useScopedTransition = typeof scope?.startViewTransition === 'function';
     const host = useScopedTransition ? scope : root;
@@ -187,7 +194,6 @@ export default function Nav({ ready }: { ready: boolean }) {
     const useRootSnapshot = goingBack && (!outgoingRect
       || Math.abs(outgoingMatrix.b) > 0.00001 || Math.abs(outgoingMatrix.a - 1) > 0.00001
       || outgoingRect.top > metrics.top + 1 || outgoingRect.bottom < metrics.top + metrics.height - 1);
-    const startProgress = Number(getComputedStyle(root).getPropertyValue('--nav-hero-progress'));
     const wasStopped = lenis?.isStopped;
     const panelStyle = goingBack && outgoingStyle ? outgoingStyle : getComputedStyle(panel);
     const panelRadius = panelStyle.getPropertyValue('--section-base-radius').trim() || '0px';
@@ -272,6 +278,7 @@ export default function Nav({ ready }: { ready: boolean }) {
       root.style.removeProperty('--nav-outgoing-color');
       root.style.removeProperty('--nav-snapshot-x');
       root.style.removeProperty('--nav-snapshot-y');
+      root.style.removeProperty('--nav-hero-offset');
       window.removeEventListener('wheel', onWheel, true);
       window.removeEventListener('touchstart', onTouchStart, true);
       window.removeEventListener('touchmove', onTouchMove, true);
@@ -346,7 +353,6 @@ export default function Nav({ ready }: { ready: boolean }) {
     void transition.ready.then(() => {
       captureSnapshot = false;
       if (released || request !== navigationRequest.current) return;
-      const endProgress = Number(root.style.getPropertyValue('--nav-hero-progress'));
       const animatedSnapshot = useRootSnapshot
         ? '::view-transition-old(root)' : '::view-transition-group(nav-section)';
       const style = getComputedStyle(host, animatedSnapshot);
@@ -357,9 +363,9 @@ export default function Nav({ ready }: { ready: boolean }) {
         easing: returningHome ? 'ease-in-out' : style.animationTimingFunction,
         fill: 'both' as const,
       };
-      if (startProgress !== endProgress) {
+      if (heroOffset !== 0) {
         animations.push(root.animate([
-          { '--nav-hero-offset': startProgress - endProgress },
+          { '--nav-hero-offset': heroOffset },
           { '--nav-hero-offset': 0 },
         ], timing));
       }
