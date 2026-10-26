@@ -464,7 +464,7 @@ export default function Nav({ ready }: { ready: boolean }) {
       };
       const shaderBackground = panel.querySelector('.section-bands-layer');
       if (shaderBackground && !returningHome && !goingBack) {
-        animations.push(shaderBackground.animate([{ opacity: 0 }, { opacity: 1 }], timing));
+        animations.push(shaderBackground.animate([{ opacity: 0 }, { opacity: 1 }], { ...timing, easing: 'linear' }));
       }
       if (startProgress !== endProgress) {
         animations.push(root.animate([
@@ -494,15 +494,23 @@ export default function Nav({ ready }: { ready: boolean }) {
         const radius = `calc(${panelRadius} * ${getSectionCornerScale(goingBack ? 1 - progress : progress)})`;
         return {
           offset: progress,
-          ...(!useRootSnapshot && {
-            backgroundColor: blendSectionColor(fromHsl, toHsl, progress),
-          }),
           clipPath: `inset(0 round ${radius} ${radius} 0 0)`,
         };
       }), {
         ...timing,
         pseudoElement: animatedSnapshot,
       }));
+      if (!useRootSnapshot) {
+        // The movement eases out early; keep the color blend running for the full transition.
+        animations.push(host.animate(Array.from({ length: 61 }, (_, index) => ({
+          offset: index / 60,
+          backgroundColor: blendSectionColor(fromHsl, toHsl, index / 60),
+        })), {
+          ...timing,
+          easing: 'linear',
+          pseudoElement: animatedSnapshot,
+        }));
+      }
       if (entryAnimation?.startTime != null) {
         for (const animation of animations) {
           animation.startTime = entryAnimation.startTime;
