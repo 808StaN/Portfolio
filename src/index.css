@@ -745,6 +745,15 @@ html.nav-document-transition .cursor-layer {
   z-index: 3;
 }
 
+html.nav-document-transition::view-transition-group(site-nav-bg) {
+  /* Isolate Firefox's backdrop before clipping it to the portfolio corners. */
+  --nav-portfolio-side: calc((100% - var(--portfolio-width)) / 2);
+  border-radius: 0 0 var(--panel-radius) var(--panel-radius);
+  overflow: hidden;
+  mask-image: linear-gradient(#000 0 0);
+  clip-path: inset(0 var(--nav-portfolio-side) calc(100% - var(--portfolio-height)) var(--nav-portfolio-side) round var(--portfolio-radius));
+}
+
 /* Draw the outline with the glass box instead of resizing a captured rounded border. */
 html.nav-document-transition::view-transition-new(site-nav-bg) {
   box-sizing: border-box;
