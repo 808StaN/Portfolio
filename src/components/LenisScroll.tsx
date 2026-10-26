@@ -91,9 +91,22 @@ export default function LenisScroll({ children }: { children: ReactNode }) {
       },
     });
 
+    // Firefox can round scrolling and transform pins on different pixel boundaries.
+    // Snap before scroll subscribers run, without rounding Lenis's inertia state.
+    const unsubscribePixelSnap = viewport && /Firefox\//.test(navigator.userAgent)
+      ? instance.on("scroll", () => {
+          if (instance.isScrolling !== "smooth") return;
+          const top = Math.round(instance.scroll);
+          if (viewport.scrollTop !== top) {
+            viewport.scrollTo({ top, behavior: "instant" });
+          }
+        })
+      : undefined;
+
     setLenis(instance);
 
     return () => {
+      unsubscribePixelSnap?.();
       instance.destroy();
       setLenis(null);
     };
