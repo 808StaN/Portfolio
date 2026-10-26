@@ -59,8 +59,10 @@ export default function LenisScroll({ children }: { children: ReactNode }) {
     if (reducedMotion) return;
 
     const viewport = getScrollViewport();
+    let multiTouch = false;
     const instance = new Lenis({
       wrapper: viewport ?? window,
+      eventsTarget: window,
       content: viewport
         ? viewport.querySelector<HTMLElement>(".portfolio-scroll-content")!
         : document.documentElement,
@@ -75,6 +77,18 @@ export default function LenisScroll({ children }: { children: ReactNode }) {
       wheelMultiplier: 1,
       touchMultiplier: 1.15,
       anchors: true,
+      prevent: (node) => Boolean(node.closest(".mobile-menu-backdrop")),
+      virtualScroll: ({ event }) => {
+        if ("touches" in event) {
+          if (event.type === "touchstart") multiTouch = event.touches.length > 1;
+          else if (event.touches.length > 1) multiTouch = true;
+          if (multiTouch) {
+            if (event.touches.length === 0) multiTouch = false;
+            return false;
+          }
+        }
+        return !event.defaultPrevented;
+      },
     });
 
     setLenis(instance);
