@@ -286,22 +286,6 @@ html[data-page-loading] .portfolio-scrollport {
   position: relative;
 }
 
-html.nav-section-transition .page-transition-layout {
-  height: var(--nav-page-height);
-}
-
-html.nav-section-transition .page-transition-content {
-  position: fixed;
-  inset: 0;
-  z-index: 1;
-  overflow: clip;
-  view-transition-group: normal;
-}
-
-html.nav-section-transition .page-transition-content > main {
-  margin-top: calc(-1 * var(--nav-page-scroll));
-}
-
 .section-bands-layer {
   position: absolute;
   inset: 0;
@@ -606,6 +590,12 @@ html.custom-scrollbar-dragging * {
   initial-value: 0;
 }
 
+@property --nav-hero-offset {
+  syntax: '<number>';
+  inherits: true;
+  initial-value: 0;
+}
+
 /* Scoped transitions keep the live glass; document transitions require a separate snapshot. */
 html.nav-document-transition .nav-bg-layer {
   view-transition-name: site-nav-bg;
@@ -689,6 +679,16 @@ html.nav-document-transition .cursor-layer {
 [data-nav-capture] {
   view-transition-name: nav-section;
   background-color: transparent !important;
+}
+
+/* Fade a presentation layer, never the colors and shader opacity owned by scrolling. */
+[data-nav-blend]::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  pointer-events: none;
+  background-color: var(--nav-section-start-color);
 }
 
 .nav-section-transition::view-transition {
@@ -833,7 +833,7 @@ html.nav-document-transition::view-transition-old(site-cursor),
   top: 0;
   left: 0;
   right: 0;
-  width: calc(40vw + (var(--portfolio-width, 100vw) - 40vw) * var(--nav-hero-progress, 0));
+  width: calc(40vw + (var(--portfolio-width, 100vw) - 40vw) * clamp(0, calc(var(--nav-hero-progress, 0) + var(--nav-hero-offset, 0)), 1));
   margin-inline: auto;
 }
 
@@ -841,7 +841,7 @@ html.nav-document-transition::view-transition-old(site-cursor),
   .site-nav,
   .nav-bg-layer,
   .nav-section-transition::view-transition-group(site-nav-bg) {
-    width: calc(60vw + (var(--portfolio-width, 100vw) - 60vw) * var(--nav-hero-progress, 0));
+    width: calc(60vw + (var(--portfolio-width, 100vw) - 60vw) * clamp(0, calc(var(--nav-hero-progress, 0) + var(--nav-hero-offset, 0)), 1));
   }
 }
 

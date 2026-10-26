@@ -110,7 +110,7 @@ export default function Nav({ ready }: { ready: boolean }) {
     const returningHome = el.id === 'home';
     const top = getSectionTargetTop(el);
     const metrics = getScrollMetrics();
-    const scroller = getScrollViewport() ?? window;
+    const viewport = getScrollViewport();
     if (Math.abs(metrics.scroll - top) < 2) return;
     const goingBack = !returningHome && top < metrics.scroll;
     const panel = el.querySelector<HTMLElement>('.section-tilt-panel');
@@ -118,39 +118,40 @@ export default function Nav({ ready }: { ready: boolean }) {
     let outgoingPanel: HTMLElement | null = null;
     let outgoingSection: HTMLElement | null = null;
     let captureSnapshot = false;
-    let expectedScroll = metrics.scroll;
-    let cancelled = false;
-    const previousFocus = document.activeElement;
-    const revealedElements: HTMLElement[] = [];
-    const hadTabIndex = el.hasAttribute('tabindex');
+    let jumped = false;
 
     const jump = () => {
-      if (cancelled || request !== navigationRequest.current || !el.isConnected) return;
+      if (jumped || request !== navigationRequest.current || !el.isConnected) return;
       outgoingPanel?.removeAttribute('data-nav-capture');
       outgoingSection?.removeAttribute('data-nav-source');
-      expectedScroll = top;
       if (document.documentElement.classList.contains('nav-section-transition')) {
         document.documentElement.classList.add('nav-capture-ready');
-        document.documentElement.style.setProperty('--nav-page-scroll', `${top}px`);
       }
       if (lenis) {
         lenis.scrollTo(top, { immediate: true, force: true });
       } else {
         scrollToY(top, null, { immediate: true });
       }
+      jumped = true;
       ScrollTrigger.update();
-      if (captureSnapshot) panel?.setAttribute('data-nav-capture', '');
+      // Animate the viewport, so its live contents can scroll independently of the entrance.
+      if (captureSnapshot) {
+        viewport?.setAttribute('data-nav-capture', '');
+        panel?.setAttribute('data-nav-blend', '');
+      }
       // Reveal scroll-triggered content, but leave the hero's looping animation alone.
       if (!returningHome) {
         el.querySelectorAll<HTMLElement>('.section-tilt-container [style*="opacity"]')
-          .forEach(node => {
-            if (!node.hasAttribute('data-nav-revealed')) revealedElements.push(node);
-            node.setAttribute('data-nav-revealed', '');
-          });
+          .forEach(node => node.setAttribute('data-nav-revealed', ''));
       }
       flushSync(() => setActiveSection(el.id));
       if (!el.hasAttribute('tabindex')) el.setAttribute('tabindex', '-1');
       el.focus({ preventScroll: true });
+      // Pin and capture layout updates can adjust the browser's scroll position.
+      if (Math.abs(getScrollMetrics().scroll - top) > 1) {
+        scrollToY(top, null, { immediate: true });
+        ScrollTrigger.update();
+      }
     };
 
     const root = document.documentElement;
@@ -163,7 +164,7 @@ export default function Nav({ ready }: { ready: boolean }) {
       : document.startViewTransition?.bind(document);
     if (!startTransition
       || window.matchMedia('(prefers-reduced-motion: reduce)').matches
-      || !panel || !targetColor) {
+      || !panel || !targetColor || !viewport) {
       jump();
       return;
     }
@@ -214,9 +215,6 @@ export default function Nav({ ready }: { ready: boolean }) {
     root.style.setProperty('--nav-section-source-transform', goingBack && !useRootSnapshot && outgoingRect
       ? `translate(${outgoingRect.left - metrics.left + snapshotX}px, ${outgoingRect.top - metrics.top + snapshotY}px)`
       : useRootSnapshot ? 'translate(0px, 0px)' : `translate(${snapshotX}px, ${snapshotY}px)`);
-    // Preserve the scroll range while the scene stays fixed to the viewport.
-    root.style.setProperty('--nav-page-height', `${getScrollViewport()?.scrollHeight ?? root.scrollHeight}px`);
-    root.style.setProperty('--nav-page-scroll', `${metrics.scroll}px`);
     root.classList.toggle('nav-home-transition', returningHome);
     root.classList.toggle('nav-back-transition', goingBack);
     root.classList.toggle('nav-back-root-transition', useRootSnapshot);
@@ -236,33 +234,30 @@ export default function Nav({ ready }: { ready: boolean }) {
     }
     const animations: Animation[] = [];
     let released = false;
-    let finishRequested = false;
-    let inputReady = false;
-    let inputRequested = false;
-    let inputHeld = false;
-    let inputFinished = false;
-    let inputFrame = 0;
-    let inputTime = 0;
-    let inputPosition = 0;
-    let inputTarget = 0;
+    let scrollReady = false;
     let queuedDelta = 0;
-    let remainder = 0;
     let touchY: number | null = null;
-    let inputAnimations: Animation[] = [];
-    let progressAnimation: Animation | undefined;
-    const direction = Math.sign(top - metrics.scroll);
-    const inputRange = Math.max(1, metrics.height);
-    const finishDocumentTransition = () => {
-      const snapshots = host.getAnimations({ subtree: true }).filter(animation =>
-        animation.effect instanceof KeyframeEffect && animation.effect.pseudoElement);
-      [...snapshots, ...animations].forEach(animation => animation.finish());
+    const scrollBy = (delta: number) => {
+      if (lenis) lenis.scrollTo(lenis.targetScroll + delta, { programmatic: false, lerp: lenis.options.lerp });
+      else scrollToY(getScrollMetrics().scroll + delta, null);
+    };
+    const resumeScroll = () => {
+      // Cleanup must not restart Lenis and discard scrolling already in progress.
+      if (scrollReady) return;
+      scrollReady = true;
+      if (!wasStopped) {
+        lenis?.start();
+        if (request === navigationRequest.current && queuedDelta) scrollBy(queuedDelta);
+      }
+      queuedDelta = 0;
     };
     const release = () => {
       if (released) return;
       released = true;
-      if (inputFrame) cancelAnimationFrame(inputFrame);
       captureSnapshot = false;
+      viewport.removeAttribute('data-nav-capture');
       panel.removeAttribute('data-nav-capture');
+      panel.removeAttribute('data-nav-blend');
       outgoingPanel?.removeAttribute('data-nav-capture');
       outgoingSection?.removeAttribute('data-nav-source');
       animations.forEach(animation => animation.cancel());
@@ -275,95 +270,28 @@ export default function Nav({ ready }: { ready: boolean }) {
       root.style.removeProperty('--nav-section-source-transform');
       root.style.removeProperty('--nav-section-travel');
       root.style.removeProperty('--nav-outgoing-color');
-      root.style.removeProperty('--nav-page-height');
-      root.style.removeProperty('--nav-page-scroll');
       root.style.removeProperty('--nav-snapshot-x');
       root.style.removeProperty('--nav-snapshot-y');
       window.removeEventListener('wheel', onWheel, true);
-      window.removeEventListener('pointerdown', interrupt, true);
       window.removeEventListener('touchstart', onTouchStart, true);
       window.removeEventListener('touchmove', onTouchMove, true);
       window.removeEventListener('touchend', onTouchEnd, true);
       window.removeEventListener('touchcancel', onTouchEnd, true);
       window.removeEventListener('keydown', interrupt, true);
       window.removeEventListener('resize', interrupt);
-      scroller.removeEventListener('scroll', onScroll);
-      if (!wasStopped) {
-        lenis?.start();
-        if (inputFinished && request === navigationRequest.current && Math.abs(remainder) > 0.01) {
-          if (lenis) {
-            lenis.scrollTo(lenis.scroll + remainder, { programmatic: false, lerp: lenis.options.lerp });
-          } else {
-            scrollToY(getScrollMetrics().scroll + remainder, null);
-          }
-        }
-      }
-    };
-
-    const advanceInput = (now: number) => {
-      inputFrame = 0;
-      if (released) return;
-      const elapsed = Math.max(0, (now - inputTime) / 1000);
-      inputTime = now;
-      const smoothing = 1 - Math.exp(-(lenis?.options.lerp ?? 0.085) * 60 * elapsed);
-      inputPosition += (inputTarget - inputPosition) * smoothing;
-      if (Math.abs(inputTarget - inputPosition) < 0.05) inputPosition = inputTarget;
-      const phase = Math.max(0, Math.min(1, inputPosition / inputRange));
-      for (const animation of inputAnimations) {
-        animation.currentTime = Number(animation.effect!.getTiming().duration) * phase;
-      }
-
-      if ((inputPosition <= 0 && inputTarget <= 0) || (inputPosition >= inputRange && inputTarget >= inputRange)) {
-        inputFinished = true;
-        remainder = direction * (inputTarget - (phase === 1 ? inputRange : 0));
-        if (phase === 0) {
-          cancelled = true;
-          expectedScroll = metrics.scroll;
-          root.style.setProperty('--nav-page-scroll', `${metrics.scroll}px`);
-          if (lenis) lenis.scrollTo(metrics.scroll, { immediate: true, force: true });
-          else scrollToY(metrics.scroll, null, { immediate: true });
-          ScrollTrigger.update();
-          revealedElements.forEach(node => node.removeAttribute('data-nav-revealed'));
-          if (!hadTabIndex) el.removeAttribute('tabindex');
-          if (previousFocus instanceof HTMLElement && previousFocus.isConnected) previousFocus.focus({ preventScroll: true });
-        }
-        // Both endpoint images now match the live page; seeking alone leaves paused snapshots alive.
-        transition.skipTransition();
-        release();
-      } else if (inputPosition !== inputTarget) {
-        inputFrame = requestAnimationFrame(advanceInput);
-      }
-    };
-
-    const takeScroll = (delta: number) => {
-      if (!inputHeld) {
-        inputHeld = true;
-        // Keep raw timeline time: using the eased progress here would apply easing twice.
-        const duration = Number(progressAnimation!.effect!.getTiming().duration);
-        const phase = Math.max(0, Math.min(1, Number(progressAnimation!.currentTime) / duration));
-        inputPosition = inputTarget = phase * inputRange;
-        inputTime = performance.now();
-        inputAnimations.forEach(animation => {
-          animation.pause();
-          animation.currentTime = Number(animation.effect!.getTiming().duration) * phase;
-        });
-      }
-      inputTarget += delta * direction;
-      if (Math.abs(inputTarget) < 0.05) inputTarget = 0;
-      if (Math.abs(inputTarget - inputRange) < 0.05) inputTarget = inputRange;
-      if (!inputFrame) inputFrame = requestAnimationFrame(advanceInput);
+      resumeScroll();
     };
 
     const consumeScroll = (delta: number, event: Event) => {
-      if (released || finishRequested || wasStopped || delta === 0) return;
+      if (released || wasStopped || delta === 0) return;
       if (event.cancelable) event.preventDefault();
-      inputRequested = true;
-      if (inputReady) takeScroll(delta);
+      if (scrollReady) scrollBy(delta);
       else queuedDelta += delta;
     };
 
     const onWheel = (event: WheelEvent) => {
-      if (event.ctrlKey || event.defaultPrevented) return;
+      if (scrollReady || event.ctrlKey || event.defaultPrevented || (event.target instanceof Element
+        && event.target.closest('.mobile-menu-backdrop'))) return;
       const unit = event.deltaMode === WheelEvent.DOM_DELTA_LINE ? 100 / 6
         : event.deltaMode === WheelEvent.DOM_DELTA_PAGE ? window.innerHeight : 1;
       consumeScroll(event.deltaY * unit * (lenis?.options.wheelMultiplier ?? 1), event);
@@ -379,15 +307,13 @@ export default function Nav({ ready }: { ready: boolean }) {
       const y = event.touches[0].clientY;
       const delta = (touchY - y) * (lenis?.options.touchMultiplier ?? 1);
       touchY = y;
-      consumeScroll(delta, event);
+      if (!scrollReady) consumeScroll(delta, event);
     };
 
     const onTouchEnd = () => { touchY = null; };
 
     const interrupt = (event: Event) => {
       if (released) return;
-      if (event.type === 'pointerdown' && !(event.target instanceof Element
-        && event.target.closest('.custom-scrollbar-track'))) return;
       if (event instanceof KeyboardEvent) {
         if (event.altKey || event.ctrlKey || event.metaKey || (event.target instanceof HTMLElement
           && (event.target.isContentEditable || event.target.closest('input, textarea, select')))) return;
@@ -401,38 +327,20 @@ export default function Nav({ ready }: { ready: boolean }) {
           consumeScroll(deltas[event.key], event);
           return;
         }
-        if (!['Escape', 'Tab'].includes(event.key)) return;
+        if (event.key !== 'Escape') return;
       }
-      if (inputFrame) cancelAnimationFrame(inputFrame);
-      if (event.type === 'pointerdown') navigationRequest.current += 1;
-      if (useScopedTransition || event.type === 'pointerdown') {
-        transition.skipTransition();
-        release();
-      } else {
-        // Finish document snapshots before releasing their captured layout.
-        finishRequested = true;
-        finishDocumentTransition();
-      }
-    };
-    const onScroll = (event: Event) => {
-      if (Math.abs(getScrollMetrics().scroll - expectedScroll) > 2) interrupt(event);
+      transition.skipTransition();
     };
     const transition = startTransition(jump);
     navigation.current = { transition, release };
     window.addEventListener('wheel', onWheel, { capture: true, passive: false });
-    window.addEventListener('pointerdown', interrupt, { capture: true, passive: true });
     window.addEventListener('touchstart', onTouchStart, { capture: true, passive: true });
     window.addEventListener('touchmove', onTouchMove, { capture: true, passive: false });
     window.addEventListener('touchend', onTouchEnd, { capture: true, passive: true });
     window.addEventListener('touchcancel', onTouchEnd, { capture: true, passive: true });
     window.addEventListener('keydown', interrupt, true);
     window.addEventListener('resize', interrupt);
-    scroller.addEventListener('scroll', onScroll, { passive: true });
     const failReady = () => {
-      if (!inputReady && inputRequested && !finishRequested) {
-        inputFinished = true;
-        remainder = queuedDelta;
-      }
       transition.skipTransition();
     };
     void transition.ready.then(() => {
@@ -449,27 +357,10 @@ export default function Nav({ ready }: { ready: boolean }) {
         easing: returningHome ? 'ease-in-out' : style.animationTimingFunction,
         fill: 'both' as const,
       };
-      const readyForInput = () => {
-        inputAnimations = Array.from(new Set([
-          ...host.getAnimations({ subtree: true }).filter(animation => animation.effect instanceof KeyframeEffect && animation.effect.pseudoElement),
-          ...animations,
-        ])).filter(animation => {
-          const duration = animation.effect?.getTiming().duration;
-          return typeof duration === 'number' && duration > 0 && Number.isFinite(duration);
-        });
-        progressAnimation = entryAnimation ?? animations[0];
-        inputReady = Boolean(progressAnimation);
-        if (finishRequested) finishDocumentTransition();
-        else if (inputRequested && inputReady) takeScroll(queuedDelta);
-      };
-      const shaderBackground = panel.querySelector('.section-bands-layer');
-      if (shaderBackground && !returningHome && !goingBack) {
-        animations.push(shaderBackground.animate([{ opacity: 0 }, { opacity: 1 }], { ...timing, easing: 'linear' }));
-      }
       if (startProgress !== endProgress) {
         animations.push(root.animate([
-          { '--nav-hero-progress': startProgress },
-          { '--nav-hero-progress': endProgress },
+          { '--nav-hero-offset': startProgress - endProgress },
+          { '--nav-hero-offset': 0 },
         ], timing));
       }
       if (returningHome) {
@@ -486,7 +377,7 @@ export default function Nav({ ready }: { ready: boolean }) {
         if (startTime != null) {
           animations.forEach(animation => { animation.startTime = startTime; });
         }
-        readyForInput();
+        resumeScroll();
         return;
       }
       animations.push(host.animate(Array.from({ length: 61 }, (_, index) => {
@@ -502,13 +393,14 @@ export default function Nav({ ready }: { ready: boolean }) {
       }));
       if (!useRootSnapshot) {
         // The movement eases out early; keep the color blend running for the full transition.
-        animations.push(host.animate(Array.from({ length: 61 }, (_, index) => ({
+        animations.push((goingBack ? host : panel).animate(Array.from({ length: 61 }, (_, index) => ({
           offset: index / 60,
           backgroundColor: blendSectionColor(fromHsl, toHsl, index / 60),
+          ...(!goingBack && { opacity: 1 - index / 60 }),
         })), {
           ...timing,
           easing: 'linear',
-          pseudoElement: animatedSnapshot,
+          pseudoElement: goingBack ? animatedSnapshot : '::before',
         }));
       }
       if (entryAnimation?.startTime != null) {
@@ -516,7 +408,7 @@ export default function Nav({ ready }: { ready: boolean }) {
           animation.startTime = entryAnimation.startTime;
         }
       }
-      readyForInput();
+      resumeScroll();
     }, failReady).catch(failReady);
     try {
       await transition.finished;
