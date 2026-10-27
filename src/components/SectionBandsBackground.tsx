@@ -1,7 +1,7 @@
 import { useEffect, useState, type CSSProperties } from 'react';
 import { createPortal } from 'react-dom';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
-import { BarShift, BlueNoise, FlowingGradient, GridDistortion, Shader, isWebGPUSupported } from 'shaders/react';
+import { BlueNoise, FlowingGradient, Shader, isWebGPUSupported } from 'shaders/react';
 import { sectionShaderPalettes, type ShaderPalette } from '../constants/sectionColors';
 import { getScrollMetrics, getScrollViewport } from '../utils/scroll';
 
@@ -176,9 +176,6 @@ export function SectionShaderRenderer({ onReady }: { onReady: (ready: boolean) =
         onReady={onReady}
         onUnavailable={() => setUnavailable(true)}
       >
-        <GridDistortion gridSize={36} intensity={5} decay={10} radius={0.5} edges="transparent">
-          <BarShift count={6} intensity={0.1} angle={0} edges="mirror">
-            <BarShift count={6} intensity={0.1} angle={90} edges="mirror">
               <FlowingGradient
                 colorA={colorA}
                 colorB={colorB}
@@ -188,9 +185,6 @@ export function SectionShaderRenderer({ onReady }: { onReady: (ready: boolean) =
                 speed={1.6}
                 distortion={0.15}
               />
-            </BarShift>
-          </BarShift>
-        </GridDistortion>
         <BlueNoise opacity={0.25} contrast={-0.2} balance={0} blendMode="overlay" />
       </Shader>, host, String(id),
     );
