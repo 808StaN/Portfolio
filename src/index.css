@@ -1450,9 +1450,9 @@ html.nav-document-transition::view-transition-group(site-nav-bg) {
   width: 100%;
   height: 100%;
   position: relative;
+  /* Clip backgrounds on the faces; overflow here would flatten their 3D backs. */
   transform-style: preserve-3d;
   border-radius: 12px;
-  overflow: hidden;
   box-shadow:
     0 32px 64px rgba(0, 0, 0, 0.50),
     0 14px 28px rgba(0, 0, 0, 0.40),
