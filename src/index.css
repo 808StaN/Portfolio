@@ -470,11 +470,30 @@ html.custom-scrollbar-dragging * {
 }
 
 .hero-copy {
+  position: relative;
   display: flex;
   flex-direction: column;
   align-items: flex-start;
   gap: 24px;
   max-width: 32rem;
+}
+
+.hero-logo-anchor {
+  width: clamp(160px, 48vw, 220px);
+  aspect-ratio: 460 / 410;
+  flex-shrink: 0;
+  align-self: center;
+  color: #61dafb;
+}
+
+.hero-logo-anchor svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.hero-tilt-panel:has(.section-shader-slot[data-shader-ready="true"]) .hero-logo-anchor svg {
+  visibility: hidden;
 }
 
 .hero-description {
@@ -530,6 +549,14 @@ html.custom-scrollbar-dragging * {
   .hero-copy {
     grid-column: 7 / -1;
     max-width: none;
+  }
+
+  .hero-logo-anchor {
+    position: absolute;
+    inset-inline: 0;
+    bottom: calc(100% + 120px);
+    width: min(360px, 100%, 42svh);
+    margin-inline: auto;
   }
 }
 

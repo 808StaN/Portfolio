@@ -123,6 +123,16 @@ export default function Hero({ ready }: { ready: boolean }) {
             </h1>
 
             <div className="hero-copy">
+              <div className="hero-logo-anchor" data-hero-shader-logo role="img" aria-label="React">
+                <svg viewBox="-11.5 -10.23174 23 20.46348" aria-hidden="true" focusable="false">
+                  <circle r="2.05" fill="currentColor" />
+                  <g stroke="currentColor" strokeWidth="1" fill="none">
+                    <ellipse rx="11" ry="4.2" />
+                    <ellipse rx="11" ry="4.2" transform="rotate(60)" />
+                    <ellipse rx="11" ry="4.2" transform="rotate(120)" />
+                  </g>
+                </svg>
+              </div>
               <motion.p
                 className="hero-description"
                 initial={{ opacity: 0, y: 20 }}
