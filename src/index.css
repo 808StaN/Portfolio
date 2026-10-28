@@ -52,7 +52,7 @@
   --color-accent-orange: #f97316;
   --nav-glass-background: rgba(18, 26, 42, 0.1);
   --nav-glass-filter: blur(12px) saturate(110%);
-  --nav-glass-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.16), inset 0 -1px 0 rgba(255, 255, 255, 0.06), 0 8px 28px rgba(5, 12, 28, 0.12);
+  --nav-glass-shadow: inset 0 -1px 0 rgba(255, 255, 255, 0.06), 0 8px 28px rgba(5, 12, 28, 0.12);
   /* boczny navbar (Nav.tsx) — bez zmian przy szerszej treści */
   --page-gutter: clamp(20px, 4vw, 64px);
   /* marginesy i szerokość głównej zawartości sekcji */
@@ -60,6 +60,8 @@
   --content-max-width: 1520px;
   --section-space-y: clamp(58px, 9vw, 120px);
   --panel-radius: clamp(16px, 2.4vw, 28px);
+  --nav-corner-scale: clamp(0, calc((1 - var(--nav-hero-progress, 0) - var(--nav-hero-offset, 0)) * 10), 1);
+  --nav-radius: calc(var(--panel-radius) * var(--nav-corner-scale));
   --font-sans: 'Geist', system-ui, sans-serif;
   --font-display: 'Satoshi', 'Geist', system-ui, sans-serif;
   /* Karuzela 3D projektów (16:9, skalowana do viewportu) */
@@ -780,14 +782,14 @@ html.nav-document-transition .cursor-layer {
   -webkit-backdrop-filter: var(--nav-glass-filter);
   backdrop-filter: var(--nav-glass-filter);
   box-shadow: var(--nav-glass-shadow);
-  clip-path: inset(0 round 0 0 var(--panel-radius) var(--panel-radius));
+  clip-path: inset(0 round 0 0 var(--nav-radius) var(--nav-radius));
   z-index: 3;
 }
 
 html.nav-document-transition::view-transition-group(site-nav-bg) {
   /* Isolate Firefox's backdrop before clipping it to the portfolio corners. */
   --nav-portfolio-side: calc((100% - var(--portfolio-width)) / 2);
-  border-radius: 0 0 var(--panel-radius) var(--panel-radius);
+  border-radius: 0 0 var(--nav-radius) var(--nav-radius);
   overflow: hidden;
   mask-image: linear-gradient(#000 0 0);
   clip-path: inset(0 var(--nav-portfolio-side) calc(100% - var(--portfolio-height)) var(--nav-portfolio-side) round var(--portfolio-radius));
@@ -801,8 +803,8 @@ html.nav-document-transition::view-transition-new(site-nav-bg) {
   height: calc(100% - 1px);
   object-fit: fill;
   border-bottom: 1px solid rgba(255, 255, 255, 0.26);
-  border-inline: 1px solid rgba(255, 255, 255, 0.2);
-  border-radius: 0 0 var(--panel-radius) var(--panel-radius);
+  border-inline: 1px solid rgba(255, 255, 255, calc(0.2 * var(--nav-corner-scale)));
+  border-radius: 0 0 var(--nav-radius) var(--nav-radius);
 }
 
 .nav-back-transition::view-transition-old(root) {
@@ -911,7 +913,7 @@ html.nav-document-transition::view-transition-group(site-nav-bg) {
   z-index: 100;
   pointer-events: none;
   overflow: hidden;
-  border-radius: 0 0 var(--panel-radius) var(--panel-radius);
+  border-radius: 0 0 var(--nav-radius) var(--nav-radius);
 }
 
 .nav-bg-layer::after {
@@ -936,14 +938,14 @@ html.nav-document-transition::view-transition-group(site-nav-bg) {
   overflow: hidden;
   border-bottom: 1px solid transparent;
   border-inline: 1px solid transparent;
-  border-radius: 0 0 var(--panel-radius) var(--panel-radius);
+  border-radius: 0 0 var(--nav-radius) var(--nav-radius);
 }
 
 .nav-outline {
   position: absolute;
   inset: 0;
   border-bottom: 1px solid rgba(255, 255, 255, 0.26);
-  border-inline: 1px solid rgba(255, 255, 255, 0.2);
+  border-inline: 1px solid rgba(255, 255, 255, calc(0.2 * var(--nav-corner-scale)));
   border-radius: inherit;
   pointer-events: none;
 }
