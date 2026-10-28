@@ -9,18 +9,19 @@ import Cursor from "./components/Cursor";
 import SectionTiltDirector from "./components/SectionTiltDirector";
 import ScrollProgressFrame from "./components/ScrollProgressFrame";
 import PageLoader, { type PageLoaderStage } from "./components/PageLoader";
-import { SectionShaderRenderer } from "./components/SectionBandsBackground";
+import { SectionShaderRenderer, type SectionShaderState } from "./components/SectionBandsBackground";
 
 export default function App() {
   const [loaderStage, setLoaderStage] = useState<PageLoaderStage>("intro");
-  const [shadersReady, setShadersReady] = useState(false);
+  const [shaderState, setShaderState] = useState<SectionShaderState>("loading");
   const entranceReady = loaderStage !== "intro";
 
   return (
     <>
-      {loaderStage !== "done" && <PageLoader ready={shadersReady} onStageChange={setLoaderStage} />}
+      {loaderStage !== "done" && <PageLoader ready={shaderState !== "loading"} onStageChange={setLoaderStage} />}
       <div
         className="app-shell relative min-h-screen"
+        data-shader-state={shaderState}
         inert={loaderStage !== "done"}
         style={{ background: "#f2f5fc", color: "var(--color-text)" }}
       >
@@ -34,7 +35,7 @@ export default function App() {
           <div className="portfolio-scene">
             <div id="page-transition-scope" className="page-transition-scope">
               <SectionTiltDirector />
-              <SectionShaderRenderer onReady={setShadersReady} />
+              <SectionShaderRenderer onStateChange={setShaderState} />
 
               <div id="portfolio-scrollport" className="portfolio-scrollport" tabIndex={-1}>
                 <div className="page-transition-layout portfolio-scroll-content">

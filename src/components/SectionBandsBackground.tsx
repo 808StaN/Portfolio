@@ -35,7 +35,9 @@ type ShaderCanvasContext = {
   getConfiguration?: () => { device: { queue: { onSubmittedWorkDone: () => Promise<void> } } } | null;
 };
 
-export function SectionShaderRenderer({ onReady }: { onReady: (ready: boolean) => void }) {
+export type SectionShaderState = 'loading' | 'ready' | 'fallback';
+
+export function SectionShaderRenderer({ onStateChange }: { onStateChange: (state: SectionShaderState) => void }) {
   const [reducedMotion, setReducedMotion] = useState(() => window.matchMedia('(prefers-reduced-motion: reduce)').matches);
   const [unavailable, setUnavailable] = useState(false);
   const [renderers, setRenderers] = useState<ShaderSlot[]>([]);
@@ -50,10 +52,11 @@ export function SectionShaderRenderer({ onReady }: { onReady: (ready: boolean) =
   useEffect(() => {
     if (reducedMotion !== false || unavailable || !isWebGPUSupported()) {
       setRenderers([]);
-      onReady(true);
+      onStateChange('fallback');
       return;
     }
 
+    onStateChange('loading');
     const layers = Array.from(document.querySelectorAll<HTMLElement>('[data-shader-palette]'));
     const heroLayer = layers.find(layer => layer.dataset.shaderPalette === 'home');
     const logoAnchor = document.querySelector<HTMLElement>('[data-hero-shader-logo]');
@@ -72,7 +75,7 @@ export function SectionShaderRenderer({ onReady }: { onReady: (ready: boolean) =
         slot.host.dataset.shaderActive = 'false';
         parking.appendChild(slot.host);
       });
-      onReady(true);
+      onStateChange('fallback');
       // The library cannot dispose a pending initialize(); park it until its first submission.
       if (initialized.size === slots.length) setUnavailable(true);
     }, 8000);
@@ -100,10 +103,11 @@ export function SectionShaderRenderer({ onReady }: { onReady: (ready: boolean) =
       // Allow the completed frame to reach the compositor before revealing the page.
       readyFrame = requestAnimationFrame(() => {
         readyFrame = requestAnimationFrame(() => {
+          if (timedOut) return;
           clearTimeout(startupTimeout);
           parking.removeAttribute('data-shader-warming');
           update();
-          onReady(true);
+          onStateChange('ready');
         });
       });
     };
@@ -200,7 +204,7 @@ export function SectionShaderRenderer({ onReady }: { onReady: (ready: boolean) =
       slots.forEach(slot => slot.host.remove());
       parking.remove();
     };
-  }, [reducedMotion, unavailable, onReady]);
+  }, [reducedMotion, unavailable, onStateChange]);
 
   return renderers.map(({ host, palette, id, onReady, hero, logoCenter, logoScale }) => {
     const [colorA, colorB, colorC, colorD] = sectionShaderPalettes[palette];
@@ -217,7 +221,7 @@ export function SectionShaderRenderer({ onReady }: { onReady: (ready: boolean) =
           colorB={colorB}
           colorC={colorC}
           colorD={colorD}
-          colorSpace="hsl"
+          colorSpace={palette === 'projectOtakuVersus' ? 'oklab' : 'hsl'}
           speed={1.6}
           distortion={0.15}
         />

@@ -145,10 +145,15 @@ body {
 }
 
 .app-shell {
+  --portfolio-noise: none;
   isolation: isolate;
   width: 100%;
   max-width: 100%;
   overflow-x: hidden;
+}
+
+.app-shell[data-shader-state="fallback"] {
+  --portfolio-noise: url('/noise.png');
 }
 
 html[data-site="portfolio"],
@@ -294,8 +299,10 @@ html[data-page-loading] .portfolio-scrollport {
   opacity: var(--section-shader-opacity, 1);
   overflow: hidden;
   background:
-    repeating-linear-gradient(90deg, transparent 0%, color-mix(in srgb, var(--shader-color-0) 22%, transparent) 16.4%, color-mix(in srgb, var(--shader-color-2) 12%, transparent) 16.67%),
-    radial-gradient(ellipse at 75% 25%, var(--shader-color-2), var(--shader-color-1) 35%, var(--shader-color-0) 65%, color-mix(in srgb, var(--shader-color-0) 70%, black));
+    radial-gradient(ellipse 85% 90% at 88% 12%, color-mix(in srgb, var(--shader-color-3) 80%, transparent) 0%, transparent 75%),
+    radial-gradient(ellipse 95% 85% at 62% 88%, color-mix(in srgb, var(--shader-color-2) 85%, transparent) 0%, transparent 78%),
+    radial-gradient(ellipse 80% 110% at 5% 38%, var(--shader-color-0) 0%, transparent 80%),
+    linear-gradient(125deg, var(--shader-color-0) 0%, var(--shader-color-1) 48%, var(--shader-color-2) 100%);
 }
 
 .section-shader-slot {
@@ -911,7 +918,7 @@ html.nav-document-transition::view-transition-group(site-nav-bg) {
   content: '';
   position: absolute;
   inset: 0;
-  background: url('/noise.png');
+  background: var(--portfolio-noise, none);
   background-size: 250px;
   opacity: 0.06;
   pointer-events: none;
@@ -1017,7 +1024,7 @@ html.nav-document-transition::view-transition-group(site-nav-bg) {
   content: '';
   position: absolute;
   inset: 0;
-  background: url('/noise.png');
+  background: var(--portfolio-noise, none);
   background-size: 250px;
   pointer-events: none;
   z-index: 2;
@@ -1025,6 +1032,10 @@ html.nav-document-transition::view-transition-group(site-nav-bg) {
 
 .hero-tilt-panel::after {
   content: none;
+}
+
+.app-shell[data-shader-state="fallback"] .hero-tilt-panel::after {
+  content: '';
 }
 
 .section-shell .section-tilt-container {
@@ -1722,7 +1733,7 @@ html.nav-document-transition::view-transition-group(site-nav-bg) {
   position: absolute;
   inset: 0;
   z-index: 0;
-  background: url('/noise.png');
+  background: var(--portfolio-noise, none);
   background-size: 250px;
   pointer-events: none;
 }
