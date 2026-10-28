@@ -250,7 +250,7 @@ export function SectionShaderRenderer({ onReady }: { onReady: (ready: boolean) =
             >
               <Stripes
                 angle={-139}
-                balance={0.7}
+                balance={0.5}
                 colorA="#00000000"
                 colorB="#e8f4ff"
                 colorSpace="linear"
@@ -264,7 +264,7 @@ export function SectionShaderRenderer({ onReady }: { onReady: (ready: boolean) =
               angle={154}
               colorA="#b8caff"
               colorB="#61dafb"
-              colorC="#1756d9"
+              colorC="#4f8ef7"
               colorSpace="oklab"
               maskSource={logoMaskId}
               maskType="alpha"
@@ -272,7 +272,7 @@ export function SectionShaderRenderer({ onReady }: { onReady: (ready: boolean) =
               scale={5.2}
               speed={-0.25}
             />
-            <Exposure exposure={8} />
+            <Exposure exposure={6} />
           </Glass>
           <ThinFilm
             center={logoCenter}
