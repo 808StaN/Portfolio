@@ -190,8 +190,8 @@ html[data-site="portfolio"] body {
 }
 
 .scroll-progress-frame {
-  --scroll-frame-track: hsl(219 29% 48%);
-  --scroll-frame-progress: hsl(219 83% 76%);
+  --scroll-frame-track: hsl(218 64% 53%);
+  --scroll-frame-progress: hsl(218 95% 60%);
   --scroll-frame-width: 10px;
   --scroll-frame-gap: 0px;
   --scroll-frame-outset: calc(var(--scroll-frame-gap) + var(--scroll-frame-width));

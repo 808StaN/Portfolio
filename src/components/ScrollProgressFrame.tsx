@@ -1,6 +1,7 @@
 import { useLayoutEffect, useRef } from "react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
+import { sectionShaderPalettes, type ShaderPalette } from "../constants/sectionColors";
 import { getScrollViewport } from "../utils/scroll";
 import { hexToHsl, hslToHex } from "../utils/tilt";
 
@@ -44,14 +45,15 @@ export default function ScrollProgressFrame() {
           if (distance === 0) break;
         }
       }
-      const color = section?.dataset.sectionColor;
+      const palette = section?.querySelector<HTMLElement>("[data-shader-palette]")?.dataset.shaderPalette as ShaderPalette | undefined;
+      const color = palette ? sectionShaderPalettes[palette][3] : section?.dataset.sectionColor;
       if (!color || color === activeColor) return;
 
       const { h, s } = hexToHsl(color);
       colorTween?.kill();
       colorTween = gsap.to(frame, {
-        "--scroll-frame-track": hslToHex(h, s * 0.35, 0.48),
-        "--scroll-frame-progress": hslToHex(h, Math.min(0.9, Math.max(0.45, s)), 0.76),
+        "--scroll-frame-track": hslToHex(h, s * (palette === 'home' ? 0.75 : 0.85), palette === 'home' ? 0.53 : 0.4),
+        "--scroll-frame-progress": hslToHex(h, Math.min(0.95, s * 1.25), 0.6),
         duration: reducedMotion.matches || !activeColor ? 0 : 0.45,
         ease: "power2.out",
       });
