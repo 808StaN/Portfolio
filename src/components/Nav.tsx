@@ -35,11 +35,9 @@ export default function Nav({ ready }: { ready: boolean }) {
     if (section.id === 'home') return 0;
     const { limit } = getScrollMetrics();
     const transitionTarget = ScrollTrigger.getById(`section-target-${section.id}`);
-    const navHeight = document.querySelector('header')?.getBoundingClientRect().height ?? 64;
-    const targetCorrection = section.id === 'about' ? navHeight : 0;
     const top =
       transitionTarget?.end !== undefined
-        ? transitionTarget.end + targetCorrection
+        ? transitionTarget.end
         : getScrollTargetTop(section);
     return Math.min(Math.max(0, top), limit);
   };
