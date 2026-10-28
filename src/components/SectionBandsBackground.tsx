@@ -1,7 +1,7 @@
 import { useEffect, useState, type CSSProperties } from 'react';
 import { createPortal } from 'react-dom';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
-import { Blob, BlueNoise, CursorRipples, Glass, FlowingGradient, Shader, Swirl, WaveDistortion, isWebGPUSupported } from 'shaders/react';
+import { BlueNoise, ColorWheel, Exposure, FlowingGradient, Glass, Glow, Group, Shader, Stripes, ThinFilm, Twirl, isWebGPUSupported } from 'shaders/react';
 import { sectionShaderPalettes, type ShaderPalette } from '../constants/sectionColors';
 import { getScrollMetrics, getScrollViewport } from '../utils/scroll';
 
@@ -204,6 +204,7 @@ export function SectionShaderRenderer({ onReady }: { onReady: (ready: boolean) =
 
   return renderers.map(({ host, palette, id, onReady, hero, logoCenter, logoScale }) => {
     const [colorA, colorB, colorC, colorD] = sectionShaderPalettes[palette];
+    const logoMaskId = `hero-logo-stripes-${id}`;
     return createPortal(
       <Shader
         className="section-bands-canvas"
@@ -220,67 +221,81 @@ export function SectionShaderRenderer({ onReady }: { onReady: (ready: boolean) =
           speed={1.6}
           distortion={0.15}
         />
-        <Glass
-          aberration={0.5}
-          cutout={true}
-          edgeSoftness={0.1}
-          fresnel={0.13}
-          fresnelColor="#91b2ff"
-          fresnelSoftness={0.48}
-          highlight={0.1}
-          highlightColor="#dbe6ff"
-          highlightSoftness={0.27}
-          innerZoom={1}
-          lightAngle={289}
-          refraction={0.82}
-          center={logoCenter}
-          scale={logoScale * 1.1}
-          shapeSdfUrl={heroLogoSdfUrl}
-          thickness={0.37}
-          opacity={hero ? 0.999 : 0}
-        >
-          <Swirl
-            blend={45}
-            colorA="#c2d7ff"
-            colorB="#abbaff"
+        <Group opacity={hero ? 0.999 : 0}>
+          <Glass
+            aberration={0}
+            blur={20}
+            center={logoCenter}
+            cutout={true}
+            edgeSoftness={0.6}
+            fresnel={0.08}
+            fresnelColor="#f2f7ff"
+            fresnelSoftness={0.57}
+            highlight={0}
+            highlightColor="#c9e8ff"
+            highlightSoftness={0.2}
+            innerZoom={1}
+            lightAngle={300}
+            refraction={0}
+            scale={logoScale * 1.1}
+            shapeSdfUrl={heroLogoSdfUrl}
+            thickness={0}
+          >
+            <Twirl
+              id={logoMaskId}
+              center={{ x: 0.22872827081427263, y: 0.667479674796748 }}
+              edges="mirror"
+              intensity={-1.7}
+              visible={false}
+            >
+              <Stripes
+                angle={-139}
+                balance={0.7}
+                colorA="#00000000"
+                colorB="#e8f4ff"
+                colorSpace="linear"
+                density={2}
+                offset={0}
+                softness={0.4}
+                speed={-0.15}
+              />
+            </Twirl>
+            <ColorWheel
+              angle={154}
+              colorA="#b8caff"
+              colorB="#61dafb"
+              colorC="#1756d9"
+              colorSpace="oklab"
+              maskSource={logoMaskId}
+              maskType="alpha"
+              mode="custom"
+              scale={5.2}
+              speed={-0.25}
+            />
+            <Exposure exposure={8} />
+          </Glass>
+          <ThinFilm
+            center={logoCenter}
+            colorA="#6e9ff4"
+            colorB="#dbeafe"
+            colorC="#b8caff"
             colorSpace="oklab"
-            detail={3.5}
-            speed={0.6}
+            dispersion={0.42}
+            edgeSoftness={0.55}
+            hueShift={0}
+            intensity={1.5}
+            lightAngle={298}
+            mode="custom"
+            rimWidth={0.15}
+            saturation={1}
+            scale={logoScale * 1.1}
+            shapeSdfUrl={heroLogoSdfUrl}
+            speed={-0.19}
+            thickness={0.45}
           />
-          <Blob
-            blendMode="linearDodge"
-            center={{
-              type: 'mouse-position',
-              reach: 0.55,
-              originX: 0.5,
-              originY: 0.5,
-              momentum: 0.3,
-              smoothing: 0.3,
-            }}
-            colorA="#ff9b8f"
-            colorB="#ffd1a3"
-            colorSpace="linear"
-            deformation={0.9}
-            highlightColor="#ffe11a"
-            highlightIntensity={0.5}
-            highlightX={0.3}
-            highlightY={-0.3}
-            highlightZ={0.4}
-            seed={1}
-            size={0.15}
-            softness={0.7}
-            speed={0.5}
-          />
-          <WaveDistortion
-            angle={23}
-            edges="mirror"
-            frequency={5.1}
-            speed={2.5}
-            strength={0.15}
-            waveType="sine"
-          />
-          <CursorRipples chromaticSplit={2} decay={5} edges="stretch" intensity={20} radius={0.7} />
-        </Glass>
+          <Glow intensity={1.5} opacity={0.01} size={200} threshold={0.3} />
+          <Glow intensity={1} opacity={0.1} size={100} threshold={0.5} />
+        </Group>
         <BlueNoise opacity={0.25} contrast={-0.2} balance={0} blendMode="overlay" />
       </Shader>, host, String(id),
     );
