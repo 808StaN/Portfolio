@@ -84,5 +84,5 @@ export const getProjectPinStart = (section: HTMLElement) =>
 
 export const getTiltDrop = (rotation: number) => {
   const radians = (Math.abs(rotation) * Math.PI) / 180;
-  return Math.max(0, Math.ceil(getViewportWidth() * Math.tan(radians)));
+  return Math.max(0, getViewportWidth() * Math.tan(radians));
 };

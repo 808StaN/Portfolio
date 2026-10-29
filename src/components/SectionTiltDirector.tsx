@@ -38,6 +38,10 @@ export default function SectionTiltDirector() {
 
     const updateTiltClip = (section: HTMLElement, panel: HTMLElement) => {
       const rotation = Number(gsap.getProperty(panel, "rotation")) || 0;
+      const radians = rotation * Math.PI / 180;
+      // Account for the bottom-left origin, with 1px outside the edge for antialiasing.
+      const top = panel.offsetHeight * (1 - 1 / Math.cos(radians)) - (rotation ? 1 : 0);
+      section.style.setProperty("--tilt-hit-top", `${top}px`);
       section.style.setProperty("--tilt-hit-drop", `${getTiltDrop(rotation)}px`);
     };
 
@@ -215,6 +219,7 @@ export default function SectionTiltDirector() {
       ScrollTrigger.removeEventListener("refreshInit", updateOverlaps);
       ScrollTrigger.removeEventListener("refresh", updateAllTiltClips);
       sections.forEach((section) => {
+        section.style.removeProperty("--tilt-hit-top");
         section.style.removeProperty("--tilt-hit-drop");
       });
       ctx.revert();

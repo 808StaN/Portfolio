@@ -970,13 +970,14 @@ html.nav-document-transition::view-transition-group(site-nav-bg) {
 }
 
 .section-tilt-section {
+  --tilt-hit-top: 0px;
   --tilt-hit-drop: 0px;
   position: relative;
   width: 100%;
   max-width: 100%;
   min-height: var(--portfolio-height, 100svh);
   overflow: visible;
-  clip-path: polygon(0 0, 100% var(--tilt-hit-drop), 100% 100%, 0 100%);
+  clip-path: polygon(0 var(--tilt-hit-top), 100% calc(var(--tilt-hit-top) + var(--tilt-hit-drop)), 100% 100%, 0 100%);
   pointer-events: none;
 }
 
