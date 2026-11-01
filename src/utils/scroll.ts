@@ -29,3 +29,35 @@ export const getScrollTargetTop = (element: HTMLElement) => {
   const { scroll, top } = getScrollMetrics();
   return scroll + element.getBoundingClientRect().top - top;
 };
+
+export const getKeyboardScrollDelta = (event: KeyboardEvent): number | null => {
+  const viewport = getScrollViewport();
+  if (!viewport || event.defaultPrevented || event.isComposing || event.altKey || event.ctrlKey || event.metaKey
+    || (event.shiftKey && event.key !== ' ')
+    || document.documentElement.hasAttribute('data-page-loading')
+    || document.querySelector('.mobile-menu-backdrop')) return null;
+
+  const target = event.target instanceof Element ? event.target : null;
+  if ((target instanceof HTMLElement && target.isContentEditable)
+    || target?.closest('input, textarea, select, summary, video, audio, [role="textbox"], [role="combobox"], [role="listbox"], [role="slider"], [role="spinbutton"], [role="checkbox"], [role="radio"], [role="switch"], [role="menu"], [role="tree"], [role="grid"], [role="tablist"], [data-lenis-prevent], [data-lenis-prevent-vertical]')
+    || (event.key === ' ' && target?.closest('button, [role="button"]'))) return null;
+
+  const { height, limit } = getScrollMetrics();
+  let delta: number;
+  switch (event.key) {
+    case 'ArrowUp': delta = -80; break;
+    case 'ArrowDown': delta = 80; break;
+    case 'PageUp': delta = -height * 0.85; break;
+    case 'PageDown': delta = height * 0.85; break;
+    case 'Home': delta = -limit; break;
+    case 'End': delta = limit; break;
+    case ' ': delta = height * 0.85 * (event.shiftKey ? -1 : 1); break;
+    default: return null;
+  }
+
+  // Leave keyboard scrolling inside nested scroll containers to the browser.
+  for (let node = target; node && node !== viewport; node = node.parentElement) {
+    if (node.scrollHeight > node.clientHeight + 1 && /^(auto|scroll|overlay)$/.test(getComputedStyle(node).overflowY)) return null;
+  }
+  return delta;
+};

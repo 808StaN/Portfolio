@@ -4,7 +4,7 @@ import { motion, AnimatePresence, useReducedMotion } from 'framer-motion';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { scrollToY, useLenis } from './LenisScroll';
 import { blendSectionColor, getSectionCornerScale, hexToHsl, incomingAngles } from '../utils/tilt';
-import { getScrollMetrics, getScrollTargetTop, getScrollViewport } from '../utils/scroll';
+import { getKeyboardScrollDelta, getScrollMetrics, getScrollTargetTop, getScrollViewport } from '../utils/scroll';
 
 const links = [
   { label: 'Projects', href: '#work' },
@@ -320,16 +320,13 @@ export default function Nav({ ready }: { ready: boolean }) {
     const interrupt = (event: Event) => {
       if (released) return;
       if (event instanceof KeyboardEvent) {
-        if (event.altKey || event.ctrlKey || event.metaKey || (event.target instanceof HTMLElement
-          && (event.target.isContentEditable || event.target.closest('input, textarea, select')))) return;
-        const deltas: Record<string, number> = {
-          ArrowUp: -40, ArrowDown: 40, PageUp: -metrics.height, PageDown: metrics.height,
-          Home: -getScrollMetrics().limit, End: getScrollMetrics().limit,
-          ' ': event.shiftKey ? -metrics.height : metrics.height,
-        };
-        if (event.key in deltas) {
-          if (event.key === ' ' && event.target instanceof Element && event.target.closest('button, a')) return;
-          consumeScroll(deltas[event.key], event);
+        if (event.defaultPrevented || event.isComposing || event.altKey || event.ctrlKey || event.metaKey
+          || (event.target instanceof HTMLElement
+            && (event.target.isContentEditable || event.target.closest('input, textarea, select')))) return;
+        const delta = getKeyboardScrollDelta(event);
+        if (delta !== null) {
+          // Once live scrolling resumes, the shared keyboard handler owns the event.
+          if (!scrollReady) consumeScroll(delta, event);
           return;
         }
         if (event.key !== 'Escape') return;

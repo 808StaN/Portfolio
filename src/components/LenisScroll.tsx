@@ -7,7 +7,7 @@ import {
 } from "react";
 import Lenis from "lenis";
 import "lenis/dist/lenis.css";
-import { getScrollViewport } from "../utils/scroll";
+import { getKeyboardScrollDelta, getScrollViewport } from "../utils/scroll";
 
 const LenisContext = createContext<Lenis | null>(null);
 
@@ -111,6 +111,30 @@ export default function LenisScroll({ children }: { children: ReactNode }) {
       setLenis(null);
     };
   }, []);
+
+  useEffect(() => {
+    const viewport = getScrollViewport();
+    if (!viewport) return;
+    const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
+    const onKeyDown = (event: KeyboardEvent) => {
+      const delta = getKeyboardScrollDelta(event);
+      if (delta === null) return;
+      event.preventDefault();
+      if (lenis?.isStopped || lenis?.isLocked) return;
+
+      const current = lenis?.scroll ?? viewport.scrollTop;
+      const target = lenis?.targetScroll ?? current;
+      // Reverse from the current position rather than consuming pending motion first.
+      const next = (delta * (target - current) < 0 ? current : target) + delta;
+      if (lenis) {
+        lenis.scrollTo(next, { programmatic: false, lerp: lenis.options.lerp, immediate: reducedMotion.matches });
+      } else {
+        viewport.scrollTo({ top: next, behavior: "instant" });
+      }
+    };
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, [lenis]);
 
   return (
     <LenisContext.Provider value={lenis}>{children}</LenisContext.Provider>
