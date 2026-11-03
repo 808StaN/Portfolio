@@ -63,22 +63,9 @@ function chunk<T>(arr: T[], size: number): T[][] {
   return chunks;
 }
 
-function CategoryBlock({
-  cat,
-  index,
-  inView,
-}: {
-  cat: (typeof categories)[0];
-  index: number;
-  inView: boolean;
-}) {
+function CategoryBlock({ cat }: { cat: (typeof categories)[0] }) {
   return (
-    <motion.div
-      className="stack-category-card"
-      initial={{ opacity: 0, y: 30 }}
-      animate={inView ? { opacity: 1, y: 0 } : {}}
-      transition={{ duration: 0.7, delay: 0.1 + index * 0.07, ease: easeOut }}
-    >
+    <div className="stack-category-card">
       <div className="stack-category-head">
         <div className="stack-category-title-wrap">
           <span className="stack-category-dot" style={{ background: cat.color, color: cat.color }} />
@@ -97,7 +84,7 @@ function CategoryBlock({
           </div>
         ))}
       </div>
-    </motion.div>
+    </div>
   );
 }
 
@@ -114,11 +101,16 @@ export default function Stack() {
           <ProjectTitleStretch title="Tech I use" projectId="stack" />
         </div>
 
-        <div className="stack-categories stack-intro">
-          {categories.map((cat, i) => (
-            <CategoryBlock key={cat.label} cat={cat} index={i} inView={inView} />
+        <motion.div
+          className="stack-categories stack-intro"
+          initial={{ opacity: 0 }}
+          animate={inView ? { opacity: 1 } : {}}
+          transition={{ duration: 0.35, ease: easeOut }}
+        >
+          {categories.map(cat => (
+            <CategoryBlock key={cat.label} cat={cat} />
           ))}
-        </div>
+        </motion.div>
         </div>
       </div>
     </section>

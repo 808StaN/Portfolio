@@ -35,9 +35,9 @@ export default function About() {
 
             <motion.div
               className="about-intro space-y-4 max-w-[66ch] mb-7"
-              initial={{ opacity: 0, y: 20 }}
-              animate={inView ? { opacity: 1, y: 0 } : {}}
-              transition={{ duration: 0.8, delay: 0.2, ease: easeOut }}
+              initial={{ opacity: 0 }}
+              animate={inView ? { opacity: 1 } : {}}
+              transition={{ duration: 0.35, ease: easeOut }}
             >
               <p className="text-sm md:text-base leading-[1.75]" style={{ color: 'rgba(255,255,255,0.56)', fontFamily: 'var(--font-sans)' }}>
                 Hi, I&apos;m Dawid, a full-stack developer based in Poland, specializing in React, Next.js, and Node.js.
@@ -59,9 +59,9 @@ export default function About() {
 
             <motion.div
               className="about-cv-btn"
-              initial={{ opacity: 0, y: 24 }}
-              animate={inView ? { opacity: 1, y: 0 } : {}}
-              transition={{ duration: 0.8, delay: 0.28, ease: easeOut }}
+              initial={{ opacity: 0 }}
+              animate={inView ? { opacity: 1 } : {}}
+              transition={{ duration: 0.35, ease: easeOut }}
             >
               <GravityLink
                 href="https://ziianpdcwxtnkuojaxtp.supabase.co/storage/v1/object/public/Portfolio/Dawid_Stanisz_CV.pdf"
@@ -77,19 +77,16 @@ export default function About() {
           <div className="flex flex-col gap-8">
             <motion.div
               className="about-certs-shell"
-              initial={{ opacity: 0, y: 30 }}
-              animate={inView ? { opacity: 1, y: 0 } : {}}
-              transition={{ duration: 0.8, delay: 0.25, ease: easeOut }}
+              initial={{ opacity: 0 }}
+              animate={inView ? { opacity: 1 } : {}}
+              transition={{ duration: 0.35, ease: easeOut }}
             >
               <p className="about-certs-label">Certificates</p>
               <div className="about-certs-list">
-                {certificates.map((certificate, i) => (
-                  <motion.article
+                {certificates.map(certificate => (
+                  <article
                     key={certificate.title}
                     className="about-cert-item"
-                    initial={{ opacity: 0, x: 20 }}
-                    animate={inView ? { opacity: 1, x: 0 } : {}}
-                    transition={{ duration: 0.65, delay: 0.35 + i * 0.1, ease: easeOut }}
                   >
                     <div className="about-cert-copy">
                       <h3 className="about-cert-title">
@@ -106,7 +103,7 @@ export default function About() {
                       icon="arrow-up-right"
                       sizing={{ paddingX: 14, paddingY: 8, fontSize: 11.5 }}
                     />
-                  </motion.article>
+                  </article>
                 ))}
               </div>
             </motion.div>

@@ -61,9 +61,9 @@ export default function Contact() {
             <motion.p
               className="contact-intro text-base leading-relaxed max-w-[62ch]"
               style={{ color: 'rgba(255,255,255,0.56)', fontFamily: 'var(--font-sans)' }}
-              initial={{ opacity: 0, y: 20 }}
-              animate={inView ? { opacity: 1, y: 0 } : {}}
-              transition={{ duration: 0.8, delay: 0.2, ease: easeOut }}
+              initial={{ opacity: 0 }}
+              animate={inView ? { opacity: 1 } : {}}
+              transition={{ duration: 0.35, ease: easeOut }}
             >
               The best way to reach me is through LinkedIn or email. I am open to internship opportunities and full-time roles, with a willingness to relocate. I’m eager to grow as a developer and contribute to meaningful products.
             </motion.p>
@@ -71,9 +71,9 @@ export default function Contact() {
 
           <div className="flex flex-col justify-center gap-8">
             <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={inView ? { opacity: 1, y: 0 } : {}}
-              transition={{ duration: 0.8, delay: 0.3, ease: easeOut }}
+              initial={{ opacity: 0 }}
+              animate={inView ? { opacity: 1 } : {}}
+              transition={{ duration: 0.35, ease: easeOut }}
             >
               <span
                 className="text-[11px] uppercase tracking-widest mb-5 block"
@@ -124,6 +124,7 @@ export default function Contact() {
               initial={{ opacity: 0 }}
               whileInView={{ opacity: 1 }}
               viewport={{ once: true }}
+              transition={{ duration: 0.35, ease: easeOut }}
             >
               Designed & developed by Dawid Stanisz (808StaN) - 2026
             </motion.p>
