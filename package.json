@@ -8,6 +8,7 @@
     "dev": "vite",
     "prebuild": "node scripts/download-fonts.mjs",
     "build": "vite build",
+    "test:shaders": "node scripts/test-flowing-gradient.mjs",
     "preview": "vite preview"
   },
   "dependencies": {
@@ -22,7 +23,8 @@
     "react-dom": "19.2.3",
     "shaders": "^3.0.445",
     "tailwind-merge": "3.4.0",
-    "three": "^0.184.0"
+    "three": "^0.184.0",
+    "typegpu": "0.11.9"
   },
   "devDependencies": {
     "@tailwindcss/vite": "4.1.17",

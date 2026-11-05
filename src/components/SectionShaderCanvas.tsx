@@ -3,13 +3,13 @@ import { createGpuUniformsMap, rootPassthrough, shaderRendererGPU, type GpuShade
 import { componentDefinition as BlueNoise } from 'shaders/core/BlueNoise';
 import { componentDefinition as ColorWheel } from 'shaders/core/ColorWheel';
 import { componentDefinition as Exposure } from 'shaders/core/Exposure';
-import { componentDefinition as FlowingGradient } from 'shaders/core/FlowingGradient';
 import { componentDefinition as Glass } from 'shaders/core/Glass';
 import { componentDefinition as Group } from 'shaders/core/Group';
 import { componentDefinition as Stripes } from 'shaders/core/Stripes';
 import { componentDefinition as ThinFilm } from 'shaders/core/ThinFilm';
 import { componentDefinition as Twirl } from 'shaders/core/Twirl';
 import { sectionShaderPalettes, type ShaderPalette } from '../constants/sectionColors';
+import { sectionFlowingGradient } from '../utils/flowingOklab';
 
 type SectionShaderCanvasProps = {
   palette: ShaderPalette;
@@ -86,7 +86,7 @@ export default function SectionShaderCanvas({ palette, heroCapable, hero, active
           }, createGpuUniformsMap(definition, props, id), definition);
         };
         const [colorA, colorB, colorC, colorD] = sectionShaderPalettes.home;
-        add('gradient', FlowingGradient, { colorA, colorB, colorC, colorD, colorSpace: 'oklab', speed: 1.6, distortion: 0.15 });
+        add('gradient', sectionFlowingGradient, { colorA, colorB, colorC, colorD, colorSpace: 'oklab', speed: 1.6, distortion: 0.15 });
         if (heroCapable) {
           add('hero', Group, {}, 'root', { opacity: 0.999 });
           // Opacity alone does not stop compute dispatches; pause the blur outside Hero.
