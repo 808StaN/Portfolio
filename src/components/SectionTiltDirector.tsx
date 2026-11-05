@@ -184,7 +184,6 @@ export default function SectionTiltDirector() {
       if (refreshFrame) return;
       refreshFrame = requestAnimationFrame(() => {
         refreshFrame = 0;
-        lenis?.resize();
         ScrollTrigger.refresh();
       });
     };
@@ -194,26 +193,25 @@ export default function SectionTiltDirector() {
     scheduleRefresh();
 
     let { width, height } = getScrollMetrics();
-    const observer = viewport ? new ResizeObserver(() => {
+    const onResize = () => {
       const metrics = getScrollMetrics();
       if (metrics.width === width && metrics.height === height) return;
       width = metrics.width;
       height = metrics.height;
       scheduleRefresh();
-    }) : null;
+    };
+    const observer = viewport ? new ResizeObserver(onResize) : null;
     if (viewport) observer?.observe(viewport);
 
     const onScroll = () => {
       ScrollTrigger.update();
     };
     const unsubscribeLenis = lenis?.on("scroll", onScroll);
-    scroller.addEventListener("scroll", onScroll, { passive: true });
-    window.addEventListener("resize", scheduleRefresh);
+    window.addEventListener("resize", onResize);
 
     return () => {
       unsubscribeLenis?.();
-      scroller.removeEventListener("scroll", onScroll);
-      window.removeEventListener("resize", scheduleRefresh);
+      window.removeEventListener("resize", onResize);
       observer?.disconnect();
       cancelAnimationFrame(refreshFrame);
       ScrollTrigger.removeEventListener("refreshInit", updateOverlaps);

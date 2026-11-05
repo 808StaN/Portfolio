@@ -65,16 +65,44 @@ export default function Projects() {
   }, []);
 
   useEffect(() => {
-    const raf = requestAnimationFrame(() => ScrollTrigger.refresh());
-    // Podmiana fontu (Syne) zmienia metryki tytułów — przelicz triggery raz, gdy
-    // font jest gotowy. Jeden globalny refresh zamiast pomiaru per-tytuł.
+    // Measure unpinned panels, not transformed bounds or pin spacers.
+    const panels = Array.from(
+      revealRef.current?.querySelectorAll<HTMLElement>(".projects-project-panel") ?? [],
+    );
+    let heights = panels.map((panel) => panel.offsetHeight);
+    let raf = 0;
+    const scheduleRefresh = () => {
+      if (raf) return;
+      raf = requestAnimationFrame(() => {
+        raf = 0;
+        ScrollTrigger.refresh();
+      });
+    };
+    const onRefresh = () => {
+      // Any completed full refresh already includes the pending layout changes.
+      cancelAnimationFrame(raf);
+      raf = 0;
+      heights = panels.map((panel) => panel.offsetHeight);
+    };
+    ScrollTrigger.addEventListener("refresh", onRefresh);
+    const observer = new ResizeObserver(() => {
+      const nextHeights = panels.map((panel) => panel.offsetHeight);
+      if (nextHeights.every((height, index) => height === heights[index])) return;
+      heights = nextHeights;
+      scheduleRefresh();
+    });
+    panels.forEach((panel) => observer.observe(panel));
+    scheduleRefresh();
+    // Refresh title metrics once fonts are ready, even when panel heights stay unchanged.
     let cancelled = false;
     document.fonts?.ready.then(() => {
-      if (!cancelled) ScrollTrigger.refresh();
+      if (!cancelled) scheduleRefresh();
     });
     return () => {
       cancelled = true;
       cancelAnimationFrame(raf);
+      observer.disconnect();
+      ScrollTrigger.removeEventListener("refresh", onRefresh);
     };
   }, []);
 

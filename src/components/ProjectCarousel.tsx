@@ -105,7 +105,7 @@ export default function ProjectCarousel({ project }: ProjectCarouselProps) {
           <div className="carousel__cell" key={`${project.id}-cell-${i}`}>
             <div
               className="card"
-              style={{ "--img": `url(${image.srcOriginal})` } as React.CSSProperties}
+              style={{ "--img": `image-set(url("${image.src1100}") 1x, url("${image.srcOriginal}") 2x)` } as React.CSSProperties}
             >
               <div className="card__face card__face--front" />
               <div className="card__face card__face--back" />

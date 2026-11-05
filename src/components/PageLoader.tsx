@@ -32,7 +32,7 @@ export default function PageLoader({ ready, onStageChange }: { ready: boolean; o
     reducedMotion.addEventListener('change', onMotionChange);
     const intro = window.setTimeout(() => setIntroComplete(true), 1200);
     // A failed or stalled GPU must never leave the page locked behind the intro.
-    const timeout = window.setTimeout(() => onStageChange('done'), reducedMotion.matches ? 0 : 10000);
+    const timeout = window.setTimeout(() => onStageChange('done'), reducedMotion.matches ? 0 : 14000);
     return () => {
       clearTimeout(intro);
       clearTimeout(timeout);

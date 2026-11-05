@@ -1,11 +1,11 @@
 import { useEffect, useState, type CSSProperties } from 'react';
 import { createPortal } from 'react-dom';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
-import { BlueNoise, ColorWheel, Exposure, FlowingGradient, Glass, Glow, Group, Shader, Stripes, ThinFilm, Twirl, isWebGPUSupported } from 'shaders/react';
+import { isWebGPUSupported } from 'shaders/core';
 import { sectionShaderPalettes, type ShaderPalette } from '../constants/sectionColors';
 import { getScrollMetrics, getScrollViewport } from '../utils/scroll';
+import SectionShaderCanvas from './SectionShaderCanvas';
 
-const heroLogoSdfUrl = '/react-logo_sdf.bin';
 // Occupied width of the supplied 512px SDF, excluding its transparent padding.
 const heroLogoSdfWidth = 460 / 512;
 
@@ -28,11 +28,9 @@ type ShaderSlot = {
   id: number;
   onReady: () => void;
   hero: boolean;
+  active: boolean;
   logoCenter: { x: number; y: number };
   logoScale: number;
-};
-type ShaderCanvasContext = {
-  getConfiguration?: () => { device: { queue: { onSubmittedWorkDone: () => Promise<void> } } } | null;
 };
 
 export type SectionShaderState = 'loading' | 'ready' | 'fallback';
@@ -66,8 +64,8 @@ export function SectionShaderRenderer({ onStateChange }: { onStateChange: (state
     parking.setAttribute('data-shader-warming', '');
     parking.setAttribute('aria-hidden', 'true');
     document.querySelector('.portfolio-viewport')!.appendChild(parking);
-    const initialized = new Set<HTMLDivElement>();
     let timedOut = false;
+    // Compile scroll-time modes up front; this is a watchdog, not an intro delay.
     const startupTimeout = window.setTimeout(() => {
       timedOut = true;
       parking.removeAttribute('data-shader-warming');
@@ -76,42 +74,27 @@ export function SectionShaderRenderer({ onStateChange }: { onStateChange: (state
         parking.appendChild(slot.host);
       });
       onStateChange('fallback');
-      // The library cannot dispose a pending initialize(); park it until its first submission.
-      if (initialized.size === slots.length) setUnavailable(true);
-    }, 8000);
+      setUnavailable(true);
+    }, 12000);
     let readyFrame = 0;
     let warmed = false;
-    const markReady = async (host: HTMLDivElement): Promise<void> => {
-      if (!host.isConnected) return;
-      initialized.add(host);
-      if (timedOut) {
-        if (initialized.size === slots.length) setUnavailable(true);
-        return;
-      }
-      try {
-        const context = host.querySelector('canvas')?.getContext('webgpu') as ShaderCanvasContext | null;
-        // The library signals submission before Firefox finishes compiling/drawing on the GPU.
-        await context?.getConfiguration?.()?.device.queue.onSubmittedWorkDone();
-      } catch {
-        if (host.isConnected) setUnavailable(true);
-        return;
-      }
+    const markReady = (host: HTMLDivElement) => {
       if (!host.isConnected || timedOut) return;
       host.dataset.shaderReady = 'true';
       if (warmed || !slots.every(slot => slot.host.dataset.shaderReady === 'true')) return;
       warmed = true;
+      clearTimeout(startupTimeout);
       // Allow the completed frame to reach the compositor before revealing the page.
       readyFrame = requestAnimationFrame(() => {
         readyFrame = requestAnimationFrame(() => {
           if (timedOut) return;
-          clearTimeout(startupTimeout);
           parking.removeAttribute('data-shader-warming');
           update();
           onStateChange('ready');
         });
       });
     };
-    // Warm both persistent renderers before interaction; the spare stays viewport-sized.
+    // Only slot 0 builds Hero; slot 1 compiles both gradient modes together.
     const slots = Array.from({ length: 2 }, (_, id) => {
       const host = document.createElement('div');
       host.className = 'section-shader-slot';
@@ -120,6 +103,7 @@ export function SectionShaderRenderer({ onStateChange }: { onStateChange: (state
       return { host, id, palette: 'home' as ShaderPalette, target: null as HTMLElement | null, onReady: () => markReady(host) };
     });
     let frame = 0;
+    let logoGeometry: { logoCenter: { x: number; y: number }; logoScale: number } | null = null;
     const update = () => {
       cancelAnimationFrame(frame);
       frame = 0;
@@ -138,44 +122,50 @@ export function SectionShaderRenderer({ onStateChange }: { onStateChange: (state
       });
       const visible = candidates.slice(covering).slice(-2).map(({ layer }) => layer);
 
+      const assignments = new Map<(typeof slots)[number], HTMLElement>();
+      // Reserve the warmed variants first, independent of scroll direction or navigation jumps.
+      const special = (layer: HTMLElement) => layer === heroLayer || layer.dataset.shaderPalette === 'projectOtakuVersus';
+      [...visible].sort((a, b) => Number(special(b)) - Number(special(a))).forEach(layer => {
+        const slot = layer === heroLayer ? slots[0]
+          : layer.dataset.shaderPalette === 'projectOtakuVersus' ? slots[1]
+            : slots.find(candidate => candidate.target === layer && !assignments.has(candidate))
+              ?? slots.find(candidate => !assignments.has(candidate))!;
+        assignments.set(slot, layer);
+      });
       slots.forEach(slot => {
-        if (!slot.target || !visible.includes(slot.target)) {
-          slot.host.dataset.shaderActive = 'false';
-          if (slot.host.parentElement !== parking) parking.appendChild(slot.host);
-          slot.target = null;
-        }
+        const target = assignments.get(slot) ?? null;
+        slot.host.dataset.shaderActive = String(!!target);
+        slot.target = target;
+        if (target) slot.palette = target.dataset.shaderPalette as ShaderPalette;
+        const parent = target ?? parking;
+        if (slot.host.parentElement !== parent) parent.appendChild(slot.host);
       });
-      visible.forEach(layer => {
-        const slot = slots.find(candidate => candidate.target === layer)
-          ?? slots.find(candidate => !candidate.target)!;
-        if (slot.target !== layer) {
-          slot.target = layer;
-          slot.palette = layer.dataset.shaderPalette as ShaderPalette;
-          layer.appendChild(slot.host);
+      if (!logoGeometry) {
+        let logoX = 0;
+        let logoY = 0;
+        const heroPanel = heroLayer?.parentElement;
+        // Panel-local coordinates only change with layout, not its scroll-driven transform.
+        for (let element = logoAnchor; element && element !== heroPanel; element = element.offsetParent as HTMLElement | null) {
+          logoX += element.offsetLeft;
+          logoY += element.offsetTop;
         }
-        slot.host.dataset.shaderActive = 'true';
-      });
-      let logoX = 0;
-      let logoY = 0;
-      const heroPanel = heroLayer?.parentElement;
-      // Offset coordinates stay panel-local while GSAP rotates/translates the entire section.
-      for (let element = logoAnchor; element && element !== heroPanel; element = element.offsetParent as HTMLElement | null) {
-        logoX += element.offsetLeft;
-        logoY += element.offsetTop;
+        const logoWidth = logoAnchor?.offsetWidth ?? 0;
+        const logoHeight = logoAnchor?.offsetHeight ?? 0;
+        const panelWidth = heroPanel?.clientWidth || width;
+        const panelHeight = heroPanel?.clientHeight || height;
+        logoGeometry = {
+          logoCenter: { x: (logoX + logoWidth / 2) / panelWidth, y: (logoY + logoHeight / 2) / panelHeight },
+          logoScale: logoWidth / (heroLogoSdfWidth * panelHeight),
+        };
       }
-      const logoWidth = logoAnchor?.offsetWidth ?? 0;
-      const logoHeight = logoAnchor?.offsetHeight ?? 0;
-      const panelWidth = heroPanel?.clientWidth || width;
-      const panelHeight = heroPanel?.clientHeight || height;
-      const logoCenter = { x: (logoX + logoWidth / 2) / panelWidth, y: (logoY + logoHeight / 2) / panelHeight };
-      const logoScale = logoWidth / (heroLogoSdfWidth * panelHeight);
       const next = slots.map(({ host, palette, id, onReady, target }) => ({
-        host, palette, id, onReady, logoCenter, logoScale,
-        hero: target === heroLayer || (!warmed && !target),
+        host, palette, id, onReady, ...logoGeometry!,
+        hero: id === 0 && target === heroLayer,
+        active: !!target,
       }));
       setRenderers(previous => previous.length === next.length
         && previous.every((slot, index) => slot.host === next[index].host && slot.palette === next[index].palette
-          && slot.hero === next[index].hero && slot.logoScale === next[index].logoScale
+          && slot.hero === next[index].hero && slot.active === next[index].active && slot.logoScale === next[index].logoScale
           && slot.logoCenter.x === next[index].logoCenter.x && slot.logoCenter.y === next[index].logoCenter.y)
         ? previous : next);
     };
@@ -183,14 +173,18 @@ export function SectionShaderRenderer({ onStateChange }: { onStateChange: (state
       if (!frame) frame = requestAnimationFrame(update);
     };
     const scroller = getScrollViewport() ?? window;
-    const observer = new ResizeObserver(schedule);
+    const measure = () => {
+      logoGeometry = null;
+      schedule();
+    };
+    const observer = new ResizeObserver(measure);
     layers.forEach(layer => observer.observe(layer));
     if (logoAnchor) observer.observe(logoAnchor);
     update();
     scroller.addEventListener('scroll', schedule, { passive: true });
-    window.addEventListener('resize', schedule);
+    window.addEventListener('resize', measure);
     document.addEventListener('visibilitychange', update);
-    ScrollTrigger.addEventListener('refresh', schedule);
+    ScrollTrigger.addEventListener('refresh', measure);
 
     return () => {
       clearTimeout(startupTimeout);
@@ -198,110 +192,16 @@ export function SectionShaderRenderer({ onStateChange }: { onStateChange: (state
       cancelAnimationFrame(readyFrame);
       observer.disconnect();
       scroller.removeEventListener('scroll', schedule);
-      window.removeEventListener('resize', schedule);
+      window.removeEventListener('resize', measure);
       document.removeEventListener('visibilitychange', update);
-      ScrollTrigger.removeEventListener('refresh', schedule);
+      ScrollTrigger.removeEventListener('refresh', measure);
       slots.forEach(slot => slot.host.remove());
       parking.remove();
     };
   }, [reducedMotion, unavailable, onStateChange]);
 
-  return renderers.map(({ host, palette, id, onReady, hero, logoCenter, logoScale }) => {
-    const [colorA, colorB, colorC, colorD] = sectionShaderPalettes[palette];
-    const logoMaskId = `hero-logo-stripes-${id}`;
-    return createPortal(
-      <Shader
-        className="section-bands-canvas"
-        disableTelemetry
-        onReady={onReady}
-        onUnavailable={() => setUnavailable(true)}
-      >
-        <FlowingGradient
-          colorA={colorA}
-          colorB={colorB}
-          colorC={colorC}
-          colorD={colorD}
-          colorSpace={palette === 'projectOtakuVersus' ? 'oklab' : 'hsl'}
-          speed={1.6}
-          distortion={0.15}
-        />
-        <Group opacity={hero ? 0.999 : 0}>
-          <Glass
-            aberration={0}
-            blur={20}
-            center={logoCenter}
-            cutout={true}
-            edgeSoftness={0.6}
-            fresnel={0.08}
-            fresnelColor="#f2f7ff"
-            fresnelSoftness={0.57}
-            highlight={0}
-            highlightColor="#c9e8ff"
-            highlightSoftness={0.2}
-            innerZoom={1}
-            lightAngle={300}
-            refraction={0}
-            scale={logoScale * 1.1}
-            shapeSdfUrl={heroLogoSdfUrl}
-            thickness={0}
-          >
-            <Twirl
-              id={logoMaskId}
-              center={{ x: 0.22872827081427263, y: 0.667479674796748 }}
-              edges="mirror"
-              intensity={-1.7}
-              visible={false}
-            >
-              <Stripes
-                angle={-139}
-                balance={0.5}
-                colorA="#00000000"
-                colorB="#e8f4ff"
-                colorSpace="linear"
-                density={2}
-                offset={0}
-                softness={0.4}
-                speed={-0.15}
-              />
-            </Twirl>
-            <ColorWheel
-              angle={154}
-              colorA="#b8caff"
-              colorB="#61dafb"
-              colorC="#4f8ef7"
-              colorSpace="oklab"
-              maskSource={logoMaskId}
-              maskType="alpha"
-              mode="custom"
-              scale={5.2}
-              speed={-0.25}
-            />
-            <Exposure exposure={6} />
-          </Glass>
-          <ThinFilm
-            center={logoCenter}
-            colorA="#6e9ff4"
-            colorB="#dbeafe"
-            colorC="#b8caff"
-            colorSpace="oklab"
-            dispersion={0.42}
-            edgeSoftness={0.55}
-            hueShift={0}
-            intensity={1.5}
-            lightAngle={298}
-            mode="custom"
-            rimWidth={0.15}
-            saturation={1}
-            scale={logoScale * 1.1}
-            shapeSdfUrl={heroLogoSdfUrl}
-            speed={-0.19}
-            thickness={0.45}
-          />
-          <Glow intensity={1.5} opacity={0.01} size={200} threshold={0.3} />
-          <Glow intensity={1} opacity={0.1} size={100} threshold={0.5} />
-        </Group>
-        <BlueNoise opacity={0.25} contrast={-0.2} balance={0} blendMode="overlay" />
-      </Shader>, host, String(id),
-    );
-  });
+  return renderers.map(({ host, id, ...props }) => createPortal(
+    <SectionShaderCanvas {...props} heroCapable={id === 0} onUnavailable={() => setUnavailable(true)} />,
+    host, String(id),
+  ));
 }
