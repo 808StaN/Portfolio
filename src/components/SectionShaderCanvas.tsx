@@ -36,12 +36,7 @@ export default function SectionShaderCanvas({ palette, heroCapable, hero, active
     if (paletteRef.current !== palette) {
       sectionShaderPalettes[palette].forEach((color, index) => {
         renderer.updateUniformValue('gradient', `color${'ABCD'[index]}`, color);
-        if (!heroCapable) renderer.updateUniformValue('gradient_oklab', `color${'ABCD'[index]}`, color);
       });
-      if (!heroCapable) {
-        // Stay below the library's opacity=1 recompile boundary; f32 still receives exactly 1.
-        renderer.updateNodeMetadata('gradient_oklab', { opacity: palette === 'projectOtakuVersus' ? 1 - Number.EPSILON : 0 });
-      }
       paletteRef.current = palette;
     }
     if (heroCapable) {
@@ -91,11 +86,7 @@ export default function SectionShaderCanvas({ palette, heroCapable, hero, active
           }, createGpuUniformsMap(definition, props, id), definition);
         };
         const [colorA, colorB, colorC, colorD] = sectionShaderPalettes.home;
-        add('gradient', FlowingGradient, { colorA, colorB, colorC, colorD, colorSpace: 'hsl', speed: 1.6, distortion: 0.15 });
-        if (!heroCapable) {
-          // Both interpolation modes compile together; section changes only update uniforms.
-          add('gradient_oklab', FlowingGradient, { colorA, colorB, colorC, colorD, colorSpace: 'oklab', speed: 1.6, distortion: 0.15 }, 'root', { opacity: 0 });
-        }
+        add('gradient', FlowingGradient, { colorA, colorB, colorC, colorD, colorSpace: 'oklab', speed: 1.6, distortion: 0.15 });
         if (heroCapable) {
           add('hero', Group, {}, 'root', { opacity: 0.999 });
           // Opacity alone does not stop compute dispatches; pause the blur outside Hero.

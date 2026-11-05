@@ -94,7 +94,7 @@ export function SectionShaderRenderer({ onStateChange }: { onStateChange: (state
         });
       });
     };
-    // Only slot 0 builds Hero; slot 1 compiles both gradient modes together.
+    // Only slot 0 builds Hero; both slots use OKLab gradients.
     const slots = Array.from({ length: 2 }, (_, id) => {
       const host = document.createElement('div');
       host.className = 'section-shader-slot';
