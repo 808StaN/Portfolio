@@ -9,6 +9,7 @@ import { getKeyboardScrollDelta, getScrollMetrics, getScrollTargetTop, getScroll
 const links = [
   { label: 'Projects', href: '#work' },
   { label: 'About', href: '#about' },
+  { label: 'Experience', href: '#experience' },
   { label: 'Stack', href: '#stack' },
   { label: 'Contact', href: '#contact' },
 ];
@@ -143,7 +144,9 @@ export default function Nav({ ready }: { ready: boolean }) {
       // Reveal scroll-triggered content, but leave the hero's looping animation alone.
       if (!returningHome) {
         el.querySelectorAll<HTMLElement>('.section-tilt-container [style*="opacity"]')
-          .forEach(node => node.setAttribute('data-nav-revealed', ''));
+          .forEach(node => {
+            if (!node.closest('[data-scroll-journey]')) node.setAttribute('data-nav-revealed', '');
+          });
       }
       flushSync(() => setActiveSection(el.id));
       if (!el.hasAttribute('tabindex')) el.setAttribute('tabindex', '-1');
@@ -483,7 +486,7 @@ export default function Nav({ ready }: { ready: boolean }) {
               ))}
             </div>
 
-            <div className="hidden lg:flex items-center gap-4">
+            <div className="site-nav-external hidden lg:flex items-center gap-4">
               <a
                 href="https://github.com/808StaN"
                 target="_blank"
@@ -502,7 +505,7 @@ export default function Nav({ ready }: { ready: boolean }) {
             </div>
           </div>
           <button
-            className="lg:hidden absolute flex h-11 w-11 flex-col items-center justify-center gap-1.5 cursor-pointer border-none"
+            className="site-nav-menu-toggle lg:hidden absolute flex h-11 w-11 flex-col items-center justify-center gap-1.5 cursor-pointer border-none"
             style={{
               top: '50%',
               right: '10px',

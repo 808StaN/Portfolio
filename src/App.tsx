@@ -3,6 +3,7 @@ import Nav from "./components/Nav";
 import Hero from "./components/Hero";
 import Projects from "./components/Projects";
 import About from "./components/About";
+import Experience from "./components/Experience";
 import Stack from "./components/Stack";
 import Contact from "./components/Contact";
 import Cursor from "./components/Cursor";
@@ -44,6 +45,7 @@ export default function App() {
                       <Hero ready={entranceReady} />
                       <Projects />
                       <About />
+                      <Experience />
                       <Stack />
                       <Contact />
                     </main>

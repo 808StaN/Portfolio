@@ -27,9 +27,6 @@ export default function ProjectCarousel({ project }: ProjectCarouselProps) {
     if (!section) return;
 
     const scroller = getScrollViewport() ?? window;
-    const reducedMotion = window.matchMedia(
-      "(prefers-reduced-motion: reduce)",
-    ).matches;
 
     // "Ostatni projekt" = ten, po którym następuje sekcja spoza grupy projektów
     // (OtakuVersus → About). Wtedy pin trwa dłużej (300%): 200% na rotację zdjęć,
@@ -51,42 +48,46 @@ export default function ProjectCarousel({ project }: ProjectCarouselProps) {
       cells.forEach((cell, i) => {
         cell.style.transform = `rotateY(${i * ANGLE_STEP}deg) translateZ(var(--carousel-radius))`;
       });
-      if (reducedMotion) return restoreCells;
+      const media = gsap.matchMedia();
+      media.add('(prefers-reduced-motion: no-preference)', () => {
+        const tl = gsap.timeline({
+          scrollTrigger: {
+            id: `carousel-${project.id}`,
+            scroller,
+            // Enable document-order refreshes for pins mounted after the director.
+            refreshPriority: 0,
+            trigger: section,
+            // Let tall projects scroll fully into view before pinning their lower content.
+            start: () => getProjectPinStart(section),
+            end: () => `+=${getScrollMetrics().height * (isLastProject ? 3 : 2)}`,
+            scrub: true,
+            pin: true,
+            pinSpacing: true,
+          },
+        });
 
-      const tl = gsap.timeline({
-        scrollTrigger: {
-          id: `carousel-${project.id}`,
-          scroller,
-          // Enable document-order refreshes for pins mounted after the director.
-          refreshPriority: 0,
-          trigger: section,
-          // Let tall projects scroll fully into view before pinning their lower content.
-          start: () => getProjectPinStart(section),
-          end: () => `+=${getScrollMetrics().height * (isLastProject ? 3 : 2)}`,
-          scrub: true,
-          pin: true,
-          pinSpacing: true,
-        },
+        tl.fromTo(
+          carousel,
+          { rotationY: 0, rotationZ: 3, rotationX: 3 },
+          {
+            rotationY: -270,
+            rotationZ: -3,
+            rotationX: -3,
+            ease: "sine.inOut",
+            duration: 2,
+          },
+        );
+
+        // Pusty ogon: rotacja kończy się na 200%, a karuzela trzyma pin przez
+        // ostatnie 100%, gdy About się wynurza.
+        if (isLastProject) {
+          tl.to({}, { duration: 1 });
+        }
       });
-
-      tl.fromTo(
-        carousel,
-        { rotationY: 0, rotationZ: 3, rotationX: 3 },
-        {
-          rotationY: -270,
-          rotationZ: -3,
-          rotationX: -3,
-          ease: "sine.inOut",
-          duration: 2,
-        },
-      );
-
-      // Pusty ogon: rotacja kończy się na 200%, a karuzela trzyma pin przez
-      // ostatnie 100%, gdy About się wynurza.
-      if (isLastProject) {
-        tl.to({}, { duration: 1 });
-      }
-      return restoreCells;
+      return () => {
+        media.revert();
+        restoreCells();
+      };
     }, scene);
 
     return () => ctx.revert();

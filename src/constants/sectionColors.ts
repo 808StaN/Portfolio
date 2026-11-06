@@ -3,6 +3,7 @@ export const sectionColors = {
   work: "#075A9C",
 
   about: "#3A315E",
+  experience: "#143D88",
   stack: "#263A59",
   contact: "#24313D",
 
@@ -19,6 +20,7 @@ export const sectionShaderPalettes = {
   projectOpenStudio: ['#173D28', '#245837', '#2F7542', '#488556'],
   projectOtakuVersus: ['#450B21', '#850F36', '#BA1247', '#E11955'],
   about: ['#241E3D', '#3A315E', '#4B3D70', '#665482'],
+  experience: ['#102854', '#143D88', '#2561BD', '#5086DA'],
   stack: ['#16263D', '#263A59', '#334F6F', '#466681'],
   contact: ['#17232D', '#24313D', '#304653', '#42606A'],
 } as const;

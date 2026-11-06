@@ -622,7 +622,18 @@ html.custom-scrollbar-dragging * {
 }
 
 .site-nav .site-nav-links {
-  gap: clamp(8px, calc(40cqw - 184px), 32px);
+  gap: clamp(8px, calc(20cqw - 100px), 24px);
+}
+
+@container (max-width: 520px) {
+  .site-nav .site-nav-links,
+  .site-nav .site-nav-external {
+    display: none;
+  }
+
+  .site-nav .site-nav-menu-toggle {
+    display: flex;
+  }
 }
 
 @property --nav-hero-progress {
@@ -691,6 +702,7 @@ html.nav-document-transition::view-transition-new(*) {
 html.nav-document-transition .nav-visual-home { view-transition-name: nav-home; }
 html.nav-document-transition .nav-visual-work { view-transition-name: nav-work; }
 html.nav-document-transition .nav-visual-about { view-transition-name: nav-about; }
+html.nav-document-transition .nav-visual-experience { view-transition-name: nav-experience; }
 html.nav-document-transition .nav-visual-stack { view-transition-name: nav-stack; }
 html.nav-document-transition .nav-visual-contact { view-transition-name: nav-contact; }
 html.nav-document-transition .nav-visual-github { view-transition-name: nav-github; }
@@ -843,6 +855,7 @@ html.nav-document-transition::view-transition-new(site-nav-bg) {
 html.nav-document-transition::view-transition-group(nav-home),
 html.nav-document-transition::view-transition-group(nav-work),
 html.nav-document-transition::view-transition-group(nav-about),
+html.nav-document-transition::view-transition-group(nav-experience),
 html.nav-document-transition::view-transition-group(nav-stack),
 html.nav-document-transition::view-transition-group(nav-contact),
 html.nav-document-transition::view-transition-group(nav-github),
@@ -861,6 +874,7 @@ html.nav-document-transition::view-transition-group(site-cursor) {
 html.nav-document-transition::view-transition-old(nav-home),
 html.nav-document-transition::view-transition-old(nav-work),
 html.nav-document-transition::view-transition-old(nav-about),
+html.nav-document-transition::view-transition-old(nav-experience),
 html.nav-document-transition::view-transition-old(nav-stack),
 html.nav-document-transition::view-transition-old(nav-contact),
 html.nav-document-transition::view-transition-old(nav-github),

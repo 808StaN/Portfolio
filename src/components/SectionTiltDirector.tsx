@@ -1,8 +1,10 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { useLenis } from "./LenisScroll";
 import { getScrollMetrics, getScrollViewport } from "../utils/scroll";
+import { experienceTravelScreens } from "../constants/experience";
+import { useExperiencePin } from "../utils/useExperiencePin";
 import {
   incomingAngles,
   hexToHsl,
@@ -17,6 +19,15 @@ ScrollTrigger.config({ ignoreMobileResize: true });
 
 export default function SectionTiltDirector() {
   const lenis = useLenis();
+  const experiencePinned = useExperiencePin();
+  const [reducedMotion, setReducedMotion] = useState(() => window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+
+  useEffect(() => {
+    const media = window.matchMedia('(prefers-reduced-motion: reduce)');
+    const update = () => setReducedMotion(media.matches);
+    media.addEventListener('change', update);
+    return () => media.removeEventListener('change', update);
+  }, []);
 
   useEffect(() => {
     const sections = Array.from(
@@ -27,9 +38,6 @@ export default function SectionTiltDirector() {
     const viewport = getScrollViewport();
     const scroller = viewport ?? window;
 
-    const reducedMotion = window.matchMedia(
-      "(prefers-reduced-motion: reduce)",
-    ).matches;
     const clipTargets: Array<{
       section: HTMLElement;
       panel: HTMLElement;
@@ -119,12 +127,13 @@ export default function SectionTiltDirector() {
           applyBlend(this.progress());
         };
 
-        // Match the carousel's final viewport of pin time without adding another pin.
+        // Keep long pinned sections in place while the next section tilts in.
         const isOutgoingProject = section.dataset.sectionGroup === "projects";
-        if (isOutgoingProject) {
+        const isOutgoingExperience = section.hasAttribute('data-experience-journey') && experiencePinned;
+        if (isOutgoingProject || isOutgoingExperience) {
           overlapTargets.push({ section: incomingSection, marginTop: incomingSection.style.marginTop });
           gsap.set(incomingSection, { "--section-overlap-offset": `${-getScrollMetrics().height}px` });
-          // Keep a live value in the margin that ScrollTrigger saves when pinning About.
+          // Keep a live margin through pin refreshes and viewport changes.
           incomingSection.style.marginTop = "var(--section-overlap-offset)";
 
           const tl = gsap.timeline({
@@ -135,11 +144,13 @@ export default function SectionTiltDirector() {
                 : undefined,
               trigger: section,
               start: () => getProjectPinStart(section),
-              end: () => `+=${getScrollMetrics().height * 3}`,
+              end: () => `+=${getScrollMetrics().height * (isOutgoingExperience ? experienceTravelScreens + 1 : 3)}`,
               scrub: true,
+              // Experience has one pin owner for both the journey and the outgoing tilt.
+              ...(isOutgoingExperience && { pin: true, pinSpacing: true }),
             },
           });
-          tl.to({}, { duration: 2 });
+          tl.to({}, { duration: isOutgoingExperience ? experienceTravelScreens : 2 });
           tl.to(incomingPanel, {
             keyframes: tiltKeyframes,
             ease: "none",
@@ -226,7 +237,7 @@ export default function SectionTiltDirector() {
       });
       clipTargets.forEach(({ panel }) => panel.style.removeProperty('--section-corner-scale'));
     };
-  }, [lenis]);
+  }, [lenis, experiencePinned, reducedMotion]);
 
   return null;
 }

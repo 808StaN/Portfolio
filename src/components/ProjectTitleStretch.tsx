@@ -63,32 +63,33 @@ export default function ProjectTitleStretch({
     };
     scaleEl.style.transformOrigin = transformOrigin;
 
-    const reducedMotion = window.matchMedia(
-      "(prefers-reduced-motion: reduce)",
-    ).matches;
-    if (reducedMotion) {
-      scaleEl.style.transform = `scale(${BASE_SCALE_X}, ${REST_SCALE_Y})`;
-      return restoreStyles;
-    }
+    const media = gsap.matchMedia();
+    media.add({ motion: '(prefers-reduced-motion: no-preference)', reduced: '(prefers-reduced-motion: reduce)' }, context => {
+      if (context.conditions?.reduced) {
+        scaleEl.style.transform = `scale(${BASE_SCALE_X}, ${REST_SCALE_Y})`;
+        return restoreStyles;
+      }
 
-    const trigger = ScrollTrigger.create({
-      id: `title-stretch-${projectId}`,
-      scroller: getScrollViewport() ?? window,
-      trigger: section,
-      start: "top bottom",
-      end: "top top",
-      scrub: true,
-      invalidateOnRefresh: true,
-      onRefresh: (self) => applyTitleStretch(scaleEl, self.progress),
-      onUpdate: (self) => applyTitleStretch(scaleEl, self.progress),
+      const trigger = ScrollTrigger.create({
+        id: `title-stretch-${projectId}`,
+        scroller: getScrollViewport() ?? window,
+        trigger: section,
+        start: "top bottom",
+        end: "top top",
+        scrub: true,
+        invalidateOnRefresh: true,
+        onRefresh: (self) => applyTitleStretch(scaleEl, self.progress),
+        onUpdate: (self) => applyTitleStretch(scaleEl, self.progress),
+      });
+
+      applyTitleStretch(scaleEl, trigger.progress);
+
+      return () => {
+        trigger.kill();
+        restoreStyles();
+      };
     });
-
-    applyTitleStretch(scaleEl, trigger.progress);
-
-    return () => {
-      trigger.kill();
-      restoreStyles();
-    };
+    return () => media.revert();
   }, [lenis, projectId, transformOrigin]);
 
   return (
