@@ -223,6 +223,25 @@
   display: none;
 }
 
+.experience-world-container {
+  position: relative;
+}
+
+.experience-world-3d {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0;
+}
+
+.experience-world-container[data-scene-ready="true"] > .experience-world {
+  visibility: hidden;
+}
+
+.experience-world-container[data-scene-ready="true"] > .experience-world-3d {
+  opacity: 1;
+}
+
 .experience-checkpoint-fill,
 .experience-checkpoint-outline {
   transition: opacity 0.3s;

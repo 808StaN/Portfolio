@@ -8,7 +8,7 @@ import { getScrollMetrics, getScrollViewport } from '../utils/scroll';
 import { getProjectPinStart } from '../utils/tilt';
 import { useExperiencePin } from '../utils/useExperiencePin';
 import { scrollToY, useLenis } from './LenisScroll';
-import ExperienceScene from './ExperienceScene';
+import ExperienceWorld, { type JourneySceneState } from './ExperienceWorld';
 import ExperienceMobileScene from './ExperienceMobileScene';
 import ProjectTitleStretch from './ProjectTitleStretch';
 import SectionBandsBackground from './SectionBandsBackground';
@@ -20,6 +20,7 @@ gsap.registerPlugin(ScrollTrigger);
 export default function Experience() {
   const sectionRef = useRef<HTMLElement>(null);
   const checkpointProgress = useRef([0, 1]);
+  const journeyScene = useRef<JourneySceneState>({ points: [], x: 130, y: 510, dx: 1, dy: -0.577, stride: 0, checkpoint: 0, visible: false });
   const lenis = useLenis();
   const pinExperience = useExperiencePin();
 
@@ -46,6 +47,7 @@ export default function Experience() {
       const near = scene.querySelector<SVGGElement>('[data-journey-parallax="near"]');
       const length = path.getTotalLength();
       const points = Array.from({ length: 601 }, (_, i) => path.getPointAtLength(length * i / 600));
+      if (!portrait) journeyScene.current.points = points;
       const stops = Array.from(scene.querySelectorAll<SVGGElement>('[data-journey-checkpoint]')).map(checkpoint => {
         const x = Number(checkpoint.dataset.x), y = Number(checkpoint.dataset.y);
         return points.reduce((nearest, p, i) => Math.hypot(p.x - x, p.y - y)
@@ -78,6 +80,10 @@ export default function Experience() {
         badges[1]?.setAttribute('opacity', progress >= 0.7 ? '1' : '0');
         section.dataset.journeyProgress = progress.toFixed(4);
         const checkpoint = progress >= 0.7 ? 1 : 0;
+        if (!portrait) {
+          Object.assign(journeyScene.current, { x, y, dx: points[index + 1].x - points[index].x, dy: points[index + 1].y - points[index].y, stride, checkpoint });
+          if (journeyScene.current.visible) journeyScene.current.invalidate?.();
+        }
         if (checkpoint !== previousCheckpoint) {
           previousCheckpoint = checkpoint;
           section.dataset.checkpoint = checkpoint ? 'next' : 'flyrank';
@@ -171,7 +177,7 @@ export default function Experience() {
           <div className="experience-layout">
             <div className="experience-mobile-art"><ExperienceMobileScene /></div>
             <div className="experience-art">
-              <ExperienceScene />
+              <ExperienceWorld journey={journeyScene.current} />
             </div>
             <div className="experience-copy">
               <nav className="experience-chapters" aria-label="Experience checkpoints">
