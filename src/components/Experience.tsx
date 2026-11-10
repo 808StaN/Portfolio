@@ -19,6 +19,7 @@ gsap.registerPlugin(ScrollTrigger);
 
 export default function Experience() {
   const sectionRef = useRef<HTMLElement>(null);
+  const checkpointProgress = useRef([0, 1]);
   const lenis = useLenis();
   const pinExperience = useExperiencePin();
 
@@ -50,6 +51,7 @@ export default function Experience() {
         return points.reduce((nearest, p, i) => Math.hypot(p.x - x, p.y - y)
           < Math.hypot(points[nearest].x - x, points[nearest].y - y) ? i : nearest, 0) / 600;
       });
+      checkpointProgress.current = stops.map(stop => stop / stops[1]);
       const originalAttributes = Array.from(scene.querySelectorAll<SVGElement>('[data-journey-character], [data-journey-shadow], [data-journey-body], [data-journey-leg], [data-journey-arm], [data-journey-badge], [data-journey-parallax]'))
         .map(node => ({ node, transform: node.getAttribute('transform'), opacity: node.getAttribute('opacity') }));
       section.dataset.journeyMode = pinned ? 'pinned' : 'flow';
@@ -57,11 +59,8 @@ export default function Experience() {
       let characterScaleY = 1;
 
       const render = (progress: number) => {
-        // Holds are part of scroll progress, so jumps and reverse scrolling are deterministic.
-        const travel = progress < 0.17 ? stops[0] * progress / 0.17
-          : progress < 0.42 ? stops[0]
-            : progress < 0.82 ? stops[0] + (stops[1] - stops[0]) * (progress - 0.42) / 0.4 : stops[1];
-        const moving = (progress > 0 && progress < 0.17) || (progress > 0.42 && progress < 0.82);
+        const travel = progress * stops[1];
+        const moving = progress > 0 && progress < 1;
         const index = Math.min(599, Math.floor(travel * 600));
         const fraction = travel * 600 - index;
         const x = points[index].x + (points[index + 1].x - points[index].x) * fraction;
@@ -75,8 +74,8 @@ export default function Experience() {
         arms.forEach((arm, i) => arm.setAttribute('transform', `rotate(${stride * (i ? 8 : -8)} ${i ? 12 : -15} -61)`));
         far?.setAttribute('transform', `translate(0 ${(progress - 0.5) * -10})`);
         near?.setAttribute('transform', `translate(0 ${(progress - 0.5) * 16})`);
-        badges[0].setAttribute('opacity', progress >= 0.17 && progress < 0.7 ? '1' : '0');
-        badges[1].setAttribute('opacity', progress >= 0.7 ? '1' : '0');
+        badges[0]?.setAttribute('opacity', progress >= checkpointProgress.current[0] && progress < 0.7 ? '1' : '0');
+        badges[1]?.setAttribute('opacity', progress >= 0.7 ? '1' : '0');
         section.dataset.journeyProgress = progress.toFixed(4);
         const checkpoint = progress >= 0.7 ? 1 : 0;
         if (checkpoint !== previousCheckpoint) {
@@ -131,7 +130,7 @@ export default function Experience() {
     const section = sectionRef.current;
     const journey = ScrollTrigger.getById('experience-journey');
     if (section?.dataset.journeyMode === 'pinned' && journey) {
-      scrollToY(journey.start + (journey.end - journey.start) * (checkpoint ? 0.88 : 0.27), lenis);
+      scrollToY(journey.start + (journey.end - journey.start) * checkpointProgress.current[checkpoint], lenis);
     } else {
       const card = section?.querySelectorAll<HTMLElement>('[data-experience-card]')[checkpoint];
       if (card && section) {
@@ -172,7 +171,6 @@ export default function Experience() {
           <div className="experience-layout">
             <div className="experience-mobile-art"><ExperienceMobileScene /></div>
             <div className="experience-art">
-              <div className="experience-art-caption" aria-hidden="true"><span>2026 / NOW</span></div>
               <ExperienceScene />
             </div>
             <div className="experience-copy">

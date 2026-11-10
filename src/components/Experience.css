@@ -223,21 +223,6 @@
   display: none;
 }
 
-.experience-art-caption {
-  display: flex;
-  align-items: center;
-  justify-content: flex-end;
-  gap: 20px;
-  color: #c0d8f4;
-  font-size: 0.6rem;
-  letter-spacing: 0.025em;
-}
-
-.experience-art-caption > span:last-child {
-  font-size: 0.52rem;
-  letter-spacing: 0.12em;
-}
-
 .experience-checkpoint-fill,
 .experience-checkpoint-outline {
   transition: opacity 0.3s;
@@ -395,10 +380,6 @@
   .experience-chapters {
     margin-left: -64px;
     gap: 10px;
-  }
-
-  .experience-art-caption {
-    padding-inline: 8px;
   }
 
   .experience-world {
