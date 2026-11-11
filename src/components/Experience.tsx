@@ -59,8 +59,12 @@ export default function Experience() {
       section.dataset.journeyMode = pinned ? 'pinned' : 'flow';
       let previousCheckpoint = -1;
       let characterScaleY = 1;
+      let previousProgress = 0;
+      let direction = 1;
 
       const render = (progress: number) => {
+        if (progress !== previousProgress) direction = progress > previousProgress ? 1 : -1;
+        previousProgress = progress;
         const travel = progress * stops[1];
         const moving = progress > 0 && progress < 1;
         const index = Math.min(599, Math.floor(travel * 600));
@@ -68,7 +72,9 @@ export default function Experience() {
         const x = points[index].x + (points[index + 1].x - points[index].x) * fraction;
         const y = points[index].y + (points[index + 1].y - points[index].y) * fraction;
         const stride = moving ? Math.sin(travel * length / 11) : 0;
-        const facing = points[index + 1].x < points[index].x ? -1 : 1;
+        const dx = (points[index + 1].x - points[index].x) * direction;
+        const dy = (points[index + 1].y - points[index].y) * direction;
+        const facing = dx < 0 ? -1 : 1;
         character.setAttribute('transform', `translate(${x.toFixed(2)} ${y.toFixed(2)}) scale(${facing} ${characterScaleY})`);
         shadow.setAttribute('transform', `translate(${x.toFixed(2)} ${y.toFixed(2)}) scale(${1 - Math.abs(stride) * 0.05} 1)`);
         body.setAttribute('transform', `translate(0 ${-Math.abs(stride) * 2.4})`);
@@ -81,7 +87,7 @@ export default function Experience() {
         section.dataset.journeyProgress = progress.toFixed(4);
         const checkpoint = progress >= 0.7 ? 1 : 0;
         if (!portrait) {
-          Object.assign(journeyScene.current, { x, y, dx: points[index + 1].x - points[index].x, dy: points[index + 1].y - points[index].y, stride, checkpoint });
+          Object.assign(journeyScene.current, { x, y, dx, dy, stride, checkpoint });
           if (journeyScene.current.visible) journeyScene.current.invalidate?.();
         }
         if (checkpoint !== previousCheckpoint) {

@@ -144,6 +144,32 @@ function Billboard({ x, y, next, journey }: { x: number; y: number; next?: boole
 }
 
 function Character({ journey }: { journey: JourneySceneState }) {
+  const [hair] = useState(() => {
+    const positions: number[] = [];
+    const indices: number[] = [];
+    // Keep the sides close to the head and lift the hairline around the ears.
+    for (let ring = 0; ring <= 16; ring++) {
+      for (let segment = 0; segment <= 48; segment++) {
+        const theta = segment / 48 * Math.PI * 2;
+        const front = Math.max(0, Math.cos(theta));
+        const fringe = Math.max(0, Math.min(1, (front - 0.45) / 0.2));
+        const blend = fringe * fringe * (3 - 2 * fringe);
+        const hairline = (1.26 + 0.62 * Math.max(0, -Math.cos(theta))) * (1 - blend) + 1.36 * blend;
+        const phi = ring / 16 * hairline;
+        positions.push(0.294 * Math.sin(phi) * Math.sin(theta), 1.43 + 0.32 * Math.cos(phi), 0.278 * Math.sin(phi) * Math.cos(theta));
+        if (ring < 16 && segment < 48) {
+          const a = ring * 49 + segment, b = a + 49;
+          indices.push(a, b, a + 1, b, b + 1, a + 1);
+        }
+      }
+    }
+    const geometry = new BufferGeometry();
+    geometry.setAttribute('position', new Float32BufferAttribute(positions, 3));
+    geometry.setIndex(indices);
+    geometry.computeVertexNormals();
+    return geometry;
+  });
+  useEffect(() => () => hair.dispose(), [hair]);
   const character = useRef<Group>(null);
   const body = useRef<Group>(null);
   const leftLeg = useRef<Group>(null);
@@ -184,8 +210,7 @@ function Character({ journey }: { journey: JourneySceneState }) {
           </group>)}
           <mesh position={[0, 1.13, 0]}><cylinderGeometry args={[0.085, 0.09, 0.14, 10]} /><meshStandardMaterial color="#edc7a6" roughness={0.9} /></mesh>
           <mesh position={[0, 1.43, 0]} scale={[1, 1.04, 0.93]}><sphereGeometry args={[0.285, 20, 16]} /><meshStandardMaterial color="#f0cbaa" roughness={0.9} /></mesh>
-          <mesh position={[0, 1.53, -0.04]} rotation={[0.15, 0, -0.13]} scale={[1.05, 0.75, 0.97]}><sphereGeometry args={[0.29, 16, 12]} /><meshStandardMaterial color="#25354b" roughness={1} /></mesh>
-          <SoftBox size={[0.3, 0.12, 0.15]} position={[-0.035, 1.61, 0.18]} color="#25354b" radius={0.045} />
+          <mesh geometry={hair}><meshStandardMaterial color="#3b261c" roughness={1} /></mesh>
           {[-0.105, 0.105].map(x => <mesh key={x} position={[x, 1.43, 0.244]}><sphereGeometry args={[0.022, 8, 6]} /><meshStandardMaterial color="#263649" /></mesh>)}
           <mesh position={[0, 1.37, 0.27]}><sphereGeometry args={[0.045, 8, 6]} /><meshStandardMaterial color="#e5b490" roughness={1} /></mesh>
           {[-0.28, 0.28].map(x => <mesh key={x} position={[x, 1.43, 0]} scale={[0.55, 1, 0.8]}><sphereGeometry args={[0.085, 8, 8]} /><meshStandardMaterial color="#edc3a0" roughness={1} /></mesh>)}
