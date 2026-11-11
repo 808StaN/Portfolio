@@ -11,6 +11,7 @@ import SectionTiltDirector from "./components/SectionTiltDirector";
 import ScrollProgressFrame from "./components/ScrollProgressFrame";
 import PageLoader, { type PageLoaderStage } from "./components/PageLoader";
 import { SectionShaderRenderer, type SectionShaderState } from "./components/SectionBandsBackground";
+import { SectionNavigationProvider } from "./components/SectionNavigation";
 
 export default function App() {
   const [loaderStage, setLoaderStage] = useState<PageLoaderStage>("intro");
@@ -18,7 +19,7 @@ export default function App() {
   const entranceReady = loaderStage !== "intro";
 
   return (
-    <>
+    <SectionNavigationProvider>
       {loaderStage !== "done" && <PageLoader ready={shaderState !== "loading"} onStageChange={setLoaderStage} />}
       <div
         className="app-shell relative min-h-screen"
@@ -58,6 +59,6 @@ export default function App() {
         </div>
         <ScrollProgressFrame />
       </div>
-    </>
+    </SectionNavigationProvider>
   );
 }
