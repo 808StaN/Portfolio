@@ -7,8 +7,22 @@ import { SceneBoundary, type JourneySceneState } from './ExperienceWorld';
 
 extend({ AmbientLight, BoxGeometry, CapsuleGeometry, CircleGeometry, CylinderGeometry, DirectionalLight, Group, HemisphereLight, Mesh, MeshBasicMaterial, MeshStandardMaterial, PlaneGeometry, SphereGeometry });
 
-// Invert the SVG's ground-plane projection so both renderers share one route.
-const ground = (x: number, y: number) => new Vector3((x - 480) / 60, 0, (y - 330) / (60 * Math.SQRT1_2));
+// True isometry makes the SVG's +/-30-degree streets perpendicular in world space.
+const groundProjection = 1 / Math.sqrt(3);
+const ground = (x: number, y: number) => new Vector3((x - 480) / 60, 0, (y - 330) / (60 * groundProjection));
+const roadHalfWidth = 0.78;
+
+function roadsidePlacement(points: JourneySceneState['points'], at: [number, number], side: -1 | 1, offset: number) {
+  const target = ground(...at);
+  const nearest = points.reduce((best, point, i) => ground(point.x, point.y).distanceToSquared(target)
+    < ground(points[best].x, points[best].y).distanceToSquared(target) ? i : best, 0);
+  const anchor = ground(points[nearest].x, points[nearest].y);
+  const before = points[Math.max(0, nearest - 1)];
+  const after = points[Math.min(points.length - 1, nearest + 1)];
+  const tangent = ground(after.x, after.y).sub(ground(before.x, before.y)).normalize();
+  const outward = new Vector3(-tangent.z, 0, tangent.x).multiplyScalar(side);
+  return { position: anchor.addScaledVector(outward, offset), rotation: Math.atan2(-outward.x, -outward.z) };
+}
 
 function SoftBox({ size, position = [0, 0, 0], color, radius = 0.06 }: { size: [number, number, number]; position?: [number, number, number]; color: string; radius?: number }) {
   const [geometry] = useState(() => new RoundedBoxGeometry(...size, 2, radius));
@@ -24,7 +38,7 @@ function Road({ points }: { points: JourneySceneState['points'] }) {
     // A ribbon with vertical sides, plus semicircular caps, not a thick platform.
     route.forEach((p, i) => {
       const tangent = route[Math.min(i + 1, route.length - 1)].clone().sub(route[Math.max(0, i - 1)]).normalize();
-      const normal = new Vector3(-tangent.z, 0, tangent.x).multiplyScalar(0.78);
+      const normal = new Vector3(-tangent.z, 0, tangent.x).multiplyScalar(roadHalfWidth);
       for (const height of [0, -0.055]) {
         positions.push(p.x + normal.x, height, p.z + normal.z, p.x - normal.x, height, p.z - normal.z);
       }
@@ -43,7 +57,7 @@ function Road({ points }: { points: JourneySceneState['points'] }) {
       positions.push(p.x, 0, p.z);
       for (let i = 0; i <= 16; i++) {
         const theta = angle - Math.PI / 2 + i * Math.PI / 16;
-        positions.push(p.x + Math.cos(theta) * 0.78, 0, p.z + Math.sin(theta) * 0.78);
+        positions.push(p.x + Math.cos(theta) * roadHalfWidth, 0, p.z + Math.sin(theta) * roadHalfWidth);
         if (i) indices.push(center, center + i + 1, center + i);
       }
     }
@@ -141,7 +155,7 @@ function Character({ journey }: { journey: JourneySceneState }) {
     const p = ground(journey.x, journey.y);
     if (character.current) {
       character.current.position.set(p.x, 0.025, p.z);
-      character.current.rotation.y = Math.atan2(journey.dx, journey.dy / Math.SQRT1_2);
+      character.current.rotation.y = Math.atan2(journey.dx, journey.dy / groundProjection);
     }
     if (body.current) body.current.position.y = Math.abs(journey.stride) * 0.035;
     if (leftLeg.current) leftLeg.current.rotation.x = journey.stride * 0.48;
@@ -181,21 +195,26 @@ function Character({ journey }: { journey: JourneySceneState }) {
   );
 }
 
-function Building({ x, y, height, roof }: { x: number; y: number; height: number; roof: string }) {
-  const p = ground(x, y);
+function Building({ height, roof, office = false }: { height: number; roof: string; office?: boolean }) {
   const [windows] = useState(() => {
     const positions: number[] = [];
     const indices: number[] = [];
     const colors: number[] = [];
-    for (let floor = 0; floor < (height > 2 ? 3 : 2); floor++) {
-      for (const column of [-1, 1]) {
-        const bottom = 0.76 + floor * 0.53;
-        const color = new Color((floor + column) % 3 === 0 ? '#eee0b5' : '#c6e0e7');
-        for (const side of [false, true]) {
+    const floors = office ? Math.floor((height - 0.6) / 0.4) : height > 2 ? 3 : 2;
+    for (let floor = 0; floor < floors; floor++) {
+      for (const column of office ? [-1, 0, 1] : [-1, 1]) {
+        const bottom = (office ? 0.72 : 0.76) + floor * (office ? 0.4 : 0.53);
+        const color = new Color(office ? (floor + column) % 3 === 0 ? '#8fbbc9' : '#5e8ca7'
+          : (floor + column) % 3 === 0 ? '#eee0b5' : '#c6e0e7');
+        for (let facade = 0; facade < 4; facade++) {
           const start = positions.length / 3;
-          for (const [u, v] of [[-0.12, 0], [0.12, 0], [-0.12, 0.3], [0.12, 0.3]]) {
-            if (side) positions.push(-0.726, bottom + v, column * 0.27 + u);
-            else positions.push(column * 0.32 + u, bottom + v, 0.626);
+          const halfWidth = office ? facade % 2 ? 0.15 : 0.18 : 0.12;
+          for (const [u, v] of [[-halfWidth, 0], [halfWidth, 0], [-halfWidth, 0.3], [halfWidth, 0.3]]) {
+            const horizontal = column * (office ? facade % 2 ? 0.39 : 0.46 : facade % 2 ? 0.27 : 0.32) + u;
+            if (facade === 0) positions.push(horizontal, bottom + v, 0.626);
+            if (facade === 1) positions.push(-0.726, bottom + v, horizontal);
+            if (facade === 2) positions.push(-horizontal, bottom + v, -0.626);
+            if (facade === 3) positions.push(0.726, bottom + v, -horizontal);
             colors.push(color.r, color.g, color.b);
           }
           indices.push(start, start + 1, start + 2, start + 1, start + 3, start + 2);
@@ -210,27 +229,31 @@ function Building({ x, y, height, roof }: { x: number; y: number; height: number
   });
   useEffect(() => () => windows.dispose(), [windows]);
   return (
-    <group name="journey-building" position={[p.x, 0, p.z]} rotation={[0, 0.45, 0]}>
+    <group name="journey-building">
       <SoftBox size={[1.58, 0.08, 1.38]} position={[0, 0.04, 0]} color="#91a9bd" radius={0.035} />
-      <SoftBox size={[1.45, height, 1.25]} position={[0, height / 2 + 0.08, 0]} color="#e0e5df" radius={0.045} />
-      <SoftBox size={[1.68, 0.16, 1.48]} position={[0, height + 0.14, 0]} color={roof} radius={0.035} />
+      <SoftBox size={[1.45, height, 1.25]} position={[0, height / 2 + 0.08, 0]} color={office ? '#b9cbd4' : '#e0e5df'} radius={0.045} />
+      <SoftBox size={office ? [1.49, 0.12, 1.29] : [1.68, 0.16, 1.48]} position={[0, height + 0.14, 0]} color={roof} radius={0.035} />
       <mesh geometry={windows} position={[0, 0.08, 0]}><meshBasicMaterial vertexColors toneMapped={false} /></mesh>
-      <SoftBox size={[0.29, 0.54, 0.045]} position={[0, 0.35, 0.632]} color="#7895ac" radius={0.025} />
+      <SoftBox size={office ? [0.44, 0.58, 0.045] : [0.29, 0.54, 0.045]} position={[0, 0.35, 0.632]} color={office ? '#365b76' : '#7895ac'} radius={0.025} />
       <SoftBox size={[0.47, 0.08, 0.28]} position={[0, 0.04, 0.72]} color="#c3d2da" radius={0.025} />
-      <mesh position={[0.32, height + 0.37, -0.25]}>
-        <cylinderGeometry args={[0.15, 0.15, 0.3, 10]} /><meshStandardMaterial color="#d0d9d8" roughness={1} />
-      </mesh>
-      <mesh position={[0.32, height + 0.53, -0.25]}>
-        <cylinderGeometry args={[0.19, 0.19, 0.06, 10]} /><meshStandardMaterial color={roof} roughness={1} />
-      </mesh>
+      {office ? <>
+        <SoftBox size={[0.78, 0.065, 0.4]} position={[0, 0.76, 0.77]} color={roof} radius={0.025} />
+        <SoftBox size={height > 3.2 ? [0.85, 0.36, 0.72] : [0.63, 0.16, 0.8]} position={[0, height + (height > 3.2 ? 0.35 : 0.25), -0.08]} color={height > 3.2 ? '#92afbf' : '#6f9baa'} radius={0.04} />
+      </> : <>
+        <mesh position={[0.32, height + 0.37, -0.25]}>
+          <cylinderGeometry args={[0.15, 0.15, 0.3, 10]} /><meshStandardMaterial color="#d0d9d8" roughness={1} />
+        </mesh>
+        <mesh position={[0.32, height + 0.53, -0.25]}>
+          <cylinderGeometry args={[0.19, 0.19, 0.06, 10]} /><meshStandardMaterial color={roof} roughness={1} />
+        </mesh>
+      </>}
     </group>
   );
 }
 
-function Tree({ x, y, scale = 1 }: { x: number; y: number; scale?: number }) {
-  const p = ground(x, y);
+function Tree({ position, scale = 1 }: { position: [number, number, number]; scale?: number }) {
   return (
-    <group name="journey-tree" position={[p.x, 0, p.z]} scale={scale}>
+    <group name="journey-tree" position={position} scale={scale}>
       <mesh position={[0, 0.28, 0]}><cylinderGeometry args={[0.06, 0.08, 0.56, 8]} /><meshStandardMaterial color="#a08c74" roughness={1} /></mesh>
       <mesh position={[0, 0.76, 0]} scale={[1, 1.06, 1]}><sphereGeometry args={[0.34, 12, 10]} /><meshStandardMaterial color="#80b997" roughness={1} /></mesh>
       <mesh position={[0.035, 1.01, -0.015]}><sphereGeometry args={[0.23, 10, 8]} /><meshStandardMaterial color="#9acaa1" roughness={1} /></mesh>
@@ -238,19 +261,49 @@ function Tree({ x, y, scale = 1 }: { x: number; y: number; scale?: number }) {
   );
 }
 
-function PocketPark() {
-  const p = ground(835, 255);
+function RoadsideBuilding({ points, at, side, setback = 1, height, roof, office = false }: {
+  points: JourneySceneState['points']; at: [number, number]; side: -1 | 1; setback?: number; height: number; roof: string; office?: boolean;
+}) {
+  // Local +Z is the entrance: house, step and path always face the same road edge.
+  const offset = roadHalfWidth + 0.86 + setback;
+  const { position, rotation } = roadsidePlacement(points, at, side, offset);
+  const start = 0.82;
+  const end = offset - roadHalfWidth + 0.02;
   return (
-    <group position={[p.x, 0, p.z]} rotation={[0, 0.685, 0]}>
-      <mesh rotation={[-Math.PI / 2, 0, 0]} scale={[1.45, 0.85, 1]}>
-        <circleGeometry args={[1.05, 32]} /><meshBasicMaterial color="#557f83" />
+    <group name="journey-lot" position={position} rotation={[0, rotation, 0]}>
+      <mesh name="journey-access-path" position={[0, 0.016, (start + end) / 2]}>
+        <boxGeometry args={[0.44, 0.032, end - start]} /><meshStandardMaterial color="#b4c6cf" roughness={1} />
       </mesh>
-      {[-0.13, 0, 0.13].map(z => <SoftBox key={z} size={[1.2, 0.07, 0.1]} position={[-0.2, 0.4, z]} color="#c4ad8d" radius={0.025} />)}
-      <SoftBox size={[1.2, 0.3, 0.07]} position={[-0.2, 0.66, -0.2]} color="#c4ad8d" radius={0.025} />
-      {[-0.65, 0.25].map(x => <SoftBox key={x} size={[0.08, 0.36, 0.32]} position={[x, 0.18, 0]} color="#58728a" radius={0.025} />)}
-      <mesh position={[0.95, 0.9, 0.28]}><cylinderGeometry args={[0.035, 0.05, 1.8, 8]} /><meshStandardMaterial color="#9bb2c3" roughness={1} /></mesh>
-      <SoftBox size={[0.21, 0.25, 0.21]} position={[0.95, 1.85, 0.28]} color="#efdfb7" radius={0.035} />
-      <SoftBox size={[0.28, 0.055, 0.28]} position={[0.95, 2, 0.28]} color="#67889c" radius={0.02} />
+      <Building height={height} roof={roof} office={office} />
+      <Tree position={[1.3, 0, -0.15]} scale={1.1} />
+    </group>
+  );
+}
+
+function Bench({ x, rotation }: { x: number; rotation: number }) {
+  return <group position={[x, 0, -0.08]} rotation={[0, rotation, 0]}>
+    {[-0.13, 0, 0.13].map(z => <SoftBox key={z} size={[1.2, 0.07, 0.1]} position={[0, 0.4, z]} color="#c4ad8d" radius={0.025} />)}
+    <SoftBox size={[1.2, 0.3, 0.07]} position={[0, 0.66, -0.2]} color="#c4ad8d" radius={0.025} />
+    {[-0.45, 0.45].map(leg => <SoftBox key={leg} size={[0.08, 0.36, 0.32]} position={[leg, 0.18, 0]} color="#58728a" radius={0.025} />)}
+  </group>;
+}
+
+function PocketPark({ points }: { points: JourneySceneState['points'] }) {
+  const offset = 1.65;
+  const { position, rotation } = roadsidePlacement(points, [740, 331], 1, offset);
+  return (
+    <group name="journey-park" position={position} rotation={[0, rotation, 0]}>
+      <mesh name="journey-plaza-paving" position={[0, 0.016, -0.03]}>
+        <boxGeometry args={[2.6, 0.032, 1.84]} /><meshStandardMaterial color="#b4c6cf" roughness={1} />
+      </mesh>
+      <Bench x={-0.85} rotation={Math.PI / 2} />
+      <Bench x={0.85} rotation={-Math.PI / 2} />
+      <SoftBox size={[0.64, 0.24, 0.5]} position={[0, 0.15, -0.62]} color="#88a39e" radius={0.04} />
+      {[-0.14, 0.14].map(x => <mesh key={x} position={[x, 0.36, -0.62]}><sphereGeometry args={[0.2, 10, 8]} /><meshStandardMaterial color="#80b997" roughness={1} /></mesh>)}
+      <mesh position={[1.16, 0.9, -0.78]}><cylinderGeometry args={[0.035, 0.05, 1.8, 8]} /><meshStandardMaterial color="#9bb2c3" roughness={1} /></mesh>
+      <SoftBox size={[0.21, 0.25, 0.21]} position={[1.16, 1.85, -0.78]} color="#efdfb7" radius={0.035} />
+      <SoftBox size={[0.28, 0.055, 0.28]} position={[1.16, 2, -0.78]} color="#67889c" radius={0.02} />
+      <Tree position={[-1.05, 0, -0.95]} scale={1.1} />
     </group>
   );
 }
@@ -292,18 +345,13 @@ function World({ journey, onReady, onUnavailable }: { journey: JourneySceneState
       <directionalLight position={[-4, 9, 6]} intensity={1.6} color="#fff3de" />
       <directionalLight position={[5, 4, -5]} intensity={0.5} color="#a9d5ff" />
       <Road points={journey.points} />
-      <Billboard x={200} y={390} journey={journey} />
+      <Billboard x={160} y={420} journey={journey} />
       <Billboard x={590} y={155} next journey={journey} />
-      <Building x={395} y={295} height={2.25} roof="#76b8cd" />
-      <Building x={625} y={400} height={1.75} roof="#8c86ce" />
-      <Building x={475} y={570} height={2.3} roof="#d77f8c" />
-      <Tree x={295} y={300} scale={1.2} />
-      <Tree x={485} y={305} />
-      <Tree x={725} y={405} scale={1.1} />
-      <Tree x={385} y={525} scale={1.15} />
-      <PocketPark />
-      <Tree x={755} y={235} scale={1.1} />
-      <Tree x={875} y={205} scale={1.25} />
+      <RoadsideBuilding points={journey.points} at={[330, 395]} side={-1} height={3.6} roof="#79b5c8" office />
+      <RoadsideBuilding points={journey.points} at={[700, 309]} side={-1} height={1.75} roof="#8c86ce" />
+      <RoadsideBuilding points={journey.points} at={[490, 429]} side={1} height={2.3} roof="#d77f8c" />
+      <RoadsideBuilding points={journey.points} at={[720, 136]} side={1} height={3} roof="#728dba" office />
+      <PocketPark points={journey.points} />
       <Character journey={journey} />
     </>
   );
@@ -330,7 +378,7 @@ export default function ExperienceScene3D({ journey, onReady, onUnavailable }: {
     const observer = new ResizeObserver(() => { if (!disposed) resize?.(); });
     void root.configure({
       orthographic: true,
-      camera: { position: [0, 12, 12], near: 0.1, far: 60 },
+      camera: { position: [0, 12, 12 * Math.SQRT2], near: 0.1, far: 60 },
       size: size(), dpr: Math.min(devicePixelRatio, 1.5), frameloop: 'demand',
       gl: { alpha: true, antialias: true, powerPreference: 'low-power' },
     }).then(() => {
