@@ -213,8 +213,7 @@ export default function Experience() {
                     <span className="experience-question" aria-hidden="true">?</span>
                     <div><h3>Your team?</h3></div>
                   </div>
-                  <p className="experience-role">Something great starts with a conversation.</p>
-                  <p className="experience-availability"><span aria-hidden="true" />Open to opportunities</p>
+                  <p className="experience-role">Open to opportunities</p>
                   <p className="experience-summary">I&apos;m looking for my next role, building thoughtful interfaces and useful products with people I can learn from.</p>
                   <p className="experience-next-note">Based in Poland. Open to relocation.</p>
                   <GravityLink
