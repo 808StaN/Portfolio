@@ -98,11 +98,20 @@ function Billboard({ x, y, next, journey }: { x: number; y: number; next?: boole
   useEffect(() => () => question.dispose(), [question]);
   const panel = useRef<MeshStandardMaterial>(null);
   useFrame(() => {
-    if (panel.current) panel.current.emissiveIntensity = journey.checkpoint === (next ? 1 : 0) ? 0.19 : 0;
+    if (panel.current) {
+      const active = journey.checkpoint === (next ? 1 : 0);
+      panel.current.color.set(active ? '#16345f' : '#42658c');
+      panel.current.emissiveIntensity = active ? 0.19 : 0;
+    }
   });
   const p = ground(x, y);
+  const nearest = journey.points.reduce((best, point, index, points) =>
+    Math.hypot(point.x - x, point.y - y) < Math.hypot(points[best].x - x, points[best].y - y) ? index : best, 0);
+  const before = journey.points[Math.max(0, nearest - 1)];
+  const after = journey.points[Math.min(journey.points.length - 1, nearest + 1)];
+  const direction = ground(after.x, after.y).sub(ground(before.x, before.y));
   return (
-    <group position={[p.x, 0, p.z]} rotation={[0, 0.56, 0]} scale={1.28}>
+    <group position={[p.x, 0, p.z]} rotation={[0, Math.atan2(-direction.z, direction.x), 0]} scale={1.28}>
       {[-0.63, 0.63].map(offset => <group key={offset} position={[offset, 0, 0]}>
         <SoftBox size={[0.09, 0.86, 0.1]} position={[0, 0.43, 0]} color="#9ebbd8" radius={0.025} />
         <SoftBox size={[0.32, 0.055, 0.25]} position={[0, 0.027, 0]} color="#6e91b5" radius={0.02} />
@@ -229,6 +238,23 @@ function Tree({ x, y, scale = 1 }: { x: number; y: number; scale?: number }) {
   );
 }
 
+function PocketPark() {
+  const p = ground(835, 255);
+  return (
+    <group position={[p.x, 0, p.z]} rotation={[0, 0.685, 0]}>
+      <mesh rotation={[-Math.PI / 2, 0, 0]} scale={[1.45, 0.85, 1]}>
+        <circleGeometry args={[1.05, 32]} /><meshBasicMaterial color="#557f83" />
+      </mesh>
+      {[-0.13, 0, 0.13].map(z => <SoftBox key={z} size={[1.2, 0.07, 0.1]} position={[-0.2, 0.4, z]} color="#c4ad8d" radius={0.025} />)}
+      <SoftBox size={[1.2, 0.3, 0.07]} position={[-0.2, 0.66, -0.2]} color="#c4ad8d" radius={0.025} />
+      {[-0.65, 0.25].map(x => <SoftBox key={x} size={[0.08, 0.36, 0.32]} position={[x, 0.18, 0]} color="#58728a" radius={0.025} />)}
+      <mesh position={[0.95, 0.9, 0.28]}><cylinderGeometry args={[0.035, 0.05, 1.8, 8]} /><meshStandardMaterial color="#9bb2c3" roughness={1} /></mesh>
+      <SoftBox size={[0.21, 0.25, 0.21]} position={[0.95, 1.85, 0.28]} color="#efdfb7" radius={0.035} />
+      <SoftBox size={[0.28, 0.055, 0.28]} position={[0.95, 2, 0.28]} color="#67889c" radius={0.02} />
+    </group>
+  );
+}
+
 function World({ journey, onReady, onUnavailable }: { journey: JourneySceneState; onReady: () => void; onUnavailable: () => void }) {
   const { camera, size, invalidate, gl } = useThree();
   useEffect(() => {
@@ -266,15 +292,18 @@ function World({ journey, onReady, onUnavailable }: { journey: JourneySceneState
       <directionalLight position={[-4, 9, 6]} intensity={1.6} color="#fff3de" />
       <directionalLight position={[5, 4, -5]} intensity={0.5} color="#a9d5ff" />
       <Road points={journey.points} />
-      <Billboard x={205} y={350} journey={journey} />
-      <Billboard x={810} y={185} next journey={journey} />
+      <Billboard x={200} y={390} journey={journey} />
+      <Billboard x={590} y={155} next journey={journey} />
       <Building x={395} y={295} height={2.25} roof="#76b8cd" />
       <Building x={625} y={400} height={1.75} roof="#8c86ce" />
-      <Building x={445} y={595} height={2.3} roof="#d77f8c" />
+      <Building x={475} y={570} height={2.3} roof="#d77f8c" />
       <Tree x={295} y={300} scale={1.2} />
       <Tree x={485} y={305} />
       <Tree x={725} y={405} scale={1.1} />
-      <Tree x={345} y={575} scale={1.15} />
+      <Tree x={385} y={525} scale={1.15} />
+      <PocketPark />
+      <Tree x={755} y={235} scale={1.1} />
+      <Tree x={875} y={205} scale={1.25} />
       <Character journey={journey} />
     </>
   );
