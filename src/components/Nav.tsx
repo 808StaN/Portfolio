@@ -1,6 +1,8 @@
 import { useState } from 'react';
 import { motion, AnimatePresence, useReducedMotion } from 'framer-motion';
 import { sectionLinks as links, useSectionNavigation } from './SectionNavigation';
+import { experiencePinMedia } from '../constants/experience';
+import { preloadExperienceScene } from './ExperienceWorld';
 
 export default function Nav({ ready }: { ready: boolean }) {
   const reducedMotion = useReducedMotion();
@@ -10,6 +12,12 @@ export default function Nav({ ready }: { ready: boolean }) {
   const handleLink = (href: string) => {
     setMenuOpen(false);
     void navigate(href);
+  };
+
+  const preloadLink = (href: string) => {
+    if (href === '#experience' && window.matchMedia(experiencePinMedia).matches) {
+      void preloadExperienceScene().catch(() => {});
+    }
   };
 
   const toggleMenu = async () => {
@@ -51,6 +59,8 @@ export default function Nav({ ready }: { ready: boolean }) {
                 <button
                   key={link.href}
                   onClick={() => handleLink(link.href)}
+                  onPointerEnter={() => preloadLink(link.href)}
+                  onFocus={() => preloadLink(link.href)}
                   className={`text-sm transition-all duration-300 cursor-pointer bg-transparent border-none relative group ${
                     activeSection === link.href.slice(1)
                       ? 'text-white'
@@ -145,6 +155,8 @@ export default function Nav({ ready }: { ready: boolean }) {
                 <motion.button
                   key={link.href}
                   onClick={() => handleLink(link.href)}
+                  onPointerEnter={() => preloadLink(link.href)}
+                  onFocus={() => preloadLink(link.href)}
                   className="bg-transparent border-none cursor-pointer"
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}

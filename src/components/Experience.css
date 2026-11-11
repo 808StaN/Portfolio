@@ -259,6 +259,15 @@
 }
 
 @media (min-width: 1024px) and (min-height: 700px) and (prefers-reduced-motion: no-preference) {
+  .experience-world-container[data-scene-ready="true"][data-scene-fade="true"] > .experience-world-3d {
+    transition: opacity 0.25s ease-out;
+  }
+
+  /* Preserve the SVG's layout and route data without flashing it before 3D. */
+  .experience-world-container[data-scene-failed="false"] > .experience-world {
+    visibility: hidden;
+  }
+
   .experience-section[data-experience-pinned="true"] .experience-panel {
     height: var(--portfolio-height);
   }

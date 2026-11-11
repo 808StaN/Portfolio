@@ -12,6 +12,7 @@ import ExperienceWorld, { type JourneySceneState } from './ExperienceWorld';
 import ExperienceMobileScene from './ExperienceMobileScene';
 import ProjectTitleStretch from './ProjectTitleStretch';
 import SectionBandsBackground from './SectionBandsBackground';
+import { useSectionNavigation } from './SectionNavigation';
 import GravityLink from './ui/GravityLink';
 import './Experience.css';
 
@@ -22,6 +23,7 @@ export default function Experience() {
   const checkpointProgress = useRef([0, 1]);
   const journeyScene = useRef<JourneySceneState>({ points: [], x: 130, y: 510, dx: 1, dy: -0.577, stride: 0, checkpoint: 0, visible: false });
   const lenis = useLenis();
+  const { navigate } = useSectionNavigation();
   const pinExperience = useExperiencePin();
 
   useEffect(() => {
@@ -158,17 +160,12 @@ export default function Experience() {
   };
 
   const contact = (event: MouseEvent<HTMLAnchorElement>) => {
+    if (event.defaultPrevented) return;
+    // Capture before Lenis's native anchor listener on the scrollport.
+    event.stopPropagation();
+    if (event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
     event.preventDefault();
-    const section = document.getElementById('contact');
-    if (!section) return;
-    const target = ScrollTrigger.getById('section-target-contact')?.end;
-    const metrics = getScrollMetrics();
-    scrollToY(target ?? metrics.scroll + section.getBoundingClientRect().top - metrics.top, lenis, {
-      onComplete: () => {
-        section.setAttribute('tabindex', '-1');
-        section.focus({ preventScroll: true });
-      },
-    });
+    void navigate('#contact');
   };
 
   return (
@@ -224,7 +221,7 @@ export default function Experience() {
                     icon="arrow-up-right"
                     sizing={{ paddingX: 28, paddingY: 14, fontSize: 14 }}
                     style={{ marginTop: 28 }}
-                    onClick={contact}
+                    onClickCapture={contact}
                   />
                 </li>
               </ol>
