@@ -2,9 +2,8 @@ import { useEffect, useId, useRef, type MouseEvent } from 'react';
 import { motion, useReducedMotion } from 'framer-motion';
 import SectionBandsBackground from './SectionBandsBackground';
 import { sectionColors } from '../constants/sectionColors';
-import { scrollToY, useLenis } from './LenisScroll';
+import { useSectionNavigation } from './SectionNavigation';
 import GravityLink from './ui/GravityLink';
-import { getScrollMetrics, getScrollTargetTop } from '../utils/scroll';
 
 const words = ['fast', 'scalable', 'reliable', 'responsive', 'modern'];
 
@@ -12,17 +11,17 @@ const easeOut = [0.16, 1, 0.3, 1] as const;
 
 export default function Hero({ ready }: { ready: boolean }) {
   const prefersReduced = useReducedMotion();
-  const lenis = useLenis();
+  const { navigate } = useSectionNavigation();
   const wordRef = useRef<HTMLSpanElement>(null);
   const outlineFilterId = useId();
 
   const handleProjectsClick = (event: MouseEvent<HTMLAnchorElement>) => {
+    if (event.defaultPrevented) return;
+    // Capture before Lenis's native anchor listener on the scrollport.
+    event.stopPropagation();
+    if (event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
     event.preventDefault();
-    const work = document.getElementById('work');
-    if (!work) return;
-
-    const top = getScrollTargetTop(work);
-    scrollToY(Math.min(Math.max(0, top), getScrollMetrics().limit), lenis, { duration: 1.15 });
+    void navigate('#work');
   };
 
   useEffect(() => {
@@ -154,7 +153,7 @@ export default function Hero({ ready }: { ready: boolean }) {
                   variant="primary"
                   icon="arrow-down"
                   sizing={{ paddingX: 28, paddingY: 14, fontSize: 14 }}
-                  onClick={handleProjectsClick}
+                  onClickCapture={handleProjectsClick}
                 />
                 <GravityLink
                   href="https://ziianpdcwxtnkuojaxtp.supabase.co/storage/v1/object/public/Portfolio/Dawid_Stanisz_CV.pdf"
