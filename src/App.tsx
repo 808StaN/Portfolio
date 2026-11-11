@@ -54,6 +54,7 @@ export default function App() {
                 </div>
               </div>
             </div>
+            <div className="nav-shadow-layer" aria-hidden="true" />
             <div className="nav-bg-layer" aria-hidden="true" />
           </div>
         </div>
