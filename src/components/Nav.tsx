@@ -1,6 +1,8 @@
 import { useState } from 'react';
 import { motion, AnimatePresence, useReducedMotion } from 'framer-motion';
 import { sectionLinks as links, useSectionNavigation } from './SectionNavigation';
+import { experienceSceneMedia } from '../constants/experience';
+import { preloadExperienceScene } from './ExperienceWorld';
 
 export default function Nav({ ready }: { ready: boolean }) {
   const reducedMotion = useReducedMotion();
@@ -10,6 +12,12 @@ export default function Nav({ ready }: { ready: boolean }) {
   const handleLink = (href: string) => {
     setMenuOpen(false);
     void navigate(href);
+  };
+
+  const preloadLink = (href: string) => {
+    if (href === '#experience' && window.matchMedia(experienceSceneMedia).matches) {
+      void preloadExperienceScene().catch(() => {});
+    }
   };
 
   const toggleMenu = async () => {
@@ -51,6 +59,8 @@ export default function Nav({ ready }: { ready: boolean }) {
                 <button
                   key={link.href}
                   onClick={() => handleLink(link.href)}
+                  onPointerEnter={() => preloadLink(link.href)}
+                  onFocus={() => preloadLink(link.href)}
                   className={`text-sm transition-all duration-300 cursor-pointer bg-transparent border-none relative group ${
                     activeSection === link.href.slice(1)
                       ? 'text-white'
@@ -70,7 +80,7 @@ export default function Nav({ ready }: { ready: boolean }) {
               ))}
             </div>
 
-            <div className="hidden lg:flex items-center gap-4">
+            <div className="site-nav-external hidden lg:flex items-center gap-4">
               <a
                 href="https://github.com/808StaN"
                 target="_blank"
@@ -89,7 +99,7 @@ export default function Nav({ ready }: { ready: boolean }) {
             </div>
           </div>
           <button
-            className="lg:hidden absolute flex h-11 w-11 flex-col items-center justify-center gap-1.5 cursor-pointer border-none"
+            className="site-nav-menu-toggle lg:hidden absolute flex h-11 w-11 flex-col items-center justify-center gap-1.5 cursor-pointer border-none"
             style={{
               top: '50%',
               right: '10px',
@@ -145,6 +155,8 @@ export default function Nav({ ready }: { ready: boolean }) {
                 <motion.button
                   key={link.href}
                   onClick={() => handleLink(link.href)}
+                  onPointerEnter={() => preloadLink(link.href)}
+                  onFocus={() => preloadLink(link.href)}
                   className="bg-transparent border-none cursor-pointer"
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}

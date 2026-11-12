@@ -3,7 +3,7 @@ import tgpu from 'typegpu';
 import { createServer } from 'vite';
 import { componentDefinition as originalGradient } from 'shaders/core/FlowingGradient';
 
-const server = await createServer({ configFile: false, server: { middlewareMode: true }, appType: 'custom' });
+const server = await createServer({ configFile: false, optimizeDeps: { noDiscovery: true }, server: { middlewareMode: true }, appType: 'custom' });
 try {
   const { sectionFlowingGradient } = await server.ssrLoadModule('/src/utils/flowingOklab.ts');
   const reference = name => ({ _emit: () => name, member: prop => reference(`${name}.${prop}`) });

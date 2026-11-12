@@ -8,6 +8,7 @@ import { getKeyboardScrollDelta, getScrollMetrics, getScrollTargetTop, getScroll
 export const sectionLinks = [
   { label: 'Projects', href: '#work' },
   { label: 'About', href: '#about' },
+  { label: 'Experience', href: '#experience' },
   { label: 'Stack', href: '#stack' },
   { label: 'Contact', href: '#contact' },
 ];
@@ -153,7 +154,9 @@ export function SectionNavigationProvider({ children }: { children: ReactNode })
       // Reveal scroll-triggered content, but leave the hero's looping animation alone.
       if (!returningHome) {
         el.querySelectorAll<HTMLElement>('.section-tilt-container [style*="opacity"]')
-          .forEach(node => node.setAttribute('data-nav-revealed', ''));
+          .forEach(node => {
+            if (!node.closest('[data-scroll-journey]')) node.setAttribute('data-nav-revealed', '');
+          });
       }
       flushSync(() => setActiveSection(el.id));
       if (!el.hasAttribute('tabindex')) el.setAttribute('tabindex', '-1');

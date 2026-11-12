@@ -52,7 +52,8 @@
   --color-accent-orange: #f97316;
   --nav-glass-background: rgba(18, 26, 42, 0.1);
   --nav-glass-filter: blur(12px) saturate(110%);
-  --nav-glass-shadow: inset 0 -1px 0 rgba(255, 255, 255, 0.06), 0 8px 28px rgba(5, 12, 28, 0.12);
+  --nav-glass-shadow: inset 0 -1px 0 rgba(255, 255, 255, 0.06);
+  --nav-drop-shadow: 0 8px 28px rgba(5, 12, 28, 0.12);
   /* boczny navbar (Nav.tsx) — bez zmian przy szerszej treści */
   --page-gutter: clamp(20px, 4vw, 64px);
   /* marginesy i szerokość głównej zawartości sekcji */
@@ -221,8 +222,9 @@ html[data-site="portfolio"] body {
   position: absolute;
   inset: 0;
   contain: layout paint;
-  /* Keep navbar backdrop sampling inside the rounded scene on compositor repaints. */
+  /* A backdrop root keeps Firefox from sampling outside the rounded scene. */
   clip-path: inset(0 round var(--portfolio-radius));
+  mask-image: linear-gradient(#000 0 0);
   z-index: 0;
 }
 
@@ -622,7 +624,18 @@ html.custom-scrollbar-dragging * {
 }
 
 .site-nav .site-nav-links {
-  gap: clamp(8px, calc(40cqw - 184px), 32px);
+  gap: clamp(8px, calc(20cqw - 100px), 24px);
+}
+
+@container (max-width: 520px) {
+  .site-nav .site-nav-links,
+  .site-nav .site-nav-external {
+    display: none;
+  }
+
+  .site-nav .site-nav-menu-toggle {
+    display: flex;
+  }
 }
 
 @property --nav-hero-progress {
@@ -640,6 +653,11 @@ html.custom-scrollbar-dragging * {
 /* Scoped transitions keep the live glass; document transitions require a separate snapshot. */
 html.nav-document-transition .nav-bg-layer {
   view-transition-name: site-nav-bg;
+}
+
+html.nav-document-transition .nav-shadow-layer {
+  view-transition-name: site-nav-shadow;
+  box-shadow: none;
 }
 
 html.nav-document-transition.nav-capture-ready .nav-bg-layer {
@@ -691,6 +709,7 @@ html.nav-document-transition::view-transition-new(*) {
 html.nav-document-transition .nav-visual-home { view-transition-name: nav-home; }
 html.nav-document-transition .nav-visual-work { view-transition-name: nav-work; }
 html.nav-document-transition .nav-visual-about { view-transition-name: nav-about; }
+html.nav-document-transition .nav-visual-experience { view-transition-name: nav-experience; }
 html.nav-document-transition .nav-visual-stack { view-transition-name: nav-stack; }
 html.nav-document-transition .nav-visual-contact { view-transition-name: nav-contact; }
 html.nav-document-transition .nav-visual-github { view-transition-name: nav-github; }
@@ -774,16 +793,25 @@ html.nav-document-transition .cursor-layer {
   z-index: 2;
 }
 
-.nav-section-transition::view-transition-group(site-nav-bg) {
+.nav-section-transition::view-transition-group(site-nav-bg),
+.nav-section-transition::view-transition-group(site-nav-shadow) {
   top: 0;
   height: 3.5rem;
   transform: none;
+  z-index: 3;
+}
+
+.nav-section-transition::view-transition-group(site-nav-shadow) {
+  border-radius: 0 0 var(--nav-radius) var(--nav-radius);
+  box-shadow: var(--nav-drop-shadow);
+}
+
+.nav-section-transition::view-transition-group(site-nav-bg) {
   background: var(--nav-glass-background);
   -webkit-backdrop-filter: var(--nav-glass-filter);
   backdrop-filter: var(--nav-glass-filter);
   box-shadow: var(--nav-glass-shadow);
   clip-path: inset(0 round 0 0 var(--nav-radius) var(--nav-radius));
-  z-index: 3;
 }
 
 html.nav-document-transition::view-transition-group(site-nav-bg) {
@@ -843,6 +871,7 @@ html.nav-document-transition::view-transition-new(site-nav-bg) {
 html.nav-document-transition::view-transition-group(nav-home),
 html.nav-document-transition::view-transition-group(nav-work),
 html.nav-document-transition::view-transition-group(nav-about),
+html.nav-document-transition::view-transition-group(nav-experience),
 html.nav-document-transition::view-transition-group(nav-stack),
 html.nav-document-transition::view-transition-group(nav-contact),
 html.nav-document-transition::view-transition-group(nav-github),
@@ -861,12 +890,14 @@ html.nav-document-transition::view-transition-group(site-cursor) {
 html.nav-document-transition::view-transition-old(nav-home),
 html.nav-document-transition::view-transition-old(nav-work),
 html.nav-document-transition::view-transition-old(nav-about),
+html.nav-document-transition::view-transition-old(nav-experience),
 html.nav-document-transition::view-transition-old(nav-stack),
 html.nav-document-transition::view-transition-old(nav-contact),
 html.nav-document-transition::view-transition-old(nav-github),
 html.nav-document-transition::view-transition-old(nav-menu),
 html.nav-document-transition::view-transition-old(site-cursor),
-.nav-section-transition::view-transition-old(site-nav-bg) {
+.nav-section-transition::view-transition-old(site-nav-bg),
+.nav-section-transition::view-transition-old(site-nav-shadow) {
   animation: none;
   opacity: 0;
 }
@@ -883,7 +914,9 @@ html.nav-document-transition::view-transition-old(site-cursor),
 
 .site-nav,
 .nav-bg-layer,
-.nav-section-transition::view-transition-group(site-nav-bg) {
+.nav-shadow-layer,
+.nav-section-transition::view-transition-group(site-nav-bg),
+.nav-section-transition::view-transition-group(site-nav-shadow) {
   top: 0;
   left: 0;
   right: 0;
@@ -894,13 +927,25 @@ html.nav-document-transition::view-transition-old(site-cursor),
 @media (max-width: 767px) {
   .site-nav,
   .nav-bg-layer,
-  .nav-section-transition::view-transition-group(site-nav-bg) {
+  .nav-shadow-layer,
+  .nav-section-transition::view-transition-group(site-nav-bg),
+  .nav-section-transition::view-transition-group(site-nav-shadow) {
     width: calc(60vw + (var(--portfolio-width, 100vw) - 60vw) * clamp(0, calc(var(--nav-hero-progress, 0) + var(--nav-hero-offset, 0)), 1));
   }
 }
 
-html.nav-document-transition::view-transition-group(site-nav-bg) {
+html.nav-document-transition::view-transition-group(site-nav-bg),
+html.nav-document-transition::view-transition-group(site-nav-shadow) {
   top: var(--nav-snapshot-y, 0px);
+}
+
+.nav-shadow-layer {
+  position: fixed;
+  height: 3.5rem;
+  border-radius: 0 0 var(--nav-radius) var(--nav-radius);
+  box-shadow: var(--nav-drop-shadow);
+  z-index: 99;
+  pointer-events: none;
 }
 
 .nav-bg-layer {
@@ -928,7 +973,9 @@ html.nav-document-transition::view-transition-group(site-nav-bg) {
 
 @media (min-width: 768px) {
   .nav-bg-layer,
-  .nav-section-transition::view-transition-group(site-nav-bg) {
+  .nav-shadow-layer,
+  .nav-section-transition::view-transition-group(site-nav-bg),
+  .nav-section-transition::view-transition-group(site-nav-shadow) {
     height: 4rem;
   }
 }
@@ -1753,10 +1800,18 @@ html.nav-document-transition::view-transition-group(site-nav-bg) {
     --projects-gallery-height: min(70vh, 941px);
   }
 
+  .projects-project-inner {
+    min-height: var(--portfolio-height, 100svh);
+    display: flex;
+  }
+
   .projects-layout {
+    flex: 1;
+    width: 100%;
     grid-template-columns: 1fr;
+    grid-template-rows: auto 1fr;
     align-items: start;
-    row-gap: 18px;
+    row-gap: 0;
   }
 
   .projects-layout.is-reversed {
@@ -1783,7 +1838,10 @@ html.nav-document-transition::view-transition-group(site-nav-bg) {
   .projects-layout.is-reversed .projects-carousel-wrap {
     grid-column: 1;
     grid-row: 2;
-    margin-top: 6px;
+    align-self: stretch;
+    margin-top: 0;
+    /* Center the rotating gallery below the CTA, with room for its tilted edges. */
+    padding-block: max(48px, 8cqw);
   }
 }
 
@@ -1800,7 +1858,6 @@ html.nav-document-transition::view-transition-group(site-nav-bg) {
 
   .projects-layout {
     grid-template-columns: 1fr;
-    gap: 14px;
   }
 
   .projects-meta {
@@ -1809,7 +1866,6 @@ html.nav-document-transition::view-transition-group(site-nav-bg) {
 
   .projects-carousel-wrap {
     order: 2;
-    margin-top: 2px;
     min-height: auto;
   }
 
@@ -1850,7 +1906,6 @@ html.nav-document-transition::view-transition-group(site-nav-bg) {
 
   .projects-layout {
     grid-template-columns: 1fr;
-    gap: 12px;
   }
 
   .projects-meta {
