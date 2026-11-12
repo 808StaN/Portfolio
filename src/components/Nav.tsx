@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { motion, AnimatePresence, useReducedMotion } from 'framer-motion';
 import { sectionLinks as links, useSectionNavigation } from './SectionNavigation';
-import { experiencePinMedia } from '../constants/experience';
+import { experienceSceneMedia } from '../constants/experience';
 import { preloadExperienceScene } from './ExperienceWorld';
 
 export default function Nav({ ready }: { ready: boolean }) {
@@ -15,7 +15,7 @@ export default function Nav({ ready }: { ready: boolean }) {
   };
 
   const preloadLink = (href: string) => {
-    if (href === '#experience' && window.matchMedia(experiencePinMedia).matches) {
+    if (href === '#experience' && window.matchMedia(experienceSceneMedia).matches) {
       void preloadExperienceScene().catch(() => {});
     }
   };

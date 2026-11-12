@@ -19,7 +19,7 @@ ScrollTrigger.config({ ignoreMobileResize: true });
 
 export default function SectionTiltDirector() {
   const lenis = useLenis();
-  const experiencePinned = useExperiencePin();
+  const { pinned: experiencePinned } = useExperiencePin();
   const [reducedMotion, setReducedMotion] = useState(() => window.matchMedia('(prefers-reduced-motion: reduce)').matches);
 
   useEffect(() => {

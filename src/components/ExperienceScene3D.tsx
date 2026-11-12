@@ -337,7 +337,7 @@ function World({ journey, onReady, onUnavailable }: { journey: JourneySceneState
   const { camera, size, invalidate, gl } = useThree();
   useEffect(() => {
     const ortho = camera as OrthographicCamera;
-    ortho.zoom = size.width / 16;
+    ortho.zoom = Math.min(size.width / 16, size.height / 11);
     ortho.lookAt(0, 0, 0);
     ortho.updateProjectionMatrix();
     invalidate();
@@ -398,13 +398,14 @@ export default function ExperienceScene3D({ journey, onReady, onUnavailable }: {
     const fail = () => { if (!disposed) unavailable.current(); };
     canvas.addEventListener('webglcontextlost', fail);
     const size = () => ({ width: element.offsetWidth, height: element.offsetHeight, top: 0, left: 0 });
+    const dpr = () => Math.min(devicePixelRatio, element.offsetWidth < 600 ? 1.25 : 1.5);
     // Layout dimensions stay stable while the surrounding section tilts.
     let resize: (() => void) | undefined;
     const observer = new ResizeObserver(() => { if (!disposed) resize?.(); });
     void root.configure({
       orthographic: true,
       camera: { position: [0, 12, 12 * Math.SQRT2], near: 0.1, far: 60 },
-      size: size(), dpr: Math.min(devicePixelRatio, 1.5), frameloop: 'demand',
+      size: size(), dpr: dpr(), frameloop: 'demand',
       gl: { alpha: true, antialias: true, powerPreference: 'low-power' },
     }).then(() => {
       if (disposed) return;
@@ -415,7 +416,7 @@ export default function ExperienceScene3D({ journey, onReady, onUnavailable }: {
       );
       resize = () => {
         store.getState().setSize(element.offsetWidth, element.offsetHeight);
-        store.getState().setDpr(Math.min(devicePixelRatio, 1.5));
+        store.getState().setDpr(dpr());
       };
       observer.observe(element);
     }).catch(fail);

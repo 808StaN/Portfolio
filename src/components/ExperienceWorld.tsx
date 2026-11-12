@@ -1,6 +1,6 @@
 import { Component, lazy, Suspense, useEffect, useRef, useState, type ReactNode } from 'react';
 import ExperienceScene from './ExperienceScene';
-import { experiencePinMedia } from '../constants/experience';
+import { experienceSceneMedia } from '../constants/experience';
 import { getScrollViewport } from '../utils/scroll';
 
 let scenePromise: Promise<typeof import('./ExperienceScene3D')> | undefined;
@@ -41,7 +41,7 @@ export default function ExperienceWorld({ journey }: { journey: JourneySceneStat
   useEffect(() => {
     const element = container.current;
     if (!element) return;
-    const media = matchMedia(experiencePinMedia);
+    const media = matchMedia(experienceSceneMedia);
     const prepare = () => { if (media.matches) setEnabled(true); };
     const preload = new IntersectionObserver(([entry]) => {
       if (entry.isIntersecting) prepare();
