@@ -1800,10 +1800,18 @@ html.nav-document-transition::view-transition-group(site-nav-shadow) {
     --projects-gallery-height: min(70vh, 941px);
   }
 
+  .projects-project-inner {
+    min-height: var(--portfolio-height, 100svh);
+    display: flex;
+  }
+
   .projects-layout {
+    flex: 1;
+    width: 100%;
     grid-template-columns: 1fr;
+    grid-template-rows: auto 1fr;
     align-items: start;
-    row-gap: 18px;
+    row-gap: 0;
   }
 
   .projects-layout.is-reversed {
@@ -1830,7 +1838,10 @@ html.nav-document-transition::view-transition-group(site-nav-shadow) {
   .projects-layout.is-reversed .projects-carousel-wrap {
     grid-column: 1;
     grid-row: 2;
-    margin-top: 6px;
+    align-self: stretch;
+    margin-top: 0;
+    /* Center the rotating gallery below the CTA, with room for its tilted edges. */
+    padding-block: max(48px, 8cqw);
   }
 }
 
@@ -1847,7 +1858,6 @@ html.nav-document-transition::view-transition-group(site-nav-shadow) {
 
   .projects-layout {
     grid-template-columns: 1fr;
-    gap: 14px;
   }
 
   .projects-meta {
@@ -1856,7 +1866,6 @@ html.nav-document-transition::view-transition-group(site-nav-shadow) {
 
   .projects-carousel-wrap {
     order: 2;
-    margin-top: 2px;
     min-height: auto;
   }
 
@@ -1897,7 +1906,6 @@ html.nav-document-transition::view-transition-group(site-nav-shadow) {
 
   .projects-layout {
     grid-template-columns: 1fr;
-    gap: 12px;
   }
 
   .projects-meta {
