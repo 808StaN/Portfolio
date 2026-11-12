@@ -54,9 +54,23 @@ export default function Experience() {
     const cards = Array.from(section.querySelectorAll<HTMLElement>('[data-experience-card]'));
     const tabs = Array.from(section.querySelectorAll<HTMLButtonElement>('[data-experience-tab]'));
     const layout = section.querySelector<HTMLElement>('.experience-layout')!;
+    const panel = section.querySelector<HTMLElement>('.experience-panel')!;
+    const background = panel.querySelector<HTMLElement>(':scope > .section-bands-layer')!;
     const media = gsap.matchMedia();
     let restoreFrame = 0;
     let restoring = false;
+    let backgroundY = -1;
+    const updateBackground = () => {
+      const transform = getComputedStyle(panel).transform;
+      const tilted = transform !== 'none' && Math.abs(new DOMMatrixReadOnly(transform).b) > 0.00001;
+      // Keep one viewport of shader pixels behind the view, not stretched across the scroll spacer.
+      const shift = tilted ? 0 : Math.max(0, Math.min(getScrollMetrics().top - panel.getBoundingClientRect().top,
+        panel.clientHeight - background.clientHeight));
+      if (shift !== backgroundY) {
+        backgroundY = shift;
+        background.style.transform = `translate3d(0, ${shift}px, 0)`;
+      }
+    };
     const rememberJourney = () => {
       const metrics = getScrollMetrics();
       const last = position.current;
@@ -98,7 +112,7 @@ export default function Experience() {
         });
       });
     };
-    const resizeJourney = () => { rememberJourney(); restoreJourney(); };
+    const resizeJourney = () => { updateBackground(); rememberJourney(); restoreJourney(); };
     const interruptRestore = (event: Event) => {
       if (event instanceof WheelEvent && event.ctrlKey) return;
       previousJourney.current = null;
@@ -107,6 +121,7 @@ export default function Experience() {
     const intentEvents = ['wheel', 'touchstart', 'pointerdown', 'keydown', 'click'] as const;
     intentEvents.forEach(event => window.addEventListener(event, interruptRestore, { capture: true, passive: true }));
     const trackPosition = () => {
+      updateBackground();
       rememberJourney();
       if (previousJourney.current !== null) return;
       const metrics = getScrollMetrics();
@@ -118,6 +133,7 @@ export default function Experience() {
     const viewport = getScrollViewport();
     viewport?.addEventListener('scroll', trackPosition, { passive: true });
     ScrollTrigger.addEventListener('refreshInit', rememberJourney);
+    ScrollTrigger.addEventListener('refresh', updateBackground);
     ScrollTrigger.addEventListener('refresh', restoreJourney);
     window.addEventListener('resize', resizeJourney);
 
@@ -154,6 +170,7 @@ export default function Experience() {
       const playhead = { progress: position.current.progress };
 
       const render = (progress: number, selected?: number) => {
+        updateBackground();
         rememberJourney();
         const metrics = getScrollMetrics();
         const checkpoint = selected ?? (progress >= 0.7 ? 1 : 0);
@@ -253,11 +270,13 @@ export default function Experience() {
       rememberJourney();
       cancelAnimationFrame(restoreFrame);
       ScrollTrigger.removeEventListener('refreshInit', rememberJourney);
+      ScrollTrigger.removeEventListener('refresh', updateBackground);
       ScrollTrigger.removeEventListener('refresh', restoreJourney);
       window.removeEventListener('resize', resizeJourney);
       viewport?.removeEventListener('scroll', trackPosition);
       intentEvents.forEach(event => window.removeEventListener(event, interruptRestore, true));
       media.revert();
+      background.style.removeProperty('transform');
     };
   }, [lenis, pinExperience, dockExperience, measuredWidth, measuredHeight]);
 
