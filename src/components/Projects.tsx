@@ -5,6 +5,7 @@ import ProjectCarousel from "./ProjectCarousel";
 import ProjectTitleStretch from "./ProjectTitleStretch";
 import GravityLink from "./ui/GravityLink";
 import SectionBandsBackground from "./SectionBandsBackground";
+import MoreProjects from "./MoreProjects";
 import {
   featuredProjects,
   type Project,
@@ -187,6 +188,7 @@ export default function Projects() {
             </article>
           );
         })}
+        <MoreProjects />
       </div>
     </section>
   );

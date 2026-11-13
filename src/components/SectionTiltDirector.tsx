@@ -5,6 +5,7 @@ import { useLenis } from "./LenisScroll";
 import { getScrollMetrics, getScrollViewport } from "../utils/scroll";
 import { experienceTravelScreens } from "../constants/experience";
 import { useExperiencePin } from "../utils/useExperiencePin";
+import { moreProjectsMedia } from "./MoreProjects";
 import {
   incomingAngles,
   hexToHsl,
@@ -21,10 +22,18 @@ export default function SectionTiltDirector() {
   const lenis = useLenis();
   const { pinned: experiencePinned } = useExperiencePin();
   const [reducedMotion, setReducedMotion] = useState(() => window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+  const [horizontalProjects, setHorizontalProjects] = useState(() => window.matchMedia(moreProjectsMedia).matches);
 
   useEffect(() => {
     const media = window.matchMedia('(prefers-reduced-motion: reduce)');
     const update = () => setReducedMotion(media.matches);
+    media.addEventListener('change', update);
+    return () => media.removeEventListener('change', update);
+  }, []);
+
+  useEffect(() => {
+    const media = window.matchMedia(moreProjectsMedia);
+    const update = () => setHorizontalProjects(media.matches);
     media.addEventListener('change', update);
     return () => media.removeEventListener('change', update);
   }, []);
@@ -43,6 +52,7 @@ export default function SectionTiltDirector() {
       panel: HTMLElement;
     }> = [];
     const overlapTargets: Array<{ section: HTMLElement; marginTop: string }> = [];
+    const horizontalRefreshes: Array<() => void> = [];
 
     const updateTiltClip = (section: HTMLElement, panel: HTMLElement) => {
       const rotation = Number(gsap.getProperty(panel, "rotation")) || 0;
@@ -128,8 +138,40 @@ export default function SectionTiltDirector() {
         };
 
         // Keep long pinned sections in place while the next section tilts in.
-        const isOutgoingProject = section.dataset.sectionGroup === "projects";
+        const isMoreProjects = section.hasAttribute('data-more-projects');
+        const isOutgoingProject = section.dataset.sectionGroup === "projects" && !isMoreProjects;
         const isOutgoingExperience = section.hasAttribute('data-experience-journey') && experiencePinned;
+        if (isMoreProjects && horizontalProjects) {
+          const track = section.querySelector<HTMLElement>('.more-projects-track')!;
+          const rail = section.querySelector<HTMLElement>('.more-projects-window')!;
+          const distance = () => Math.max(0, track.scrollWidth - rail.clientWidth);
+          overlapTargets.push({ section: incomingSection, marginTop: incomingSection.style.marginTop });
+          gsap.set(incomingSection, { '--section-overlap-offset': `${-getScrollMetrics().height}px` });
+          incomingSection.style.marginTop = 'var(--section-overlap-offset)';
+          // One owner keeps horizontal travel and the following tilt on the same scroll clock.
+          const tl = gsap.timeline({
+            scrollTrigger: {
+              id: incomingSection.id ? `section-target-${incomingSection.id}` : undefined,
+              scroller,
+              trigger: section,
+              start: () => getProjectPinStart(section),
+              end: () => `+=${distance() + getScrollMetrics().height}`,
+              scrub: true,
+              pin: true,
+              pinSpacing: true,
+              invalidateOnRefresh: true,
+            },
+          });
+          const travel = gsap.fromTo(track, { x: 0 }, { x: () => -distance(), ease: 'none', duration: distance(), paused: true });
+          const tilt = gsap.to(incomingPanel, { keyframes: tiltKeyframes, ease: 'none', duration: getScrollMetrics().height, paused: true, onUpdate: onTiltUpdate });
+          tl.add(travel.play(), 0).add(tilt.play(), distance());
+          horizontalRefreshes.push(() => {
+            travel.duration(distance());
+            tilt.duration(getScrollMetrics().height);
+            tl.add(tilt, distance());
+          });
+          return;
+        }
         if (isOutgoingProject || isOutgoingExperience) {
           overlapTargets.push({ section: incomingSection, marginTop: incomingSection.style.marginTop });
           gsap.set(incomingSection, { "--section-overlap-offset": `${-getScrollMetrics().height}px` });
@@ -187,7 +229,11 @@ export default function SectionTiltDirector() {
       });
     });
 
-    ScrollTrigger.addEventListener("refreshInit", updateOverlaps);
+    const prepareRefresh = () => {
+      updateOverlaps();
+      horizontalRefreshes.forEach(update => update());
+    };
+    ScrollTrigger.addEventListener("refreshInit", prepareRefresh);
     ScrollTrigger.addEventListener("refresh", updateAllTiltClips);
 
     let refreshFrame = 0;
@@ -225,7 +271,7 @@ export default function SectionTiltDirector() {
       window.removeEventListener("resize", onResize);
       observer?.disconnect();
       cancelAnimationFrame(refreshFrame);
-      ScrollTrigger.removeEventListener("refreshInit", updateOverlaps);
+      ScrollTrigger.removeEventListener("refreshInit", prepareRefresh);
       ScrollTrigger.removeEventListener("refresh", updateAllTiltClips);
       sections.forEach((section) => {
         section.style.removeProperty("--tilt-hit-top");
@@ -237,7 +283,7 @@ export default function SectionTiltDirector() {
       });
       clipTargets.forEach(({ panel }) => panel.style.removeProperty('--section-corner-scale'));
     };
-  }, [lenis, experiencePinned, reducedMotion]);
+  }, [lenis, experiencePinned, reducedMotion, horizontalProjects]);
 
   return null;
 }

@@ -20,6 +20,9 @@ import instaFetch1100 from "../assets/projects/InstaFetch.jpg?w=1100&format=jpg&
 import instaFetchOriginal from "../assets/projects/InstaFetch.jpg";
 import storeManager1100 from "../assets/projects/StoreManager.jpg?w=1100&format=jpg&quality=95";
 import storeManagerOriginal from "../assets/projects/StoreManager.jpg";
+import chatTracePreview from "../assets/projects/ChatTrace.webp";
+import slodkoSlonyPreview from "../assets/projects/SlodkoSlonyMore.webp";
+import jobFitPreview from "../assets/projects/JobFit.webp";
 import type { GlowColor } from "../components/ui/spotlight-card";
 import { sectionColors } from "../constants/sectionColors";
 
@@ -64,7 +67,7 @@ export interface Project {
   color: string;
   glowColor: GlowColor;
   index: string;
-  /** false = ukryty w galerii portfolio (dane zostają w pliku). */
+  /** false = poza główną galerią 3D. */
   featured?: boolean;
 }
 
@@ -187,3 +190,36 @@ export const projects: Project[] = [
 ];
 
 export const featuredProjects = projects.filter((project) => project.featured !== false);
+
+export const moreProjects = [
+  {
+    id: 'chattrace',
+    title: 'ChatTrace',
+    category: 'Chrome Extension',
+    description: 'Chat history inside Twitch user cards. Browse past messages without leaving the channel you are watching.',
+    image: chatTracePreview,
+    links: [
+      { label: 'Chrome Web Store', href: 'https://chromewebstore.google.com/detail/dggjcoekkmkggklmppkfbjkopmndlbhn' },
+      { label: 'View website', href: 'https://chattrace.netlify.app/' },
+    ],
+  },
+  {
+    id: 'slodko-slony',
+    title: 'Słodko Słony',
+    category: 'Restaurant Website / Demo',
+    description: 'A restaurant website bringing the menu, catering, and contact details together in one place.',
+    image: slodkoSlonyPreview,
+    links: [{ label: 'View demo', href: 'https://slodko-slony.vercel.app/' }],
+  },
+  {
+    id: 'jobfit',
+    title: 'JobFit',
+    category: 'AI Web Application',
+    description: 'Compare a PDF CV with a job description to uncover evidence gaps and get a focused revision plan.',
+    image: jobFitPreview,
+    links: [
+      { label: 'View App', href: 'https://jobfit-ai-app.vercel.app/' },
+      { label: 'View repository', href: 'https://github.com/808StaN/JobFit' },
+    ],
+  },
+];

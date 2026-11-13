@@ -10,6 +10,7 @@ export const sectionColors = {
   projectRiftPick: "#08162E",
   projectOpenStudio: "#2F7542",
   projectOtakuVersus: "#E11955",
+  moreProjects: "#78305F",
 } as const;
 
 export type SectionKey = keyof typeof sectionColors;
@@ -19,6 +20,7 @@ export const sectionShaderPalettes = {
   projectRiftPick: ['#08162E', '#102745', '#193B5D', '#2C5377'],
   projectOpenStudio: ['#173D28', '#245837', '#2F7542', '#488556'],
   projectOtakuVersus: ['#450B21', '#850F36', '#BA1247', '#E11955'],
+  moreProjects: ['#32162F', '#592346', '#7E315F', '#AB4B7C'],
   about: ['#241E3D', '#3A315E', '#4B3D70', '#665482'],
   experience: ['#102854', '#143D88', '#2561BD', '#5086DA'],
   stack: ['#16263D', '#263A59', '#334F6F', '#466681'],
