@@ -1,10 +1,10 @@
 .more-projects-inner {
   width: 100%;
   min-height: var(--portfolio-height, 100svh);
-  padding-block: 112px 64px;
+  padding-block: clamp(88px, 10vh, 116px) 64px;
   display: flex;
   flex-direction: column;
-  justify-content: center;
+  justify-content: flex-start;
   gap: 40px;
 }
 
@@ -133,15 +133,106 @@
 }
 
 .more-projects-links a:focus-visible,
+.more-projects-github a:focus-visible,
 .more-projects-controls button:focus-visible {
   outline: 2px solid #d3e1f7;
   outline-offset: 5px;
 }
 
+.more-projects-github {
+  min-width: 0;
+  min-height: 300px;
+  padding: 32px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: center;
+  border: 1px solid #f0d2e833;
+  border-radius: 8px;
+  background: #32162f20;
+}
+
+.more-projects-github-arrow {
+  margin-bottom: 32px;
+  color: #ecd2e4;
+  font-size: 3rem;
+  line-height: 1;
+}
+
+.more-projects-github h3 {
+  font-size: 2rem;
+  font-weight: 500;
+  line-height: 1.2;
+  letter-spacing: -0.035em;
+}
+
+.more-projects-github p {
+  margin-block: 16px 28px;
+  color: #e1cddd;
+  font-size: 0.9rem;
+  line-height: 1.7;
+}
+
 @media (min-width: 1280px) and (min-height: 800px) and (prefers-reduced-motion: no-preference) {
   .more-projects-panel {
-    --more-card-width: min(740px, 48cqw, calc((var(--portfolio-height) - 500px) * 1.6));
+    --more-card-width: min(740px, calc((var(--portfolio-height) - 500px) * 1.6), calc(100cqw - 280px));
     height: var(--portfolio-height);
+  }
+
+  .more-projects-layout {
+    flex: 1;
+    display: grid;
+    grid-template-columns: 360px minmax(0, 1fr);
+    align-items: center;
+    align-content: center;
+    gap: 56px;
+  }
+
+  .more-projects-details {
+    display: grid;
+    align-self: stretch;
+    padding-block: 8px 24px;
+  }
+
+  .more-projects-details .more-projects-caption {
+    grid-area: 1 / 1;
+    display: flex;
+    flex-direction: column;
+    padding-top: 0;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.2s ease, visibility 0s 0.2s;
+  }
+
+  .more-projects-details .more-projects-caption[data-active="true"] {
+    opacity: 1;
+    visibility: visible;
+    transition-delay: 0s;
+  }
+
+  .more-projects-details .more-projects-card-heading {
+    display: block;
+  }
+
+  .more-projects-details h3 {
+    font-size: 2.25rem;
+  }
+
+  .more-projects-details .more-projects-card-heading > p {
+    margin-top: 12px;
+    text-align: left;
+  }
+
+  .more-projects-details .more-projects-description {
+    min-height: 0;
+    margin-top: 24px;
+    font-size: 0.95rem;
+    line-height: 1.75;
+  }
+
+  .more-projects-details .more-projects-links {
+    margin-top: auto;
+    padding-top: 24px;
   }
 
   .more-projects-controls {
@@ -153,7 +244,9 @@
   }
 
   .more-projects-window {
+    container-type: inline-size;
     overflow: clip;
+    clip-path: inset(8px 0 24px round 8px);
   }
 
   .more-projects-track {
@@ -161,12 +254,16 @@
     gap: 40px;
     width: max-content;
     margin-inline: 0;
-    padding-inline: calc((var(--portfolio-width) - var(--more-card-width)) / 2);
+    padding-inline: 0;
     will-change: transform;
   }
 
   .more-projects-card {
     flex: 0 0 var(--more-card-width);
     width: var(--more-card-width);
+  }
+
+  .more-projects-github {
+    flex: 0 0 calc(100cqw - var(--more-card-width) - 40px);
   }
 }

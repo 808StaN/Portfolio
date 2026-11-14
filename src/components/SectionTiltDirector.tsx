@@ -143,8 +143,9 @@ export default function SectionTiltDirector() {
         const isOutgoingExperience = section.hasAttribute('data-experience-journey') && experiencePinned;
         if (isMoreProjects && horizontalProjects) {
           const track = section.querySelector<HTMLElement>('.more-projects-track')!;
-          const rail = section.querySelector<HTMLElement>('.more-projects-window')!;
-          const distance = () => Math.max(0, track.scrollWidth - rail.clientWidth);
+          const cards = track.querySelectorAll<HTMLElement>('.more-projects-card');
+          // The GitHub tile shares the last project's frame, not a fourth scroll stop.
+          const distance = () => Math.max(0, cards[cards.length - 1].offsetLeft - cards[0].offsetLeft);
           overlapTargets.push({ section: incomingSection, marginTop: incomingSection.style.marginTop });
           gsap.set(incomingSection, { '--section-overlap-offset': `${-getScrollMetrics().height}px` });
           incomingSection.style.marginTop = 'var(--section-overlap-offset)';
