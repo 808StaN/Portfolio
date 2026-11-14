@@ -1,3 +1,9 @@
+.more-projects-panel > .section-bands-layer {
+  bottom: auto;
+  height: var(--portfolio-height);
+  max-height: 100%;
+}
+
 .more-projects-inner {
   width: 100%;
   min-height: var(--portfolio-height, 100svh);

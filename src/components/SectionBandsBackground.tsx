@@ -9,13 +9,14 @@ import SectionShaderCanvas from './SectionShaderCanvas';
 // Occupied width of the supplied 512px SDF, excluding its transparent padding.
 const heroLogoSdfWidth = 460 / 512;
 
-export default function SectionBandsBackground({ palette }: { palette: ShaderPalette }) {
+export default function SectionBandsBackground({ palette, viewport = false }: { palette: ShaderPalette; viewport?: boolean }) {
   const colors = sectionShaderPalettes[palette];
 
   return (
     <div
       className={`section-bands-layer${palette === 'home' ? ' hero-bands-layer' : ''}`}
       data-shader-palette={palette}
+      data-shader-viewport={viewport || undefined}
       style={Object.fromEntries(colors.map((color, index) => [`--shader-color-${index}`, color])) as CSSProperties}
       aria-hidden="true"
     />
@@ -45,6 +46,34 @@ export function SectionShaderRenderer({ onStateChange }: { onStateChange: (state
     const update = () => setReducedMotion(preference.matches);
     preference.addEventListener('change', update);
     return () => preference.removeEventListener('change', update);
+  }, []);
+
+  useEffect(() => {
+    const layers = Array.from(document.querySelectorAll<HTMLElement>('[data-shader-viewport]'));
+    const update = () => {
+      const { top } = getScrollMetrics();
+      layers.forEach(layer => {
+        const panel = layer.parentElement!;
+        const shift = Math.max(0, Math.min(top - panel.getBoundingClientRect().top, panel.clientHeight - layer.clientHeight));
+        const transform = shift ? `translate3d(0, ${shift}px, 0)` : '';
+        if (layer.style.transform !== transform) layer.style.transform = transform;
+      });
+    };
+    // Update before renderer visibility checks, including while GSAP pins the long section.
+    const scroller = getScrollViewport() ?? window;
+    scroller.addEventListener('scroll', update, { passive: true });
+    window.addEventListener('resize', update);
+    ScrollTrigger.addEventListener('refresh', update);
+    const observer = new ResizeObserver(update);
+    layers.forEach(layer => observer.observe(layer.parentElement!));
+    update();
+    return () => {
+      scroller.removeEventListener('scroll', update);
+      window.removeEventListener('resize', update);
+      ScrollTrigger.removeEventListener('refresh', update);
+      observer.disconnect();
+      layers.forEach(layer => layer.style.removeProperty('transform'));
+    };
   }, []);
 
   useEffect(() => {

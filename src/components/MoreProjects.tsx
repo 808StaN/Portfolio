@@ -151,7 +151,7 @@ export default function MoreProjects() {
       onBlurCapture={event => { if (event.relatedTarget) captionFocus.current = null; }}
     >
       <div className="section-tilt-panel more-projects-panel" style={{ background: sectionColors.moreProjects }}>
-        <SectionBandsBackground palette="moreProjects" />
+        <SectionBandsBackground palette="moreProjects" viewport />
         <div className="section-tilt-container more-projects-inner">
           <header className="section-inner more-projects-header">
             <ProjectTitleStretch title="More projects" projectId="more-projects" />
