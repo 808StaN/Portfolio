@@ -68,7 +68,7 @@
 .more-projects-track {
   display: grid;
   gap: 56px;
-  width: min(740px, calc(100% - var(--content-gutter) * 2));
+  width: min(740px, 100%);
   margin-inline: auto;
   list-style: none;
 }
@@ -97,7 +97,7 @@
   flex-wrap: wrap;
   align-items: baseline;
   justify-content: space-between;
-  gap: 20px;
+  gap: 8px 20px;
 }
 
 .more-projects-card-heading h3 {
@@ -132,6 +132,11 @@
   margin-top: 16px;
 }
 
+.more-projects-links a,
+.more-projects-github a {
+  min-height: 44px;
+}
+
 .more-projects-links a:focus-visible,
 .more-projects-github a:focus-visible,
 .more-projects-controls button:focus-visible {
@@ -141,8 +146,7 @@
 
 .more-projects-github {
   min-width: 0;
-  min-height: 300px;
-  padding: 32px;
+  padding: clamp(24px, 3vw, 32px);
   display: flex;
   flex-direction: column;
   align-items: flex-start;
@@ -153,7 +157,7 @@
 }
 
 .more-projects-github-arrow {
-  margin-bottom: 32px;
+  margin-bottom: 20px;
   color: #ecd2e4;
   font-size: 3rem;
   line-height: 1;
@@ -173,7 +177,51 @@
   line-height: 1.7;
 }
 
-@media (min-width: 1280px) and (min-height: 800px) and (prefers-reduced-motion: no-preference) {
+@media (max-width: 767px) {
+  .more-projects-inner {
+    gap: 32px;
+    padding-bottom: 40px;
+  }
+
+  .more-projects-card-heading {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+
+  .more-projects-card-heading > p {
+    text-align: left;
+  }
+
+  .more-projects-description {
+    font-size: 0.95rem;
+    line-height: 1.7;
+  }
+
+  .more-projects-github h3 {
+    font-size: 1.75rem;
+  }
+}
+
+@media (min-width: 1000px) {
+  .more-projects-track {
+    width: 100%;
+    gap: 64px;
+  }
+
+  .more-projects-card {
+    display: grid;
+    grid-template-columns: minmax(0, 1.35fr) minmax(280px, 1fr);
+    align-items: center;
+    gap: clamp(32px, 4vw, 56px);
+  }
+
+  .more-projects-caption {
+    padding-top: 0;
+  }
+}
+
+@media (min-width: 1280px) and (min-height: 600px) and (prefers-reduced-motion: no-preference) {
   .more-projects-panel {
     --more-card-width: min(740px, calc((var(--portfolio-height) - 500px) * 1.6), calc(100cqw - 280px));
     height: var(--portfolio-height);
@@ -243,6 +291,11 @@
     transition: filter 0.5s ease;
   }
 
+  .more-projects-links a,
+  .more-projects-github a {
+    min-height: 0;
+  }
+
   .more-projects-window {
     container-type: inline-size;
     overflow: clip;
@@ -259,11 +312,71 @@
   }
 
   .more-projects-card {
+    display: block;
     flex: 0 0 var(--more-card-width);
     width: var(--more-card-width);
   }
 
   .more-projects-github {
+    min-height: 300px;
+    padding: 32px;
     flex: 0 0 calc(100cqw - var(--more-card-width) - 40px);
+  }
+
+  .more-projects-github-arrow {
+    margin-bottom: 32px;
+  }
+
+  @media (max-width: 1599px) {
+    .more-projects-panel {
+      --more-card-width: min(740px, max(520px, calc((var(--portfolio-height) - 320px) * 1.6)), calc(100cqw - 240px));
+    }
+
+    .more-projects-inner {
+      gap: 24px;
+      padding-bottom: 32px;
+    }
+
+    .more-projects-layout {
+      grid-template-columns: 320px minmax(0, 1fr);
+      gap: 40px;
+    }
+
+    .more-projects-details h3 {
+      font-size: 2rem;
+    }
+
+    .more-projects-details .more-projects-card-heading > p {
+      margin-top: 10px;
+    }
+
+    .more-projects-details .more-projects-description {
+      margin-top: 18px;
+      font-size: 0.9rem;
+      line-height: 1.6;
+    }
+
+    .more-projects-details .more-projects-links {
+      padding-top: 20px;
+    }
+
+    .more-projects-github {
+      min-height: 0;
+      padding: 20px;
+    }
+
+    .more-projects-github-arrow {
+      display: none;
+    }
+
+    .more-projects-github h3 {
+      font-size: 1.375rem;
+    }
+
+    .more-projects-github p {
+      margin-block: 10px 16px;
+      font-size: 0.825rem;
+      line-height: 1.5;
+    }
   }
 }

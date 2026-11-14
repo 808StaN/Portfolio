@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, type FocusEvent } from 'react';
+import { useEffect, useEffectEvent, useRef, useState, type FocusEvent } from 'react';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { moreProjects } from '../data/projects';
@@ -10,7 +10,7 @@ import ProjectTitleStretch from './ProjectTitleStretch';
 import GravityLink from './ui/GravityLink';
 import './MoreProjects.css';
 
-export const moreProjectsMedia = '(min-width: 1280px) and (min-height: 800px) and (prefers-reduced-motion: no-preference)';
+export const moreProjectsMedia = '(min-width: 1280px) and (min-height: 600px) and (prefers-reduced-motion: no-preference)';
 
 function ProjectCaption({ project, index, active = true }: { project: typeof moreProjects[number]; index: number; active?: boolean }) {
   return (
@@ -44,6 +44,20 @@ export default function MoreProjects() {
   const [horizontal, setHorizontal] = useState(() => matchMedia(moreProjectsMedia).matches);
   const lenis = useLenis();
 
+  const restoreFocus = useEffectEvent(() => {
+    const target = restoreCaptionFocus.current;
+    if (!target) return false;
+    if (horizontal && active !== target.index) {
+      visit(target.index, true);
+      return true;
+    }
+    const links = Array.from(sectionRef.current?.querySelectorAll<HTMLAnchorElement>(`.more-projects-caption[data-more-project-index="${target.index}"] a`) ?? []);
+    const link = links.find(link => link.getAttribute('href') === target.href) ?? links[0];
+    link?.focus({ preventScroll: true });
+    if (document.activeElement === link) restoreCaptionFocus.current = null;
+    return Boolean(restoreCaptionFocus.current);
+  });
+
   useEffect(() => {
     const section = sectionRef.current!;
     const track = section.querySelector<HTMLElement>('.more-projects-track')!;
@@ -51,6 +65,8 @@ export default function MoreProjects() {
     const viewport = getScrollViewport() ?? window;
     const media = matchMedia(moreProjectsMedia);
     let frame = 0;
+    let focusFrame = 0;
+    const focus = () => { focusFrame = restoreFocus() ? requestAnimationFrame(focus) : 0; };
     const update = () => {
       frame = 0;
       const step = cards[1].offsetLeft - cards[0].offsetLeft;
@@ -67,44 +83,49 @@ export default function MoreProjects() {
       }
       setHorizontal(media.matches);
       setActive(nextActive);
+      if (restoreCaptionFocus.current && !focusFrame) focusFrame = requestAnimationFrame(focus);
     };
     const schedule = () => { if (!frame) frame = requestAnimationFrame(update); };
+    const afterRefresh = () => {
+      // ScrollTrigger temporarily reparents pinned sections, which can blur their links.
+      if (captionFocus.current && document.activeElement === document.body && !restoreCaptionFocus.current) restoreCaptionFocus.current = { ...captionFocus.current };
+      schedule();
+    };
     const changeLayout = () => {
       // Other media-query listeners can revert pins and blur the link before this one runs.
       if (captionFocus.current) restoreCaptionFocus.current = { ...captionFocus.current };
       schedule();
     };
+    const clearFocus = (event: Event) => {
+      if (!(event.target instanceof Element) || !event.target.closest('[data-more-projects] .more-projects-caption a')) {
+        captionFocus.current = null;
+        restoreCaptionFocus.current = null;
+      }
+    };
     const observer = new ResizeObserver(schedule);
     observer.observe(track);
     viewport.addEventListener('scroll', schedule, { passive: true });
-    ScrollTrigger.addEventListener('refresh', schedule);
+    window.addEventListener('resize', changeLayout);
+    document.addEventListener('pointerdown', clearFocus, true);
+    document.addEventListener('focusin', clearFocus);
+    ScrollTrigger.addEventListener('matchMedia', afterRefresh);
+    ScrollTrigger.addEventListener('refresh', afterRefresh);
     media.addEventListener('change', changeLayout);
     update();
     return () => {
       cancelAnimationFrame(frame);
+      cancelAnimationFrame(focusFrame);
       observer.disconnect();
       viewport.removeEventListener('scroll', schedule);
-      ScrollTrigger.removeEventListener('refresh', schedule);
+      window.removeEventListener('resize', changeLayout);
+      document.removeEventListener('pointerdown', clearFocus, true);
+      document.removeEventListener('focusin', clearFocus);
+      ScrollTrigger.removeEventListener('matchMedia', afterRefresh);
+      ScrollTrigger.removeEventListener('refresh', afterRefresh);
       media.removeEventListener('change', changeLayout);
       cards.forEach(card => card.style.removeProperty('--project-focus'));
     };
   }, []);
-
-  useEffect(() => {
-    if (!restoreCaptionFocus.current) return;
-    const frame = requestAnimationFrame(() => {
-      const target = restoreCaptionFocus.current;
-      if (!target) return;
-      if (horizontal && active !== target.index) {
-        visit(target.index, true);
-        return;
-      }
-      const links = Array.from(sectionRef.current?.querySelectorAll<HTMLAnchorElement>(`.more-projects-caption[data-more-project-index="${target.index}"] a`) ?? []);
-      (links.find(link => link.getAttribute('href') === target.href) ?? links[0])?.focus({ preventScroll: true });
-      restoreCaptionFocus.current = null;
-    });
-    return () => cancelAnimationFrame(frame);
-  }, [active, horizontal]);
 
   const visit = (index: number, immediate = false) => {
     const section = sectionRef.current!;
@@ -127,7 +148,7 @@ export default function MoreProjects() {
         const caption = event.target.closest<HTMLElement>('.more-projects-caption');
         captionFocus.current = caption ? { index: Number(caption.dataset.moreProjectIndex), href: event.target.getAttribute('href') ?? undefined } : null;
       }}
-      onBlurCapture={() => { if (matchMedia(moreProjectsMedia).matches === horizontal) captionFocus.current = null; }}
+      onBlurCapture={event => { if (event.relatedTarget) captionFocus.current = null; }}
     >
       <div className="section-tilt-panel more-projects-panel" style={{ background: sectionColors.moreProjects }}>
         <SectionBandsBackground palette="moreProjects" />
