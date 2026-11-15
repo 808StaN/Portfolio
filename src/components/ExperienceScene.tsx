@@ -3,7 +3,7 @@ import flyrankWordmark from '../assets/flyrank-wordmark.svg';
 
 const journeyPath = 'M130 510 L350 383 Q380 366 410 383 L590 487 Q620 504 650 487 L800 400 Q830 383 800 366 L590 245 Q560 228 590 211 L880 44';
 
-function RoadsideBillboard({ x, y, panel, children }: { x: number; y: number; panel: string; children: ReactNode }) {
+function RoadsideBillboard({ x, y, panel, children, next, active, onSelect }: { x: number; y: number; panel: string; children: ReactNode; next?: boolean; active: boolean; onSelect: (checkpoint: number) => void }) {
   return (
     <g transform={`translate(${x} ${y})`} strokeLinejoin="round">
       <g transform="matrix(1 -0.577 0 1 0 0)">
@@ -17,16 +17,19 @@ function RoadsideBillboard({ x, y, panel, children }: { x: number; y: number; pa
         <rect className="experience-checkpoint-outline" y="-80" width="110" height="80" rx="4" stroke="#E3F3FF" strokeWidth="1.5" opacity="0.5" />
         <path d="M7 -74 H103" stroke="#E3F3FF" strokeOpacity="0.3" />
         {children}
+        <foreignObject x="0" y="-80" width="110" height="80">
+          <button type="button" className="experience-billboard-button experience-billboard-button--svg" data-experience-billboard={next ? 'next' : 'flyrank'} aria-label={next ? "Go to What's next" : 'Go to FlyRank AI'} aria-current={active ? 'step' : undefined} aria-controls={next ? 'experience-story-next' : 'experience-story-flyrank'} onClick={() => onSelect(next ? 1 : 0)} />
+        </foreignObject>
       </g>
     </g>
   );
 }
 
-export default function ExperienceScene() {
+export default function ExperienceScene({ checkpoint, onSelect }: { checkpoint: number; onSelect: (checkpoint: number) => void }) {
   const id = `experience-${useId().replace(/:/g, '')}`;
 
   return (
-    <svg className="experience-world" viewBox="0 0 960 660" fill="none" aria-hidden="true">
+    <svg className="experience-world" viewBox="0 0 960 660" fill="none" role="presentation">
       <defs>
         <path id={`${id}-route`} d={journeyPath} />
         <linearGradient id={`${id}-pavement`} x1="130" y1="510" x2="880" y2="44" gradientUnits="userSpaceOnUse">
@@ -66,13 +69,13 @@ export default function ExperienceScene() {
       </g>
 
       <g data-journey-checkpoint="flyrank" data-x="235" data-y="449" className="experience-checkpoint experience-checkpoint--flyrank">
-        <RoadsideBillboard x={170} y={375} panel={`url(#${id}-panel)`}>
+        <RoadsideBillboard x={170} y={375} panel={`url(#${id}-panel)`} active={checkpoint === 0} onSelect={onSelect}>
           <image href={flyrankWordmark} x="10" y="-55" width="90" height="30" />
         </RoadsideBillboard>
       </g>
 
       <g data-journey-checkpoint="next" data-x="725" data-y="133" className="experience-checkpoint experience-checkpoint--next">
-        <RoadsideBillboard x={760} y={165} panel={`url(#${id}-panel)`}>
+        <RoadsideBillboard x={760} y={165} panel={`url(#${id}-panel)`} next active={checkpoint === 1} onSelect={onSelect}>
           <text x="55" y="-22" textAnchor="middle" fill="#F0FAFF" fontFamily="var(--font-sans)" fontSize="54" fontWeight="500">?</text>
         </RoadsideBillboard>
       </g>

@@ -55,45 +55,6 @@
   pointer-events: auto;
 }
 
-.experience-chapters {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  margin-bottom: clamp(24px, 3.5vh, 40px);
-}
-
-.experience-chapters button {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  min-height: 44px;
-  padding: 0;
-  border: 0;
-  background: none;
-  color: #b7cbed;
-  font: inherit;
-  font-size: 0.72rem;
-  cursor: pointer;
-  white-space: nowrap;
-  transition: color 0.2s;
-}
-
-.experience-chapters button:hover,
-.experience-chapters button[aria-current] {
-  color: #fff;
-}
-
-.experience-chapters button > span {
-  font-size: 0.6rem;
-  opacity: 0.6;
-}
-
-.experience-chapters-line {
-  height: 1px;
-  width: clamp(12px, 2vw, 36px);
-  background: #9bbce266;
-}
-
 .experience-stories {
   display: grid;
   gap: 0;
@@ -102,13 +63,21 @@
 
 .experience-story {
   grid-area: 1 / 1;
-  align-self: start;
+  align-self: center;
 }
 
-[data-checkpoint="flyrank"] .experience-story--next,
-[data-checkpoint="next"] .experience-story--flyrank {
+[data-checkpoint="flyrank"]:not([data-journey-mode="compact"]) .experience-story--next,
+[data-checkpoint="next"]:not([data-journey-mode="compact"]) .experience-story--flyrank {
   opacity: 0;
   visibility: hidden;
+}
+
+[data-journey-mode="compact"] .experience-stories {
+  gap: 40px;
+}
+
+[data-journey-mode="compact"] .experience-story {
+  grid-area: auto;
 }
 
 .experience-company {
@@ -255,6 +224,7 @@
   inset: 0;
   pointer-events: none;
   opacity: 0;
+  visibility: hidden;
 }
 
 .experience-world-container[data-scene-ready="true"] > .experience-world {
@@ -263,6 +233,34 @@
 
 .experience-world-container[data-scene-ready="true"] > .experience-world-3d {
   opacity: 1;
+  visibility: visible;
+}
+
+.experience-billboard-button {
+  display: block;
+  width: 76.8px;
+  height: 50px;
+  padding: 0;
+  border: 0;
+  border-radius: 3px;
+  background: transparent;
+  outline: none;
+  cursor: pointer;
+  pointer-events: auto;
+}
+
+.experience-billboard-button--svg {
+  width: 100%;
+  height: 100%;
+  outline: 1.5px solid transparent;
+  outline-offset: -1.5px;
+  transition: background-color 0.18s, outline-color 0.18s;
+}
+
+.experience-billboard-button--svg:hover,
+.experience-billboard-button--svg:focus-visible {
+  background-color: rgb(195 225 255 / 12%);
+  outline-color: #d9edff;
 }
 
 .experience-checkpoint-fill,
@@ -304,11 +302,11 @@
     transition: opacity 0.3s, transform 0.3s;
   }
 
-  [data-checkpoint="flyrank"] .experience-story--next {
+  [data-checkpoint="flyrank"]:not([data-journey-mode="compact"]) .experience-story--next {
     transform: translateY(10px);
   }
 
-  [data-checkpoint="next"] .experience-story--flyrank {
+  [data-checkpoint="next"]:not([data-journey-mode="compact"]) .experience-story--flyrank {
     transform: translateY(-10px);
   }
 }
@@ -355,10 +353,6 @@
     margin-inline: auto;
   }
 
-  .experience-chapters {
-    margin-bottom: 24px;
-  }
-
   .experience-layout[data-stage-docked] .experience-art::before {
     content: '';
     position: absolute;
@@ -382,16 +376,6 @@
 @media (max-width: 600px) {
   .experience-heading {
     display: block;
-  }
-
-  .experience-chapters {
-    gap: 10px;
-  }
-
-  .experience-chapters-line {
-    flex: 1;
-    min-width: 8px;
-    max-width: 36px;
   }
 
   .experience-company {

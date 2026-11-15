@@ -1,8 +1,10 @@
-import { Suspense, useEffect, useRef, useState } from 'react';
+import { Suspense, useEffect, useRef, useState, type RefObject } from 'react';
 import { createRoot, extend, useFrame, useLoader, useThree } from '@react-three/fiber';
+import { Html } from '@react-three/drei';
 import { AmbientLight, BoxGeometry, BufferGeometry, CanvasTexture, CapsuleGeometry, CircleGeometry, Color, CylinderGeometry, DirectionalLight, Float32BufferAttribute, Group, HemisphereLight, Mesh, MeshBasicMaterial, MeshStandardMaterial, OrthographicCamera, PlaneGeometry, SphereGeometry, SRGBColorSpace, TextureLoader, Vector3 } from 'three';
 import { RoundedBoxGeometry } from 'three/examples/jsm/geometries/RoundedBoxGeometry.js';
 import flyrankWordmark from '../assets/flyrank-wordmark.svg';
+import { experienceBillboards } from '../constants/experience';
 import { SceneBoundary, type JourneySceneState } from './ExperienceWorld';
 
 extend({ AmbientLight, BoxGeometry, CapsuleGeometry, CircleGeometry, CylinderGeometry, DirectionalLight, Group, HemisphereLight, Mesh, MeshBasicMaterial, MeshStandardMaterial, PlaneGeometry, SphereGeometry });
@@ -24,10 +26,10 @@ function roadsidePlacement(points: JourneySceneState['points'], at: [number, num
   return { position: anchor.addScaledVector(outward, offset), rotation: Math.atan2(-outward.x, -outward.z) };
 }
 
-function SoftBox({ size, position = [0, 0, 0], color, radius = 0.06 }: { size: [number, number, number]; position?: [number, number, number]; color: string; radius?: number }) {
+function SoftBox({ size, position = [0, 0, 0], color, radius = 0.06, materialRef }: { size: [number, number, number]; position?: [number, number, number]; color: string; radius?: number; materialRef?: RefObject<MeshStandardMaterial | null> }) {
   const [geometry] = useState(() => new RoundedBoxGeometry(...size, 2, radius));
   useEffect(() => () => geometry.dispose(), [geometry]);
-  return <mesh geometry={geometry} position={position}><meshStandardMaterial color={color} roughness={0.85} /></mesh>;
+  return <mesh geometry={geometry} position={position}><meshStandardMaterial ref={materialRef} color={color} roughness={0.85} /></mesh>;
 }
 
 function Road({ points }: { points: JourneySceneState['points'] }) {
@@ -93,7 +95,8 @@ function Road({ points }: { points: JourneySceneState['points'] }) {
   );
 }
 
-function Billboard({ x, y, next, journey }: { x: number; y: number; next?: boolean; journey: JourneySceneState }) {
+function Billboard({ x, y, next, journey, onSelect }: { x: number; y: number; next?: boolean; journey: JourneySceneState; onSelect: (checkpoint: number) => void }) {
+  const invalidate = useThree(state => state.invalidate);
   const logo = useLoader(TextureLoader, flyrankWordmark);
   logo.colorSpace = SRGBColorSpace;
   const [question] = useState(() => {
@@ -111,12 +114,20 @@ function Billboard({ x, y, next, journey }: { x: number; y: number; next?: boole
   });
   useEffect(() => () => question.dispose(), [question]);
   const panel = useRef<MeshStandardMaterial>(null);
+  const frame = useRef<MeshStandardMaterial>(null);
+  const button = useRef<HTMLButtonElement>(null);
   useFrame(() => {
-    if (panel.current) {
-      const active = journey.checkpoint === (next ? 1 : 0);
-      panel.current.color.set(active ? '#16345f' : '#42658c');
-      panel.current.emissiveIntensity = active ? 0.19 : 0;
+    const active = journey.checkpoint === (next ? 1 : 0);
+    const highlighted = button.current?.matches(':hover, :focus-visible') ?? false;
+    if (button.current) {
+      if (active) button.current.setAttribute('aria-current', 'step');
+      else button.current.removeAttribute('aria-current');
     }
+    if (panel.current) {
+      panel.current.color.set(active ? '#16345f' : '#42658c');
+      panel.current.emissiveIntensity = highlighted ? 0.35 : active ? 0.19 : 0;
+    }
+    frame.current?.color.set(highlighted ? '#e7f5ff' : '#a6c3de');
   });
   const p = ground(x, y);
   const nearest = journey.points.reduce((best, point, index, points) =>
@@ -130,7 +141,7 @@ function Billboard({ x, y, next, journey }: { x: number; y: number; next?: boole
         <SoftBox size={[0.09, 0.86, 0.1]} position={[0, 0.43, 0]} color="#9ebbd8" radius={0.025} />
         <SoftBox size={[0.32, 0.055, 0.25]} position={[0, 0.027, 0]} color="#6e91b5" radius={0.02} />
       </group>)}
-      <SoftBox size={[1.92, 1.25, 0.13]} position={[0, 1.4, 0]} color="#a6c3de" />
+      <SoftBox size={[1.92, 1.25, 0.13]} position={[0, 1.4, 0]} color="#a6c3de" materialRef={frame} />
       <mesh position={[0, 1.4, 0.077]}>
         <boxGeometry args={[1.8, 1.13, 0.035]} />
         <meshStandardMaterial ref={panel} color="#16345f" emissive="#517cac" roughness={0.9} />
@@ -139,6 +150,9 @@ function Billboard({ x, y, next, journey }: { x: number; y: number; next?: boole
         <planeGeometry args={next ? [0.48, 0.6] : [1.53, 0.504]} />
         <meshBasicMaterial map={next ? question : logo} transparent toneMapped={false} depthWrite={false} />
       </mesh>
+      <Html transform position={[0, 1.4, 0.065]} zIndexRange={[2, 1]}>
+        <button ref={node => { button.current = node; if (node) invalidate(); }} type="button" className="experience-billboard-button" data-experience-billboard={next ? 'next' : 'flyrank'} aria-label={next ? "Go to What's next" : 'Go to FlyRank AI'} aria-controls={next ? 'experience-story-next' : 'experience-story-flyrank'} onClick={() => onSelect(next ? 1 : 0)} onPointerEnter={() => invalidate()} onPointerLeave={() => invalidate()} onFocus={() => invalidate()} onBlur={() => invalidate()} />
+      </Html>
     </group>
   );
 }
@@ -333,7 +347,7 @@ function PocketPark({ points }: { points: JourneySceneState['points'] }) {
   );
 }
 
-function World({ journey, onReady, onUnavailable }: { journey: JourneySceneState; onReady: () => void; onUnavailable: () => void }) {
+function World({ journey, onSelect, onReady, onUnavailable }: { journey: JourneySceneState; onSelect: (checkpoint: number) => void; onReady: () => void; onUnavailable: () => void }) {
   const { camera, size, invalidate, gl } = useThree();
   useEffect(() => {
     const ortho = camera as OrthographicCamera;
@@ -370,8 +384,8 @@ function World({ journey, onReady, onUnavailable }: { journey: JourneySceneState
       <directionalLight position={[-4, 9, 6]} intensity={1.6} color="#fff3de" />
       <directionalLight position={[5, 4, -5]} intensity={0.5} color="#a9d5ff" />
       <Road points={journey.points} />
-      <Billboard x={160} y={420} journey={journey} />
-      <Billboard x={590} y={155} next journey={journey} />
+      <Billboard {...experienceBillboards[0]} journey={journey} onSelect={onSelect} />
+      <Billboard {...experienceBillboards[1]} next journey={journey} onSelect={onSelect} />
       <RoadsideBuilding points={journey.points} at={[330, 395]} side={-1} height={3.6} roof="#79b5c8" office />
       <RoadsideBuilding points={journey.points} at={[700, 309]} side={-1} height={1.75} roof="#8c86ce" />
       <RoadsideBuilding points={journey.points} at={[490, 429]} side={1} height={2.3} roof="#d77f8c" />
@@ -382,16 +396,19 @@ function World({ journey, onReady, onUnavailable }: { journey: JourneySceneState
   );
 }
 
-export default function ExperienceScene3D({ journey, onReady, onUnavailable }: { journey: JourneySceneState; onReady: () => void; onUnavailable: () => void }) {
+export default function ExperienceScene3D({ journey, onSelect, onReady, onUnavailable }: { journey: JourneySceneState; onSelect: (checkpoint: number) => void; onReady: () => void; onUnavailable: () => void }) {
   const container = useRef<HTMLDivElement>(null);
   const ready = useRef(onReady);
   const unavailable = useRef(onUnavailable);
+  const select = useRef(onSelect);
   ready.current = onReady;
   unavailable.current = onUnavailable;
+  select.current = onSelect;
   useEffect(() => {
     const element = container.current!;
     const canvas = document.createElement('canvas');
     canvas.style.cssText = 'display:block;width:100%;height:100%;pointer-events:none';
+    canvas.setAttribute('aria-hidden', 'true');
     element.append(canvas);
     const root = createRoot(canvas);
     let disposed = false;
@@ -411,7 +428,7 @@ export default function ExperienceScene3D({ journey, onReady, onUnavailable }: {
       if (disposed) return;
       const store = root.render(
         <SceneBoundary onError={fail}>
-          <Suspense fallback={null}><World journey={journey} onReady={() => ready.current()} onUnavailable={fail} /></Suspense>
+          <Suspense fallback={null}><World journey={journey} onSelect={checkpoint => select.current(checkpoint)} onReady={() => ready.current()} onUnavailable={fail} /></Suspense>
         </SceneBoundary>,
       );
       resize = () => {

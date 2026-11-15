@@ -13,7 +13,6 @@ export function useExperiencePin() {
     const media = window.matchMedia(experiencePinMedia);
     const motion = window.matchMedia(experienceSceneMedia);
     const header = section.querySelector<HTMLElement>('.experience-heading')!;
-    const chapters = section.querySelector<HTMLElement>('.experience-chapters')!;
     const cards = Array.from(section.querySelectorAll<HTMLElement>('[data-experience-card]'));
     const art = section.querySelector<HTMLElement>('.experience-art')!;
     let frame = 0;
@@ -27,8 +26,7 @@ export function useExperiencePin() {
       const available = metrics.height - header.offsetHeight - gap - padding - 8;
       section.style.setProperty('--experience-scene-height', `${Math.max(180, available)}px`);
       const stacked = getComputedStyle(section.querySelector('.experience-layout')!).display === 'block';
-      const copyHeight = chapters.offsetHeight + parseFloat(getComputedStyle(chapters).marginBottom)
-        + Math.max(...cards.map(card => card.offsetHeight));
+      const copyHeight = Math.max(...cards.map(card => card.offsetHeight));
       const stageHeight = stacked
         ? art.offsetHeight + parseFloat(getComputedStyle(art).marginBottom) + copyHeight
         : Math.max(copyHeight, art.offsetHeight);
@@ -50,7 +48,7 @@ export function useExperiencePin() {
     };
     const schedule = () => { if (!frame) frame = requestAnimationFrame(measure); };
     const observer = new ResizeObserver(schedule);
-    [header, chapters, ...cards, art].forEach(node => observer.observe(node));
+    [header, ...cards, art].forEach(node => observer.observe(node));
     media.addEventListener('change', schedule);
     motion.addEventListener('change', schedule);
     window.addEventListener('resize', schedule);

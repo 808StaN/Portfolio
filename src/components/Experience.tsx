@@ -2,7 +2,7 @@ import { useEffect, useRef, useState, type MouseEvent } from 'react';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import flyrankSymbol from '../assets/flyrank-symbol.svg';
-import { experienceSceneMedia, experienceTravelScreens } from '../constants/experience';
+import { experienceBillboards, experienceSceneMedia, experienceTravelScreens } from '../constants/experience';
 import { sectionColors } from '../constants/sectionColors';
 import { getScrollMetrics, getScrollViewport } from '../utils/scroll';
 import { getProjectPinStart } from '../utils/tilt';
@@ -38,7 +38,7 @@ function compactTop(section: HTMLElement, card: HTMLElement) {
 
 export default function Experience() {
   const sectionRef = useRef<HTMLElement>(null);
-  const checkpointProgress = useRef([0, 1]);
+  const checkpointProgress = useRef({ svg: [0, 1], scene: [0, 1] });
   const previousJourney = useRef<number | null>(null);
   const position = useRef({ progress: 0, checkpoint: 0, manual: false, active: false, width: 0, height: 0 });
   const selectCheckpoint = useRef<((checkpoint: number, immediate?: boolean) => void) | undefined>(undefined);
@@ -47,12 +47,14 @@ export default function Experience() {
   const lenis = useLenis();
   const { navigate } = useSectionNavigation();
   const { pinned: pinExperience, docked: dockExperience, width: measuredWidth, height: measuredHeight } = useExperiencePin();
+  const getCheckpointProgress = (checkpoint: number) => checkpointProgress.current[
+    sectionRef.current?.querySelector('[data-scene-ready="true"]') ? 'scene' : 'svg'
+  ][checkpoint];
 
   useEffect(() => {
     const section = sectionRef.current;
     if (!section) return;
     const cards = Array.from(section.querySelectorAll<HTMLElement>('[data-experience-card]'));
-    const tabs = Array.from(section.querySelectorAll<HTMLButtonElement>('[data-experience-tab]'));
     const layout = section.querySelector<HTMLElement>('.experience-layout')!;
     const panel = section.querySelector<HTMLElement>('.experience-panel')!;
     const background = panel.querySelector<HTMLElement>(':scope > .section-bands-layer')!;
@@ -75,7 +77,7 @@ export default function Experience() {
       const metrics = getScrollMetrics();
       const last = position.current;
       if ((last.width !== metrics.width || last.height !== metrics.height) && last.active && previousJourney.current === null) {
-        previousJourney.current = last.manual ? checkpointProgress.current[last.checkpoint] : last.progress;
+        previousJourney.current = last.manual ? getCheckpointProgress(last.checkpoint) : last.progress;
       }
       last.width = metrics.width;
       last.height = metrics.height;
@@ -159,7 +161,14 @@ export default function Experience() {
         return points.reduce((nearest, p, i) => Math.hypot(p.x - x, p.y - y)
           < Math.hypot(points[nearest].x - x, points[nearest].y - y) ? i : nearest, 0) / 600;
       });
-      checkpointProgress.current = stops.map(stop => stop / stops[1]);
+      checkpointProgress.current = {
+        svg: stops.map(stop => stop / stops[1]),
+        scene: experienceBillboards.map(({ x, y }) => {
+          // The isometric ground plane scales the SVG's Y axis by sqrt(3).
+          const distance = (point: DOMPoint) => (point.x - x) ** 2 + 3 * (point.y - y) ** 2;
+          return points.reduce((nearest, point, i) => distance(point) < distance(points[nearest]) ? i : nearest, 0) / 600 / stops[1];
+        }),
+      };
       const originalAttributes = Array.from(scene.querySelectorAll<SVGElement>('[data-journey-character], [data-journey-shadow], [data-journey-body], [data-journey-leg], [data-journey-arm], [data-journey-badge], [data-journey-parallax]'))
         .map(node => ({ node, transform: node.getAttribute('transform'), opacity: node.getAttribute('opacity') }));
       let previousCheckpoint = -1;
@@ -202,15 +211,15 @@ export default function Experience() {
         arms.forEach((arm, i) => arm.setAttribute('transform', `rotate(${stride * (i ? 8 : -8)} ${i ? 12 : -15} -61)`));
         far?.setAttribute('transform', `translate(0 ${(progress - 0.5) * -10})`);
         near?.setAttribute('transform', `translate(0 ${(progress - 0.5) * 16})`);
-        badges[0]?.setAttribute('opacity', progress >= checkpointProgress.current[0] && progress < 0.7 ? '1' : '0');
+        badges[0]?.setAttribute('opacity', progress >= getCheckpointProgress(0) && progress < 0.7 ? '1' : '0');
         badges[1]?.setAttribute('opacity', progress >= 0.7 ? '1' : '0');
         section.dataset.journeyProgress = progress.toFixed(4);
         Object.assign(journeyScene.current, { x, y, dx, dy, stride, checkpoint });
         if (journeyScene.current.visible) journeyScene.current.invalidate?.();
         if (checkpoint !== previousCheckpoint) {
           previousCheckpoint = checkpoint;
-          cards.forEach((card, i) => {
-            if (i !== checkpoint && card.contains(document.activeElement)) tabs[checkpoint].focus({ preventScroll: true });
+          if (pinned || docked) cards.forEach((card, i) => {
+            if (i !== checkpoint && card.contains(document.activeElement)) section.focus({ preventScroll: true });
           });
           setActiveCheckpoint(checkpoint);
         }
@@ -235,18 +244,18 @@ export default function Experience() {
       selectCheckpoint.current = (checkpoint, immediate = false) => {
         manualTween?.kill();
         if (immediate || !motion) {
-          playhead.progress = checkpointProgress.current[checkpoint];
+          playhead.progress = getCheckpointProgress(checkpoint);
           render(playhead.progress, checkpoint);
           return;
         }
         render(playhead.progress, checkpoint);
         manualTween = gsap.to(playhead, {
-          progress: checkpointProgress.current[checkpoint], duration: 0.35, ease: 'power1.inOut',
+          progress: getCheckpointProgress(checkpoint), duration: 0.35, ease: 'power1.inOut',
           onUpdate: () => render(playhead.progress, checkpoint),
         });
       };
       const manualCheckpoint = position.current.manual ? position.current.checkpoint : undefined;
-      if (!trigger && manualCheckpoint !== undefined) playhead.progress = checkpointProgress.current[manualCheckpoint];
+      if (!trigger && manualCheckpoint !== undefined) playhead.progress = getCheckpointProgress(manualCheckpoint);
       render(trigger?.progress ?? playhead.progress, trigger ? undefined : manualCheckpoint);
       restoreJourney();
 
@@ -284,7 +293,7 @@ export default function Experience() {
     const section = sectionRef.current;
     const journey = ScrollTrigger.getById('experience-journey');
     if (journey) {
-      scrollToY(journey.start + (journey.end - journey.start) * checkpointProgress.current[checkpoint], lenis);
+      scrollToY(journey.start + (journey.end - journey.start) * getCheckpointProgress(checkpoint), lenis);
     } else {
       setActiveCheckpoint(checkpoint);
       selectCheckpoint.current?.(checkpoint);
@@ -315,7 +324,7 @@ export default function Experience() {
   };
 
   return (
-    <section ref={sectionRef} id="experience" className="section-tilt-section section-shell experience-section" data-section-tilt data-experience-journey data-experience-pinned={pinExperience} data-experience-docked={dockExperience} data-journey-mode={pinExperience ? 'pinned' : dockExperience ? 'flow' : 'compact'} data-checkpoint={activeCheckpoint ? 'next' : 'flyrank'} data-section-color={sectionColors.experience} aria-label="Experience">
+    <section ref={sectionRef} id="experience" className="section-tilt-section section-shell experience-section" data-section-tilt data-experience-journey data-experience-pinned={pinExperience} data-experience-docked={dockExperience} data-journey-mode={pinExperience ? 'pinned' : dockExperience ? 'flow' : 'compact'} data-checkpoint={activeCheckpoint ? 'next' : 'flyrank'} data-section-color={sectionColors.experience} aria-label="Experience" tabIndex={-1}>
       <div className="section-tilt-panel experience-panel" style={{ background: sectionColors.experience }}>
         <SectionBandsBackground palette="experience" />
         <div className="section-tilt-container section-inner experience-inner" data-scroll-journey>
@@ -325,17 +334,11 @@ export default function Experience() {
 
           <div className="experience-layout">
             <div className="experience-art">
-              <ExperienceWorld journey={journeyScene.current} />
+              <ExperienceWorld journey={journeyScene.current} onSelect={visitCheckpoint} />
             </div>
             <div className="experience-copy">
-              <nav className="experience-chapters" aria-label="Experience checkpoints">
-                <button type="button" data-experience-tab aria-current={activeCheckpoint === 0 ? 'step' : undefined} onClick={() => visitCheckpoint(0)}><span>01</span> FlyRank AI</button>
-                <span className="experience-chapters-line" aria-hidden="true" />
-                <button type="button" data-experience-tab aria-current={activeCheckpoint === 1 ? 'step' : undefined} onClick={() => visitCheckpoint(1)}><span>02</span> What&apos;s next</button>
-              </nav>
-
               <ol className="experience-stories">
-                <li className="experience-story experience-story--flyrank" data-experience-card tabIndex={-1} inert={activeCheckpoint !== 0}>
+                <li id="experience-story-flyrank" className="experience-story experience-story--flyrank" data-experience-card tabIndex={-1} inert={(pinExperience || dockExperience) && activeCheckpoint !== 0}>
                   <div className="experience-company">
                     <img src={flyrankSymbol} width="48" height="48" alt="" />
                     <div><h3>FlyRank AI</h3></div>
@@ -350,7 +353,7 @@ export default function Experience() {
                   <div className="experience-skills"><span>React</span><span>TypeScript</span><span>AI workflows</span></div>
                 </li>
 
-                <li className="experience-story experience-story--next" data-experience-card tabIndex={-1} inert={activeCheckpoint !== 1}>
+                <li id="experience-story-next" className="experience-story experience-story--next" data-experience-card tabIndex={-1} inert={(pinExperience || dockExperience) && activeCheckpoint !== 1}>
                   <div className="experience-company">
                     <span className="experience-question" aria-hidden="true">?</span>
                     <div><h3>Your team?</h3></div>
