@@ -16,10 +16,6 @@ import openStudio21100 from "../assets/projects/openstudio2.jpg?w=1100&format=jp
 import openStudio2Original from "../assets/projects/openstudio2.jpg";
 import openStudio31100 from "../assets/projects/openstudio3.jpg?w=1100&format=jpg&quality=95";
 import openStudio3Original from "../assets/projects/openstudio3.jpg";
-import instaFetch1100 from "../assets/projects/InstaFetch.jpg?w=1100&format=jpg&quality=95";
-import instaFetchOriginal from "../assets/projects/InstaFetch.jpg";
-import storeManager1100 from "../assets/projects/StoreManager.jpg?w=1100&format=jpg&quality=95";
-import storeManagerOriginal from "../assets/projects/StoreManager.jpg";
 import chatTracePreview from "../assets/projects/ChatTrace.webp";
 import slodkoSlonyPreview from "../assets/projects/SlodkoSlonyMore.webp";
 import jobFitPreview from "../assets/projects/JobFit.webp";
@@ -45,8 +41,6 @@ const otakuVersusImage3 = projectImage(otakuVersus31100, otakuVersus3Original);
 const openStudioImage = projectImage(openStudio1100, openStudioOriginal);
 const openStudioImage2 = projectImage(openStudio21100, openStudio2Original);
 const openStudioImage3 = projectImage(openStudio31100, openStudio3Original);
-const instaFetchImage = projectImage(instaFetch1100, instaFetchOriginal);
-const storeManagerImage = projectImage(storeManager1100, storeManagerOriginal);
 
 export interface Project {
   id: string;
@@ -146,46 +140,6 @@ export const projects: Project[] = [
     color: sectionColors.projectOtakuVersus,
     glowColor: 'otakuversus',
     index: '03',
-  },
-  {
-    id: 'instafetch',
-    title: 'InstaFetch',
-    description:
-      'Chrome extension that downloads Instagram profile images and posts as ZIP files.',
-    longDescription:
-      'Lightweight extension focused on quick export flow and clean UX for photos and video assets.',
-    image: instaFetchImage,
-    secondaryImage: instaFetchImage,
-    category: 'Browser Extension',
-    tags: ['JavaScript', 'Chrome Extension', 'Browser APIs', 'DOM Scraping'],
-    year: '2026',
-    status: 'live',
-    link: 'https://github.com/808StaN/InstaFetch',
-    accent: '#f97316',
-    color: sectionColors.work,
-    glowColor: 'instafetch',
-    index: '04',
-    featured: false,
-  },
-  {
-    id: 'storemanager',
-    title: 'StoreManager',
-    description:
-      'Desktop application for managing clothing and footwear store inventory data.',
-    longDescription:
-      'CRUD-heavy desktop workflow designed for operational tasks such as stock updates and catalog management.',
-    image: storeManagerImage,
-    secondaryImage: storeManagerImage,
-    category: 'Desktop Application',
-    tags: ['C# 12', '.NET 8', 'WinForms (MDI)', 'ADO.NET', 'SQL Server', 'Azure SQL'],
-    year: '2026',
-    status: 'case-study',
-    link: 'https://github.com/808StaN/StoreManager',
-    accent: '#10b981',
-    color: sectionColors.work,
-    glowColor: 'storemanager',
-    index: '05',
-    featured: false,
   },
 ];
 
