@@ -152,13 +152,19 @@ export function SectionShaderRenderer({ onStateChange }: { onStateChange: (state
       const visible = candidates.slice(covering).slice(-2).map(({ layer }) => layer);
 
       const assignments = new Map<(typeof slots)[number], HTMLElement>();
-      // Reserve the warmed variants first, independent of scroll direction or navigation jumps.
+      // Reserve warmed variants and current hosts before assigning newly revealed layers.
       const special = (layer: HTMLElement) => layer === heroLayer || layer.dataset.shaderPalette === 'projectOtakuVersus';
       [...visible].sort((a, b) => Number(special(b)) - Number(special(a))).forEach(layer => {
         const slot = layer === heroLayer ? slots[0]
           : layer.dataset.shaderPalette === 'projectOtakuVersus' ? slots[1]
-            : slots.find(candidate => candidate.target === layer && !assignments.has(candidate))
-              ?? slots.find(candidate => !assignments.has(candidate))!;
+            : slots.find(candidate => candidate.target === layer && !assignments.has(candidate));
+        if (slot) assignments.set(slot, layer);
+      });
+      visible.forEach(layer => {
+        if ([...assignments.values()].includes(layer)) return;
+        // Alternate neighbors so returning to a warmed variant never evicts the visible shader.
+        const preferred = slots[layers.indexOf(layer) % slots.length];
+        const slot = !assignments.has(preferred) ? preferred : slots.find(candidate => !assignments.has(candidate))!;
         assignments.set(slot, layer);
       });
       slots.forEach(slot => {
