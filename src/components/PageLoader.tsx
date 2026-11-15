@@ -79,7 +79,7 @@ export default function PageLoader({ ready, onStageChange }: { ready: boolean; o
         <p className="page-loader__heading">Dawid Stanisz</p>
       </div>
       <div className="page-loader__panel page-loader__panel--bottom" style={{ background: sectionColors.home }}>
-        <p className="page-loader__subtitle">[ FULL-STACK DEVELOPER ]</p>
+        <p className="page-loader__subtitle">[ WEB DEVELOPER ]</p>
       </div>
       <button ref={skipRef} className="page-loader__skip" type="button" onClick={() => onStageChange('done')}>
         Skip intro

@@ -101,6 +101,7 @@ export default function Projects() {
                         title={slashTitle(project.title)}
                         projectId={project.id}
                         edgeAlign={reversed ? "right" : "left"}
+                        variant="project"
                       />
                       <p className="projects-category">{project.category}</p>
                       <p className="projects-description">

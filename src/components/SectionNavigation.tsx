@@ -213,7 +213,9 @@ export function SectionNavigationProvider({ children }: { children: ReactNode })
     if (titleRect && (titleRect.bottom <= metrics.top || titleRect.top >= metrics.top + metrics.height)) outgoingTitle = null;
     const outgoingTitleStyle = outgoingTitle ? getComputedStyle(outgoingTitle) : null;
     const titleOrigin = outgoingTitleStyle?.transformOrigin.split(' ').map(Number.parseFloat) ?? [0, 0];
-    const titleEndScale = outgoingTitleStyle ? 1 / new DOMMatrix(outgoingTitleStyle.transform).d : 1;
+    const titleMatrix = outgoingTitleStyle ? new DOMMatrix(outgoingTitleStyle.transform) : null;
+    // Normalize out raster downscaling so both title variants return to the same visible stretch.
+    const titleEndScale = titleMatrix ? STRETCH_START * titleMatrix.a / titleMatrix.d : 1;
     const wasStopped = lenis?.isStopped;
     const panelStyle = goingBack && outgoingStyle ? outgoingStyle : getComputedStyle(panel);
     const panelRadius = panelStyle.getPropertyValue('--section-base-radius').trim() || '0px';

@@ -9,14 +9,11 @@ gsap.registerPlugin(ScrollTrigger);
 // Wizualna wysokość tytułu: start (sekcja wjeżdża) = rozciągnięty ×STRETCH_START,
 // koniec (pin) = normalny ×STRETCH_END.
 //
-// Tekst jest renderowany OD RAZU w dużym foncie (×STRETCH_START), a transform tylko go
+// Tekst jest renderowany OD RAZU w dużym foncie, a transform tylko go
 // POMNIEJSZA (scale <= 1). Downscaling rastra jest zawsze ostry, więc nie ma pikselozy.
 export const STRETCH_START = 3;
 export const STRETCH_END = 1;
 
-// Stała kompensacja szerokości: font jest ×STRETCH_START szerszy, więc ściskamy go z powrotem.
-const BASE_SCALE_X = 1 / STRETCH_START;
-const REST_SCALE_Y = STRETCH_END / STRETCH_START;
 // Deterministyczny pivot skalowania (dół widocznych liter). Stały — bez pomiaru DOM,
 // dzięki czemu origin nigdy nie zależy od timingu refreshy (źródło buga RiftPicka).
 const BASELINE_RATIO = 0.8;
@@ -30,21 +27,25 @@ type ProjectTitleStretchProps = {
   title: string;
   projectId: string;
   edgeAlign?: "left" | "right";
+  variant?: "section" | "project";
 };
 
-function applyTitleStretch(scaleEl: HTMLElement, progress: number) {
+function applyTitleStretch(scaleEl: HTMLElement, progress: number, renderScale: number) {
   const visibleFactor = STRETCH_START + (STRETCH_END - STRETCH_START) * progress;
-  const scaleY = visibleFactor / STRETCH_START;
-  scaleEl.style.transform = `scale(${BASE_SCALE_X}, ${scaleY})`;
+  const scaleY = visibleFactor / renderScale;
+  scaleEl.style.transform = `scale(${1 / renderScale}, ${scaleY})`;
 }
 
 export default function ProjectTitleStretch({
   title,
   projectId,
   edgeAlign = "left",
+  variant = "section",
 }: ProjectTitleStretchProps) {
   const scaleRef = useRef<HTMLDivElement>(null);
   const transformOrigin = getTransformOrigin(edgeAlign);
+  // Raster size also sets the resting baseline; keep it independent of animation strength.
+  const renderScale = variant === "project" ? 3 : 4;
 
   const lenis = useLenis();
 
@@ -66,7 +67,7 @@ export default function ProjectTitleStretch({
     const media = gsap.matchMedia();
     media.add({ motion: '(prefers-reduced-motion: no-preference)', reduced: '(prefers-reduced-motion: reduce)' }, context => {
       if (context.conditions?.reduced) {
-        scaleEl.style.transform = `scale(${BASE_SCALE_X}, ${REST_SCALE_Y})`;
+        applyTitleStretch(scaleEl, 1, renderScale);
         return restoreStyles;
       }
 
@@ -78,11 +79,11 @@ export default function ProjectTitleStretch({
         end: "top top",
         scrub: true,
         invalidateOnRefresh: true,
-        onRefresh: (self) => applyTitleStretch(scaleEl, self.progress),
-        onUpdate: (self) => applyTitleStretch(scaleEl, self.progress),
+        onRefresh: (self) => applyTitleStretch(scaleEl, self.progress, renderScale),
+        onUpdate: (self) => applyTitleStretch(scaleEl, self.progress, renderScale),
       });
 
-      applyTitleStretch(scaleEl, trigger.progress);
+      applyTitleStretch(scaleEl, trigger.progress, renderScale);
 
       return () => {
         trigger.kill();
@@ -90,7 +91,7 @@ export default function ProjectTitleStretch({
       };
     });
     return () => media.revert();
-  }, [lenis, projectId, transformOrigin]);
+  }, [lenis, projectId, transformOrigin, renderScale]);
 
   return (
     <div
@@ -101,10 +102,10 @@ export default function ProjectTitleStretch({
         ref={scaleRef}
         style={{
           transformOrigin,
-          transform: `scale(${BASE_SCALE_X}, ${REST_SCALE_Y})`,
+          transform: `scale(${1 / renderScale}, ${STRETCH_END / renderScale})`,
         }}
       >
-        <h2 className="projects-title" style={{ fontSize: `${STRETCH_START}em` }}>
+        <h2 className="projects-title" style={{ fontSize: `${renderScale}em` }}>
           {title === "RiftPick" ? (
             <>Ri<span style={{ paddingInlineEnd: "0.04em" }}>f</span>tPick</>
           ) : title}
