@@ -41,7 +41,7 @@ export default function Experience() {
   const checkpointProgress = useRef({ svg: [0, 1], scene: [0, 1] });
   const previousJourney = useRef<number | null>(null);
   const position = useRef({ progress: 0, checkpoint: 0, manual: false, active: false, width: 0, height: 0 });
-  const selectCheckpoint = useRef<((checkpoint: number, immediate?: boolean) => void) | undefined>(undefined);
+  const selectCheckpoint = useRef<((checkpoint: number, immediate?: boolean, onComplete?: () => void) => void) | undefined>(undefined);
   const [activeCheckpoint, setActiveCheckpoint] = useState(0);
   const journeyScene = useRef<JourneySceneState>({ points: [], x: 130, y: 510, dx: 1, dy: -0.577, stride: 0, checkpoint: 0, visible: false });
   const lenis = useLenis();
@@ -50,6 +50,9 @@ export default function Experience() {
   const getCheckpointProgress = (checkpoint: number) => checkpointProgress.current[
     sectionRef.current?.querySelector('[data-scene-ready="true"]') ? 'scene' : 'svg'
   ][checkpoint];
+  // Four seconds between billboards, with proportional time for shorter trips.
+  const getWalkDuration = (from: number, to: number) => Math.max(0.2,
+    Math.abs(to - from) * 4 / Math.abs(getCheckpointProgress(1) - getCheckpointProgress(0)));
 
   useEffect(() => {
     const section = sectionRef.current;
@@ -60,6 +63,7 @@ export default function Experience() {
     const background = panel.querySelector<HTMLElement>(':scope > .section-bands-layer')!;
     const media = gsap.matchMedia();
     let restoreFrame = 0;
+    let manualTween: gsap.core.Tween | undefined;
     let restoring = false;
     let backgroundY = -1;
     const updateBackground = () => {
@@ -117,6 +121,11 @@ export default function Experience() {
     const resizeJourney = () => { updateBackground(); rememberJourney(); restoreJourney(); };
     const interruptRestore = (event: Event) => {
       if (event instanceof WheelEvent && event.ctrlKey) return;
+      if (manualTween?.isActive()) {
+        manualTween.kill();
+        manualTween = undefined;
+        position.current.manual = false;
+      }
       previousJourney.current = null;
       cancelAnimationFrame(restoreFrame);
     };
@@ -175,7 +184,6 @@ export default function Experience() {
       let previousProgress = 0;
       let direction = 1;
       let trigger: ScrollTrigger | undefined;
-      let manualTween: gsap.core.Tween | undefined;
       const playhead = { progress: position.current.progress };
 
       const render = (progress: number, selected?: number) => {
@@ -241,17 +249,20 @@ export default function Experience() {
         onUpdate: self => render(self.progress),
         onRefresh: self => render(self.progress),
       });
-      selectCheckpoint.current = (checkpoint, immediate = false) => {
+      selectCheckpoint.current = (checkpoint, immediate = false, onComplete) => {
         manualTween?.kill();
+        const target = getCheckpointProgress(checkpoint);
         if (immediate || !motion) {
-          playhead.progress = getCheckpointProgress(checkpoint);
+          playhead.progress = target;
           render(playhead.progress, checkpoint);
+          onComplete?.();
           return;
         }
         render(playhead.progress, checkpoint);
         manualTween = gsap.to(playhead, {
-          progress: getCheckpointProgress(checkpoint), duration: 0.35, ease: 'power1.inOut',
+          progress: target, duration: getWalkDuration(playhead.progress, target), ease: 'none',
           onUpdate: () => render(playhead.progress, checkpoint),
+          onComplete,
         });
       };
       const manualCheckpoint = position.current.manual ? position.current.checkpoint : undefined;
@@ -293,23 +304,31 @@ export default function Experience() {
     const section = sectionRef.current;
     const journey = ScrollTrigger.getById('experience-journey');
     if (journey) {
-      scrollToY(journey.start + (journey.end - journey.start) * getCheckpointProgress(checkpoint), lenis);
+      const target = getCheckpointProgress(checkpoint);
+      const distance = journey.end - journey.start;
+      const current = (getScrollMetrics().scroll - journey.start) / distance;
+      scrollToY(journey.start + distance * target, lenis, {
+        duration: getWalkDuration(current, target), easing: progress => progress,
+      });
     } else {
       setActiveCheckpoint(checkpoint);
-      selectCheckpoint.current?.(checkpoint);
-      if (!selectCheckpoint.current && section) {
+      const revealCard = () => {
+        const card = section?.querySelectorAll<HTMLElement>('[data-experience-card]')[checkpoint];
+        if (card && section) {
+          const metrics = getScrollMetrics();
+          const inset = (document.querySelector('.site-nav')?.clientHeight ?? 64) + 24;
+          const rect = card.getBoundingClientRect();
+          if (rect.top < metrics.top + inset || rect.top > metrics.top + metrics.height - 100) {
+            scrollToY(compactTop(section, card), lenis,
+              { onComplete: () => card.focus({ preventScroll: true }) });
+          }
+        }
+      };
+      if (selectCheckpoint.current) selectCheckpoint.current(checkpoint, false, revealCard);
+      else if (section) {
         position.current.progress = checkpoint;
         section.dataset.journeyProgress = checkpoint.toFixed(4);
-      }
-      const card = section?.querySelectorAll<HTMLElement>('[data-experience-card]')[checkpoint];
-      if (card && section) {
-        const metrics = getScrollMetrics();
-        const inset = (document.querySelector('.site-nav')?.clientHeight ?? 64) + 24;
-        const rect = card.getBoundingClientRect();
-        if (rect.top < metrics.top + inset || rect.top > metrics.top + metrics.height - 100) {
-          scrollToY(compactTop(section, card), lenis,
-            { onComplete: () => card.focus({ preventScroll: true }) });
-        }
+        revealCard();
       }
     }
   };

@@ -17,6 +17,7 @@ export function useLenis() {
 
 type ScrollToOptions = {
   duration?: number;
+  easing?: (progress: number) => number;
   immediate?: boolean;
   lock?: boolean;
   onComplete?: () => void;
@@ -35,6 +36,7 @@ export function scrollToY(
   if (lenis) {
     lenis.scrollTo(targetY, {
       duration: options?.duration ?? 1.1,
+      easing: options?.easing,
       immediate,
       lock: options?.lock,
       onComplete: options?.onComplete,
