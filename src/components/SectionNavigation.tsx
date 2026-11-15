@@ -2,6 +2,7 @@ import { createContext, useContext, useState, useEffect, useRef, type ReactNode 
 import { flushSync } from 'react-dom';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { scrollToY, useLenis } from './LenisScroll';
+import { STRETCH_START, STRETCH_END } from './ProjectTitleStretch';
 import { blendSectionColor, getSectionCornerScale, hexToHsl, incomingAngles } from '../utils/tilt';
 import { getKeyboardScrollDelta, getScrollMetrics, getScrollTargetTop, getScrollViewport } from '../utils/scroll';
 
@@ -129,6 +130,7 @@ export function SectionNavigationProvider({ children }: { children: ReactNode })
     const targetColor = panel?.closest<HTMLElement>('[data-section-color]')?.dataset.sectionColor;
     let outgoingPanel: HTMLElement | null = null;
     let outgoingSection: HTMLElement | null = null;
+    let outgoingTitle: HTMLElement | null = null;
     let captureSnapshot = false;
     let jumped = false;
 
@@ -136,6 +138,7 @@ export function SectionNavigationProvider({ children }: { children: ReactNode })
       if (jumped || request !== navigationRequest.current || !el.isConnected) return;
       outgoingPanel?.removeAttribute('data-nav-capture');
       outgoingSection?.removeAttribute('data-nav-source');
+      outgoingTitle?.removeAttribute('data-nav-title-capture');
       if (document.documentElement.classList.contains('nav-section-transition')) {
         document.documentElement.classList.add('nav-capture-ready');
       }
@@ -205,6 +208,12 @@ export function SectionNavigationProvider({ children }: { children: ReactNode })
     const useRootSnapshot = goingBack && (!outgoingRect
       || Math.abs(outgoingMatrix.b) > 0.00001 || Math.abs(outgoingMatrix.a - 1) > 0.00001
       || outgoingRect.top > metrics.top + 1 || outgoingRect.bottom < metrics.top + metrics.height - 1);
+    outgoingTitle = goingBack ? outgoingPanel?.querySelector<HTMLElement>('.projects-title-scale') ?? null : null;
+    const titleRect = outgoingTitle?.getBoundingClientRect();
+    if (titleRect && (titleRect.bottom <= metrics.top || titleRect.top >= metrics.top + metrics.height)) outgoingTitle = null;
+    const outgoingTitleStyle = outgoingTitle ? getComputedStyle(outgoingTitle) : null;
+    const titleOrigin = outgoingTitleStyle?.transformOrigin.split(' ').map(Number.parseFloat) ?? [0, 0];
+    const titleEndScale = outgoingTitleStyle ? 1 / new DOMMatrix(outgoingTitleStyle.transform).d : 1;
     const wasStopped = lenis?.isStopped;
     const panelStyle = goingBack && outgoingStyle ? outgoingStyle : getComputedStyle(panel);
     const panelRadius = panelStyle.getPropertyValue('--section-base-radius').trim() || '0px';
@@ -243,6 +252,7 @@ export function SectionNavigationProvider({ children }: { children: ReactNode })
     scope?.classList.add('nav-section-transition');
     lenis?.stop();
     captureSnapshot = !returningHome && !goingBack;
+    outgoingTitle?.setAttribute('data-nav-title-capture', '');
     if (goingBack && !useRootSnapshot && outgoingStyle) {
       // Keep the visible card unchanged while capturing its background separately.
       root.style.setProperty('--nav-outgoing-color', outgoingStyle.backgroundColor);
@@ -277,6 +287,7 @@ export function SectionNavigationProvider({ children }: { children: ReactNode })
       panel.removeAttribute('data-nav-blend');
       outgoingPanel?.removeAttribute('data-nav-capture');
       outgoingSection?.removeAttribute('data-nav-source');
+      outgoingTitle?.removeAttribute('data-nav-title-capture');
       animations.forEach(animation => animation.cancel());
       root.classList.remove('nav-section-transition', 'nav-home-transition', 'nav-back-transition', 'nav-back-root-transition', 'nav-capture-ready', 'nav-document-transition');
       scope?.classList.remove('nav-section-transition', 'nav-home-transition', 'nav-back-transition', 'nav-back-root-transition');
@@ -393,6 +404,39 @@ export function SectionNavigationProvider({ children }: { children: ReactNode })
         }
         resumeScroll();
         return;
+      }
+      const title = !goingBack ? el.querySelector<HTMLElement>('.projects-title-scale') : null;
+      if (title) {
+        // Compose with the scroll-owned transform so live scrolling still controls the title.
+        animations.push(title.animate([
+          { scale: `1 ${STRETCH_START / STRETCH_END}` },
+          { scale: '1 1' },
+        ], timing));
+      }
+      if (outgoingTitle) {
+        // The old section is frozen; move its separate title snapshot around the same pivot.
+        const titleSnapshot = '::view-transition-group(nav-title)';
+        const titleStyle = getComputedStyle(host, titleSnapshot);
+        const snapshotOrigin = titleStyle.transformOrigin.split(' ').map(Number.parseFloat);
+        const titleTransform = new DOMMatrix().translate(snapshotOrigin[0], snapshotOrigin[1])
+          .multiply(new DOMMatrix(titleStyle.transform)).translate(-snapshotOrigin[0], -snapshotOrigin[1]);
+        const sourceTransform = new DOMMatrix(root.style.getPropertyValue('--nav-section-source-transform'));
+        const origin = style.transformOrigin.split(' ').map(Number.parseFloat);
+        const pivotX = sourceTransform.e + origin[0];
+        const pivotY = sourceTransform.f + origin[1];
+        animations.push(host.animate(Array.from({ length: 61 }, (_, index) => {
+          const progress = index / 60;
+          const transform = new DOMMatrix()
+            .translate(pivotX, pivotY)
+            .translate(0, panelHeight * progress)
+            .rotate(incomingAngles[0] * progress)
+            .translate(-pivotX, -pivotY)
+            .multiply(titleTransform)
+            .translate(titleOrigin[0], titleOrigin[1])
+            .scale(1, 1 + (titleEndScale - 1) * progress)
+            .translate(-titleOrigin[0], -titleOrigin[1]);
+          return { offset: progress, transform: transform.toString(), transformOrigin: '0 0' };
+        }), { ...timing, pseudoElement: titleSnapshot }));
       }
       animations.push(host.animate(Array.from({ length: 61 }, (_, index) => {
         const progress = index / 60;

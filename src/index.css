@@ -736,6 +736,10 @@ html.nav-document-transition .cursor-layer {
   background-color: transparent !important;
 }
 
+[data-nav-title-capture] {
+  view-transition-name: nav-title;
+}
+
 /* Fade a presentation layer, never the colors and shader opacity owned by scrolling. */
 [data-nav-blend]::before {
   content: '';
@@ -849,6 +853,15 @@ html.nav-document-transition::view-transition-new(site-nav-bg) {
 }
 
 .nav-back-transition::view-transition-old(nav-section) {
+  animation: none;
+  mix-blend-mode: normal;
+}
+
+.nav-back-transition::view-transition-group(nav-title) {
+  z-index: 2;
+}
+
+.nav-back-transition::view-transition-old(nav-title) {
   animation: none;
   mix-blend-mode: normal;
 }
