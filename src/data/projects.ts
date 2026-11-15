@@ -113,7 +113,7 @@ export const projects: Project[] = [
     id: 'openstudio',
     title: 'OpenStudio',
     description:
-      'OpenStudio is a browser and desktop DAW built with React, Web Audio API, and Electron. It brings the core beatmaking workflow into one app: browse sounds, build patterns, edit melodies, arrange clips, mix tracks, save projects locally or in the cloud, and export the final track to WAV or MP3.',
+      'OpenStudio is a browser and desktop DAW built with React, Web Audio API, and Electron. It brings the core beatmaking workflow into one app: browse sounds, build patterns, arrange clips, mix tracks, and export the final track to WAV or MP3. The built-in AI Agent helps shape melodies, drums, instruments, mixer settings, and FX.',
     longDescription:
       'Music production workflow with track controls, timeline editing, and cross-platform desktop deployment.',
     image: openStudioImage,

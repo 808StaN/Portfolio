@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef } from "react";
 import { motion, useInView } from "framer-motion";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import ProjectCarousel from "./ProjectCarousel";
@@ -18,52 +18,8 @@ function slashTitle(title: string) {
 }
 
 export default function Projects() {
-  const [repoDescriptions, setRepoDescriptions] = useState<Record<string, string>>(
-    {},
-  );
   const revealRef = useRef<HTMLDivElement>(null);
   const inView = useInView(revealRef, { once: true, margin: "-80px" });
-
-  useEffect(() => {
-    const controller = new AbortController();
-
-    const readRepoPath = (url?: string) => {
-      if (!url) return null;
-      const match = url.match(/github\.com\/([^/]+)\/([^/#?]+)/i);
-      if (!match) return null;
-      return `${match[1]}/${match[2]}`;
-    };
-
-    const loadDescriptions = async () => {
-      const entries = await Promise.all(
-        featuredProjects.map(async (project) => {
-          const repoPath = readRepoPath(project.link);
-          if (!repoPath) return [project.id, ""] as const;
-          try {
-            const response = await fetch(`https://api.github.com/repos/${repoPath}`, {
-              signal: controller.signal,
-            });
-            if (!response.ok) return [project.id, ""] as const;
-            const data = (await response.json()) as { description?: string };
-            return [project.id, (data.description || "").trim()] as const;
-          } catch {
-            return [project.id, ""] as const;
-          }
-        }),
-      );
-
-      if (controller.signal.aborted) return;
-
-      const next: Record<string, string> = {};
-      for (const [id, description] of entries) {
-        if (description) next[id] = description;
-      }
-      setRepoDescriptions(next);
-    };
-
-    loadDescriptions();
-    return () => controller.abort();
-  }, []);
 
   useEffect(() => {
     // Measure unpinned panels, not transformed bounds or pin spacers.
@@ -108,10 +64,9 @@ export default function Projects() {
   }, []);
 
   const getProjectDescription = (project: Project) =>
-    repoDescriptions[project.id] ??
-    (project.link?.includes("github.com")
+    project.link?.includes("github.com")
       ? project.description
-      : project.longDescription);
+      : project.longDescription;
 
   return (
     <section id="work" className="projects-monopo relative">
