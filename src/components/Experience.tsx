@@ -364,12 +364,12 @@ export default function Experience() {
                   </div>
                   <p className="experience-role">Front-end AI Engineering Intern</p>
                   <p className="experience-date"><time dateTime="2026-07">Jul 2026</time><span aria-hidden="true"> / </span><time dateTime="2026-09">Sep 2026</time><span className="experience-location">Remote</span></p>
-                  <p className="experience-summary">From learning the tools to putting them to work.</p>
-                  <ul className="experience-responsibilities">
-                    <li>Built and improved interfaces with React and TypeScript through a structured engineering internship.</li>
-                    <li>Worked on UI implementation, debugging, refactoring, and database integration using AI-assisted workflows.</li>
-                  </ul>
-                  <div className="experience-skills"><span>React</span><span>TypeScript</span><span>AI workflows</span></div>
+                  <div className="experience-responsibilities">
+                    <p>Developed and deployed full-stack web applications with React, Next.js, and TypeScript.</p>
+                    <p>Integrated LLM APIs for AI chat, document analysis, and real-time streaming.</p>
+                    <p>Used AI-assisted workflows to implement, debug, and refactor features, set guidelines for AI tools, and validate generated code through reviews and automated tests.</p>
+                  </div>
+                  <div className="experience-skills"><span>React</span><span>Next.js</span><span>TypeScript</span><span>LLM APIs</span></div>
                 </li>
 
                 <li id="experience-story-next" className="experience-story experience-story--next" data-experience-card tabIndex={-1} inert={(pinExperience || dockExperience) && activeCheckpoint !== 1}>

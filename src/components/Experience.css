@@ -94,6 +94,10 @@
   border: 1px solid #c9e6ff33;
 }
 
+.experience-company img {
+  border: 2px solid rgb(0 0 0 / 10%);
+}
+
 .experience-company h3 {
   font-size: clamp(1.65rem, 2.25vw, 2.3rem);
   font-weight: 500;
@@ -124,8 +128,8 @@
   border-left: 1px solid #b6d0ef66;
 }
 
-.experience-summary {
-  max-width: 40ch;
+.experience-summary,
+.experience-responsibilities {
   margin-top: 26px;
   color: #d3e1f7;
   font-size: 0.86rem;
@@ -133,19 +137,13 @@
   text-wrap: pretty;
 }
 
-.experience-responsibilities {
-  display: grid;
-  gap: 10px;
-  margin-top: 14px;
-  padding-left: 14px;
-  color: #bdd0ed;
-  font-size: 0.78rem;
-  line-height: 1.7;
+.experience-summary {
+  max-width: 40ch;
 }
 
-.experience-responsibilities li::marker {
-  color: #a8ccff;
-  font-size: 0.65em;
+.experience-responsibilities {
+  display: grid;
+  gap: 12px;
 }
 
 .experience-skills {
@@ -407,10 +405,6 @@
   .experience-summary {
     max-width: none;
     font-size: 0.86rem;
-  }
-
-  .experience-responsibilities {
-    font-size: 0.8rem;
   }
 
 }
