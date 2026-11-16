@@ -42,6 +42,7 @@ export default function MoreProjects() {
   const restoreCaptionFocus = useRef<{ index: number; href?: string } | null>(null);
   const [active, setActive] = useState(0);
   const [horizontal, setHorizontal] = useState(() => matchMedia(moreProjectsMedia).matches);
+  const [loadImages, setLoadImages] = useState(false);
   const lenis = useLenis();
 
   const restoreFocus = useEffectEvent(() => {
@@ -102,6 +103,15 @@ export default function MoreProjects() {
         restoreCaptionFocus.current = null;
       }
     };
+    // Warm every slide before the preceding project arrives, including clipped horizontal cards.
+    const previousProject = Array.from(section.closest('.projects-list')?.querySelectorAll<HTMLElement>('[data-project-id]') ?? []).pop();
+    const imagePreload = ScrollTrigger.create({
+      scroller: viewport,
+      trigger: previousProject ?? section,
+      start: 'top bottom+=100%',
+      once: true,
+      onEnter: () => setLoadImages(true),
+    });
     const observer = new ResizeObserver(schedule);
     observer.observe(track);
     viewport.addEventListener('scroll', schedule, { passive: true });
@@ -115,6 +125,7 @@ export default function MoreProjects() {
     return () => {
       cancelAnimationFrame(frame);
       cancelAnimationFrame(focusFrame);
+      imagePreload.kill();
       observer.disconnect();
       viewport.removeEventListener('scroll', schedule);
       window.removeEventListener('resize', changeLayout);
@@ -171,7 +182,7 @@ export default function MoreProjects() {
               <ul className="more-projects-track">
                 {moreProjects.map((project, index) => (
                   <li className="more-projects-card" key={project.id} data-more-project-index={index}>
-                    <img className="more-projects-image" src={project.image} alt={`${project.title} preview`} width="1600" height="1000" loading="lazy" decoding="async" />
+                    <img className="more-projects-image" src={project.image} alt={`${project.title} preview`} width="1600" height="1000" loading={loadImages ? 'eager' : 'lazy'} decoding="async" />
                     {!horizontal && <ProjectCaption project={project} index={index} />}
                   </li>
                 ))}
