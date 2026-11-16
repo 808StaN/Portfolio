@@ -3,7 +3,7 @@ import { getScrollMetrics, getScrollViewport } from "../utils/scroll";
 
 export default function Cursor() {
   const dotRef = useRef<HTMLDivElement>(null);
-  const ringRef = useRef<HTMLDivElement>(null);
+  const ringRef = useRef<SVGSVGElement>(null);
   const pos = useRef({ x: -100, y: -100 });
   const ring = useRef({ x: -100, y: -100 });
   const rafRef = useRef<number>(0);
@@ -119,22 +119,26 @@ export default function Cursor() {
         aria-hidden="true"
       />
 
-      {/* Ring */}
-      <div
+      {/* SVG avoids Firefox seams when scaling rounded CSS borders. */}
+      <svg
         ref={ringRef}
-        className="custom-cursor-ring fixed top-0 left-0 pointer-events-none z-[10001] will-change-transform"
+        className="custom-cursor-ring fixed top-0 left-0 pointer-events-none z-[10001]"
+        viewBox="0 0 32 32"
+        fill="none"
+        strokeWidth="1"
         style={{
           width: "32px",
           height: "32px",
-          borderRadius: "50%",
-          border: `1px solid ${isHovering ? "rgba(255,255,255,0.6)" : "rgba(255,255,255,0.25)"}`,
+          stroke: isHovering ? "rgba(255,255,255,0.6)" : "rgba(255,255,255,0.25)",
           opacity: visible ? 1 : 0,
           scale: isHovering ? "1.50" : "1",
           transition:
-            "opacity 0.6s ease, border-color 0.6s ease, scale 0.4s ease",
+            "opacity 0.6s ease, stroke 0.6s ease, scale 0.4s ease",
         }}
         aria-hidden="true"
-      />
+      >
+        <circle cx="16" cy="16" r="15.5" />
+      </svg>
     </div>
   );
 }
