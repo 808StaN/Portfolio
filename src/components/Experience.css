@@ -63,7 +63,7 @@
 
 .experience-story {
   grid-area: 1 / 1;
-  align-self: center;
+  align-self: start;
 }
 
 [data-checkpoint="flyrank"]:not([data-journey-mode="compact"]) .experience-story--next,
