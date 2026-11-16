@@ -454,10 +454,10 @@ export function SectionNavigationProvider({ children }: { children: ReactNode })
       }
       const title = !goingBack ? el.querySelector<HTMLElement>('.projects-title-scale') : null;
       if (title) {
-        // Compose with the scroll-owned transform so live scrolling still controls the title.
+        // A numeric property keeps Chrome repainting glyphs instead of stretching a cached scale-animation raster.
         animations.push(title.animate([
-          { scale: `1 ${STRETCH_START / STRETCH_END}` },
-          { scale: '1 1' },
+          { '--nav-title-stretch': STRETCH_START / STRETCH_END },
+          { '--nav-title-stretch': 1 },
         ], timing));
       }
       const sourceTransform = new DOMMatrix(root.style.getPropertyValue('--nav-section-source-transform'));

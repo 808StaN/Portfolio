@@ -649,6 +649,12 @@ html.custom-scrollbar-dragging * {
   initial-value: 0;
 }
 
+@property --nav-title-stretch {
+  syntax: '<number>';
+  inherits: false;
+  initial-value: 1;
+}
+
 /* Scoped transitions keep the live glass; document transitions require a separate snapshot. */
 html.nav-document-transition .nav-bg-layer {
   view-transition-name: site-nav-bg;
@@ -767,6 +773,10 @@ html.nav-document-transition .cursor-layer {
 
 .nav-section-transition {
   --nav-section-duration: 1.2s;
+}
+
+.nav-section-transition .projects-title-scale {
+  scale: 1 var(--nav-title-stretch);
 }
 
 .nav-back-transition {
