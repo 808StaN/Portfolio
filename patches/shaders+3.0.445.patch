@@ -1,0 +1,65 @@
+diff --git a/node_modules/shaders/dist/core/gpu/index.d.ts b/node_modules/shaders/dist/core/gpu/index.d.ts
+index 2714d32..403425e 100644
+--- a/node_modules/shaders/dist/core/gpu/index.d.ts
++++ b/node_modules/shaders/dist/core/gpu/index.d.ts
+@@ -38,6 +38,8 @@ export interface GpuUniformInput {
+ export type GpuUniformsMap = Record<string, GpuUniformInput>;
+ export interface GpuInitializeOptions {
+     canvas: HTMLCanvasElement;
++    /** Compile cold pipelines without blocking Chromium's compositor. */
++    asyncPipelineCompilation?: boolean;
+     /** Element to observe for resize. Defaults to `canvas.parentElement`. */
+     resizeTarget?: HTMLElement;
+     enablePerformanceTracking?: boolean;
+diff --git a/node_modules/shaders/dist/core/index.js b/node_modules/shaders/dist/core/index.js
+index c1fe417..8b4882f 100644
+--- a/node_modules/shaders/dist/core/index.js
++++ b/node_modules/shaders/dist/core/index.js
+@@ -2333,7 +2333,12 @@ function shaderRendererGPU() {
+ 		for (const c of liveCompositions) {
+ 			writeSystemUniforms(c.store);
+ 			c.store.flush();
+-			c.passManager.repaintRtt();
++			try {
++				c.passManager.repaintRtt();
++			} catch (error) {
++				if (!(error instanceof Promise)) throw error;
++				error.then(requestRender, noteRenderFailure);
++			}
+ 		}
+ 		lastRenderTime = 0;
+ 		renderFrame();
+@@ -2481,6 +2486,10 @@ function shaderRendererGPU() {
+ 			});
+ 			consecutiveRenderErrors = 0;
+ 		} catch (error) {
++			if (error instanceof Promise) {
++				error.then(requestRender, noteRenderFailure);
++				return error;
++			}
+ 			noteRenderFailure(error);
+ 			return;
+ 		}
+@@ -2504,7 +2513,13 @@ function shaderRendererGPU() {
+ 		const wasAnimating = frameLoop.running;
+ 		if (wasAnimating) stopAnimation();
+ 		lastRenderTime = 0;
+-		renderFrame();
++		let preparation = renderFrame();
++		while (preparation instanceof Promise) {
++			await preparation;
++			if (failureReason) return;
++			lastRenderTime = 0;
++			preparation = renderFrame();
++		}
+ 		if (root && options?.waitForGpu !== false) await awaitGpuIdle(root);
+ 		if (wasAnimating) startAnimation();
+ 	};
+@@ -2733,6 +2748,7 @@ function shaderRendererGPU() {
+ 			});
+ 			if (abort.signal.aborted) return;
+ 			root = rootCtx.root;
++			if (options.asyncPipelineCompilation) root.device[Symbol.for("shaders.asyncPipelineCompilation")] = true;
+ 			attachUncapturedErrorHandler(root.device);
+ 			pixelRatio = basePixelRatio();
+ 			const lim = root.device.limits?.maxTextureDimension2D;

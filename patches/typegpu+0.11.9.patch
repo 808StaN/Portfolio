@@ -1,0 +1,106 @@
+diff --git a/node_modules/typegpu/core/pipeline/computePipeline.js b/node_modules/typegpu/core/pipeline/computePipeline.js
+index cd6dfd1..f908f86 100644
+--- a/node_modules/typegpu/core/pipeline/computePipeline.js
++++ b/node_modules/typegpu/core/pipeline/computePipeline.js
+@@ -103,6 +103,7 @@ var TgpuComputePipelineImpl = class TgpuComputePipelineImpl {
+ 	}
+ 	_executeComputePass(dispatch) {
+ 		const { root } = this.#core;
++		const memo = this.#core.unwrap();
+ 		if (this.#priors.externalPass) {
+ 			if (_lastAppliedCompute.get(this.#priors.externalPass) !== this) {
+ 				this._applyComputeState(this.#priors.externalPass);
+@@ -122,7 +123,6 @@ var TgpuComputePipelineImpl = class TgpuComputePipelineImpl {
+ 			pass$1.end();
+ 			return;
+ 		}
+-		const memo = this.#core.unwrap();
+ 		const passDescriptor = {
+ 			label: getName(this.#core) ?? "<unnamed>",
+ 			...setupTimestampWrites(this.#priors, root)
+@@ -171,6 +171,7 @@ var ComputePipelineCore = class {
+ 	}
+ 	unwrap() {
+ 		if (this._memo === void 0) {
++			if (this._initializing) throw this._initializing;
+ 			const device = this.root.device;
+ 			const enableExtensions = wgslEnableExtensions.filter((extension) => this.root.enabledFeatures.has(wgslEnableExtensionToFeatureName[extension]));
+ 			let resolutionResult;
+@@ -197,19 +198,30 @@ var ComputePipelineCore = class {
+ 				label: `${getName(this) ?? "<unnamed>"} - Shader`,
+ 				code
+ 			});
+-			this._memo = {
+-				pipeline: device.createComputePipeline({
+-					label: getName(this) ?? "<unnamed>",
+-					layout: device.createPipelineLayout({
+-						label: `${getName(this) ?? "<unnamed>"} - Pipeline Layout`,
+-						bindGroupLayouts: usedBindGroupLayouts.map((l) => this.root.unwrap(l))
+-					}),
+-					compute: { module }
++			const descriptor = {
++				label: getName(this) ?? "<unnamed>",
++				layout: device.createPipelineLayout({
++					label: `${getName(this) ?? "<unnamed>"} - Pipeline Layout`,
++					bindGroupLayouts: usedBindGroupLayouts.map((l) => this.root.unwrap(l))
+ 				}),
++				compute: { module }
++			};
++			const memo = {
++				pipeline: null,
+ 				usedBindGroupLayouts,
+ 				catchall,
+ 				logResources
+ 			};
++			if (device[Symbol.for("shaders.asyncPipelineCompilation")] && device.createComputePipelineAsync) {
++				this._initializing = device.createComputePipelineAsync(descriptor).then(pipeline => {
++					memo.pipeline = pipeline;
++					this._memo = memo;
++					this._initializing = void 0;
++				});
++				throw this._initializing;
++			}
++			memo.pipeline = device.createComputePipeline(descriptor);
++			this._memo = memo;
+ 			if (PERF?.enabled) (async () => {
+ 				const start = performance.mark("typegpu:compile-start");
+ 				await device.queue.onSubmittedWorkDone();
+diff --git a/node_modules/typegpu/core/pipeline/renderPipeline.js b/node_modules/typegpu/core/pipeline/renderPipeline.js
+index 6ad79f6..4628bb1 100644
+--- a/node_modules/typegpu/core/pipeline/renderPipeline.js
++++ b/node_modules/typegpu/core/pipeline/renderPipeline.js
+@@ -376,6 +376,7 @@ var RenderPipelineCore = class {
+ 	}
+ 	unwrap() {
+ 		if (this._memo !== void 0) return this._memo;
++		if (this._initializing) throw this._initializing;
+ 		const { root, descriptor: tgpuDescriptor } = this.options;
+ 		const device = root.device;
+ 		const enableExtensions = wgslEnableExtensions.filter((extension) => root.enabledFeatures.has(wgslEnableExtensionToFeatureName[extension]));
+@@ -433,14 +434,24 @@ var RenderPipelineCore = class {
+ 		else descriptor.primitive = tgpuDescriptor.primitive;
+ 		if (tgpuDescriptor.depthStencil) descriptor.depthStencil = tgpuDescriptor.depthStencil;
+ 		if (tgpuDescriptor.multisample) descriptor.multisample = tgpuDescriptor.multisample;
+-		this._memo = {
+-			pipeline: device.createRenderPipeline(descriptor),
++		const memo = {
++			pipeline: null,
+ 			usedBindGroupLayouts,
+ 			catchall,
+ 			logResources,
+ 			usedVertexLayouts: connectedAttribs.usedVertexLayouts,
+ 			fragmentOut: this.#latestAutoFragmentOut
+ 		};
++		if (device[Symbol.for("shaders.asyncPipelineCompilation")] && device.createRenderPipelineAsync) {
++			this._initializing = device.createRenderPipelineAsync(descriptor).then(pipeline => {
++				memo.pipeline = pipeline;
++				this._memo = memo;
++				this._initializing = void 0;
++			});
++			throw this._initializing;
++		}
++		memo.pipeline = device.createRenderPipeline(descriptor);
++		this._memo = memo;
+ 		if (PERF?.enabled) (async () => {
+ 			const start = performance.mark("typegpu:compile-start");
+ 			await device.queue.onSubmittedWorkDone();

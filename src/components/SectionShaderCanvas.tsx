@@ -74,7 +74,8 @@ export default function SectionShaderCanvas({ palette, heroCapable, hero, active
 
     const initialize = async () => {
       try {
-        await renderer.initialize({ canvas, observeElement: false });
+        // Cold synchronous pipeline compilation can stall Chromium's compositor.
+        await renderer.initialize({ canvas, observeElement: false, asyncPipelineCompilation: /(?:Chrome|Chromium)\//.test(navigator.userAgent) });
         if (disposed || renderer.getFailureReason()) return;
         renderer.stopAnimation();
         resize();
