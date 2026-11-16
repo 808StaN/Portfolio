@@ -739,6 +739,14 @@ html.nav-document-transition .cursor-layer {
   view-transition-name: nav-title;
 }
 
+[data-nav-back-capture] {
+  view-transition-name: var(--nav-back-capture-name);
+}
+
+[data-nav-back-background] {
+  background-color: transparent !important;
+}
+
 /* Fade a presentation layer, never the colors and shader opacity owned by scrolling. */
 [data-nav-blend]::before {
   content: '';

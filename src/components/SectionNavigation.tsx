@@ -131,6 +131,21 @@ export function SectionNavigationProvider({ children }: { children: ReactNode })
     let outgoingPanel: HTMLElement | null = null;
     let outgoingSection: HTMLElement | null = null;
     let outgoingTitle: HTMLElement | null = null;
+    const outgoingPanels: HTMLElement[] = [];
+    const backCaptures: Array<{
+      element: HTMLElement;
+      name: string;
+      color?: ReturnType<typeof hexToHsl>;
+      radius?: string;
+      cornerScale?: number;
+    }> = [];
+    const clearBackCaptures = () => {
+      backCaptures.forEach(({ element }) => {
+        element.removeAttribute('data-nav-back-capture');
+        element.removeAttribute('data-nav-back-background');
+        element.style.removeProperty('--nav-back-capture-name');
+      });
+    };
     let captureSnapshot = false;
     let jumped = false;
 
@@ -139,6 +154,7 @@ export function SectionNavigationProvider({ children }: { children: ReactNode })
       outgoingPanel?.removeAttribute('data-nav-capture');
       outgoingSection?.removeAttribute('data-nav-source');
       outgoingTitle?.removeAttribute('data-nav-title-capture');
+      clearBackCaptures();
       if (document.documentElement.classList.contains('nav-section-transition')) {
         document.documentElement.classList.add('nav-capture-ready');
       }
@@ -197,7 +213,14 @@ export function SectionNavigationProvider({ children }: { children: ReactNode })
         const rect = candidate.getBoundingClientRect();
         const sectionRect = section.getBoundingClientRect();
         if (sectionRect.top < metrics.top + metrics.height && sectionRect.bottom > metrics.top
-          && rect.top < metrics.top + metrics.height && rect.bottom > metrics.top) outgoingPanel = candidate;
+          && rect.top < metrics.top + metrics.height && rect.bottom > metrics.top) {
+          const matrix = getComputedStyle(candidate).transform;
+          const transform = new DOMMatrix(matrix === 'none' ? undefined : matrix);
+          if (Math.abs(transform.b) < 0.00001 && rect.top <= metrics.top + 1
+            && rect.bottom >= metrics.top + metrics.height - 1) outgoingPanels.length = 0;
+          outgoingPanels.push(candidate);
+          outgoingPanel = candidate;
+        }
       }
     }
     const outgoingRect = outgoingPanel?.getBoundingClientRect();
@@ -255,12 +278,33 @@ export function SectionNavigationProvider({ children }: { children: ReactNode })
     lenis?.stop();
     captureSnapshot = !returningHome && !goingBack;
     outgoingTitle?.setAttribute('data-nav-title-capture', '');
+    outgoingPanels.forEach((source, index) => {
+      const sourceStyle = getComputedStyle(source);
+      // Read the scroll-owned color before making the capture background transparent.
+      const rgb = sourceStyle.backgroundColor.match(/\d+/g)!;
+      const color = hexToHsl(`#${rgb.slice(0, 3).map(value => Number(value).toString(16).padStart(2, '0')).join('')}`);
+      const background = {
+        element: source,
+        name: !useRootSnapshot && source === outgoingPanel ? 'nav-section' : `nav-background-${index}`,
+        color,
+        radius: sourceStyle.getPropertyValue('--section-base-radius').trim() || '0px',
+        cornerScale: Number(sourceStyle.getPropertyValue('--section-corner-scale') || 0),
+      };
+      backCaptures.push(background);
+      const content = source.querySelector<HTMLElement>(':scope > .section-tilt-container');
+      if (content) backCaptures.push({ element: content, name: `nav-content-${index}` });
+    });
     if (goingBack && !useRootSnapshot && outgoingStyle) {
       // Keep the visible card unchanged while capturing its background separately.
       root.style.setProperty('--nav-outgoing-color', outgoingStyle.backgroundColor);
       outgoingSection?.setAttribute('data-nav-source', '');
       outgoingPanel?.setAttribute('data-nav-capture', '');
     }
+    backCaptures.forEach(({ element, name, color }) => {
+      element.style.setProperty('--nav-back-capture-name', name);
+      element.setAttribute('data-nav-back-capture', '');
+      if (color) element.setAttribute('data-nav-back-background', '');
+    });
     const animations: Animation[] = [];
     let released = false;
     let scrollReady = false;
@@ -290,6 +334,7 @@ export function SectionNavigationProvider({ children }: { children: ReactNode })
       outgoingPanel?.removeAttribute('data-nav-capture');
       outgoingSection?.removeAttribute('data-nav-source');
       outgoingTitle?.removeAttribute('data-nav-title-capture');
+      clearBackCaptures();
       animations.forEach(animation => animation.cancel());
       root.classList.remove('nav-section-transition', 'nav-home-transition', 'nav-back-transition', 'nav-back-root-transition', 'nav-capture-ready', 'nav-document-transition');
       scope?.classList.remove('nav-section-transition', 'nav-home-transition', 'nav-back-transition', 'nav-back-root-transition');
@@ -415,6 +460,14 @@ export function SectionNavigationProvider({ children }: { children: ReactNode })
           { scale: '1 1' },
         ], timing));
       }
+      const sourceTransform = new DOMMatrix(root.style.getPropertyValue('--nav-section-source-transform'));
+      const motionOrigin = style.transformOrigin.split(' ').map(Number.parseFloat);
+      const rootTransform = useRootSnapshot
+        ? new DOMMatrix(getComputedStyle(host, '::view-transition-group(root)').transform)
+        : new DOMMatrix();
+      // Root snapshots rotate locally; named captures use the host's coordinate space.
+      const pivot = new DOMPoint(sourceTransform.e + motionOrigin[0], sourceTransform.f + motionOrigin[1])
+        .matrixTransform(rootTransform);
       if (outgoingTitle) {
         // The old section is frozen; move its separate title snapshot around the same pivot.
         const titleSnapshot = '::view-transition-group(nav-title)';
@@ -422,17 +475,13 @@ export function SectionNavigationProvider({ children }: { children: ReactNode })
         const snapshotOrigin = titleStyle.transformOrigin.split(' ').map(Number.parseFloat);
         const titleTransform = new DOMMatrix().translate(snapshotOrigin[0], snapshotOrigin[1])
           .multiply(new DOMMatrix(titleStyle.transform)).translate(-snapshotOrigin[0], -snapshotOrigin[1]);
-        const sourceTransform = new DOMMatrix(root.style.getPropertyValue('--nav-section-source-transform'));
-        const origin = style.transformOrigin.split(' ').map(Number.parseFloat);
-        const pivotX = sourceTransform.e + origin[0];
-        const pivotY = sourceTransform.f + origin[1];
         animations.push(host.animate(Array.from({ length: 61 }, (_, index) => {
           const progress = index / 60;
           const transform = new DOMMatrix()
-            .translate(pivotX, pivotY)
+            .translate(pivot.x, pivot.y)
             .translate(0, panelHeight * progress)
             .rotate(incomingAngles[0] * progress)
-            .translate(-pivotX, -pivotY)
+            .translate(-pivot.x, -pivot.y)
             .multiply(titleTransform)
             .translate(titleOrigin[0], titleOrigin[1])
             .scale(1, 1 + (titleEndScale - 1) * progress)
@@ -440,6 +489,38 @@ export function SectionNavigationProvider({ children }: { children: ReactNode })
           return { offset: progress, transform: transform.toString(), transformOrigin: '0 0' };
         }), { ...timing, pseudoElement: titleSnapshot }));
       }
+      backCaptures.forEach(({ name, color, radius, cornerScale = 0 }) => {
+        const group = `::view-transition-group(${name})`;
+        const captureStyle = getComputedStyle(host, group);
+        const origin = captureStyle.transformOrigin.split(' ').map(Number.parseFloat);
+        const initial = new DOMMatrix().translate(origin[0], origin[1])
+          .multiply(new DOMMatrix(captureStyle.transform)).translate(-origin[0], -origin[1]);
+        if (name !== 'nav-section') {
+          animations.push(host.animate(Array.from({ length: 61 }, (_, index) => {
+            const progress = index / 60;
+            const transform = new DOMMatrix().translate(pivot.x, pivot.y)
+              .translate(0, panelHeight * progress).rotate(incomingAngles[0] * progress)
+              .translate(-pivot.x, -pivot.y).multiply(initial);
+            return { offset: progress, transform: transform.toString(), transformOrigin: '0 0', zIndex: 2 };
+          }), { ...timing, pseudoElement: group }));
+        }
+        // Only the frozen background fades; foreground captures remain fully opaque.
+        animations.push(host.animate([
+          { opacity: 1, mixBlendMode: 'normal' },
+          { opacity: color ? 0 : 1, mixBlendMode: 'normal' },
+        ], { ...timing, pseudoElement: `::view-transition-old(${name})` }));
+        if (color) {
+          animations.push(host.animate(Array.from({ length: 61 }, (_, index) => {
+            const progress = index / 60;
+            const scale = cornerScale + (1 - cornerScale) * getSectionCornerScale(1 - progress);
+            return {
+              offset: progress,
+              backgroundColor: blendSectionColor(color, toHsl, progress),
+              clipPath: `inset(0 round calc(${radius} * ${scale}) calc(${radius} * ${scale}) 0 0)`,
+            };
+          }), { ...timing, pseudoElement: group }));
+        }
+      });
       animations.push(host.animate(Array.from({ length: 61 }, (_, index) => {
         const progress = index / 60;
         const radius = `calc(${panelRadius} * ${getSectionCornerScale(goingBack ? 1 - progress : progress)})`;
@@ -451,21 +532,23 @@ export function SectionNavigationProvider({ children }: { children: ReactNode })
         ...timing,
         pseudoElement: animatedSnapshot,
       }));
-      if (!useRootSnapshot) {
+      if (!goingBack) {
         // The movement eases out early; keep the color blend running for the full transition.
-        animations.push((goingBack ? host : panel).animate(Array.from({ length: 61 }, (_, index) => ({
+        animations.push(panel.animate(Array.from({ length: 61 }, (_, index) => ({
           offset: index / 60,
           backgroundColor: blendSectionColor(fromHsl, toHsl, index / 60),
-          ...(!goingBack && { opacity: 1 - index / 60 }),
+          opacity: 1 - index / 60,
         })), {
           ...timing,
           easing: 'linear',
-          pseudoElement: goingBack ? animatedSnapshot : '::before',
+          pseudoElement: '::before',
         }));
       }
-      if (entryAnimation?.startTime != null) {
+      const startTime = entryAnimation?.startTime ?? document.timeline.currentTime;
+      if (startTime != null) {
+        if (entryAnimation) entryAnimation.startTime = startTime;
         for (const animation of animations) {
-          animation.startTime = entryAnimation.startTime;
+          animation.startTime = startTime;
         }
       }
       resumeScroll();
