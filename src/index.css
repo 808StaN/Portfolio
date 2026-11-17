@@ -893,11 +893,6 @@ html.nav-document-transition::view-transition-new(site-nav-bg) {
   opacity: 1;
 }
 
-.nav-home-transition::view-transition-old(root),
-.nav-home-transition::view-transition-new(root) {
-  mix-blend-mode: plus-lighter;
-}
-
 html.nav-document-transition::view-transition-group(nav-home),
 html.nav-document-transition::view-transition-group(nav-work),
 html.nav-document-transition::view-transition-group(nav-about),

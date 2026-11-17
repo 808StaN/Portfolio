@@ -125,7 +125,7 @@ export function SectionNavigationProvider({ children }: { children: ReactNode })
     const root = document.documentElement;
     const startProgress = Number(getComputedStyle(root).getPropertyValue('--nav-hero-progress'));
     let heroOffset = 0;
-    const goingBack = !returningHome && top < metrics.scroll;
+    const goingBack = top < metrics.scroll;
     const panel = el.querySelector<HTMLElement>('.section-tilt-panel');
     const targetColor = panel?.closest<HTMLElement>('[data-section-color]')?.dataset.sectionColor;
     let outgoingPanel: HTMLElement | null = null;
@@ -223,6 +223,11 @@ export function SectionNavigationProvider({ children }: { children: ReactNode })
         }
       }
     }
+    // Within the hero, rewind scrolling instead of revealing a second copy of it.
+    if (returningHome && outgoingPanels.length === 1 && outgoingPanel === panel) {
+      scrollToY(top, lenis, { onComplete: jump });
+      return;
+    }
     const outgoingRect = outgoingPanel?.getBoundingClientRect();
     outgoingSection = outgoingPanel?.parentElement ?? null;
     const outgoingStyle = outgoingPanel ? getComputedStyle(outgoingPanel) : null;
@@ -266,12 +271,10 @@ export function SectionNavigationProvider({ children }: { children: ReactNode })
     root.style.setProperty('--nav-section-source-transform', goingBack && !useRootSnapshot && outgoingRect
       ? `translate(${outgoingRect.left - metrics.left + snapshotX}px, ${outgoingRect.top - metrics.top + snapshotY}px)`
       : useRootSnapshot ? 'translate(0px, 0px)' : `translate(${snapshotX}px, ${snapshotY}px)`);
-    root.classList.toggle('nav-home-transition', returningHome);
     root.classList.toggle('nav-back-transition', goingBack);
     root.classList.toggle('nav-back-root-transition', useRootSnapshot);
     root.classList.toggle('nav-document-transition', !useScopedTransition);
     root.classList.add('nav-section-transition');
-    scope?.classList.toggle('nav-home-transition', returningHome);
     scope?.classList.toggle('nav-back-transition', goingBack);
     scope?.classList.toggle('nav-back-root-transition', useRootSnapshot);
     scope?.classList.add('nav-section-transition');
@@ -336,8 +339,8 @@ export function SectionNavigationProvider({ children }: { children: ReactNode })
       outgoingTitle?.removeAttribute('data-nav-title-capture');
       clearBackCaptures();
       animations.forEach(animation => animation.cancel());
-      root.classList.remove('nav-section-transition', 'nav-home-transition', 'nav-back-transition', 'nav-back-root-transition', 'nav-capture-ready', 'nav-document-transition');
-      scope?.classList.remove('nav-section-transition', 'nav-home-transition', 'nav-back-transition', 'nav-back-root-transition');
+      root.classList.remove('nav-section-transition', 'nav-back-transition', 'nav-back-root-transition', 'nav-capture-ready', 'nav-document-transition');
+      scope?.classList.remove('nav-section-transition', 'nav-back-transition', 'nav-back-root-transition');
       root.style.removeProperty('--nav-section-start-color');
       root.style.removeProperty('--nav-section-start-angle');
       root.style.removeProperty('--nav-section-top-left-radius');
@@ -425,8 +428,8 @@ export function SectionNavigationProvider({ children }: { children: ReactNode })
       const entryAnimation = host.getAnimations({ subtree: true }).find(animation =>
         animation instanceof CSSAnimation && animation.animationName === (goingBack ? 'nav-section-return' : 'nav-section-enter'));
       const timing = {
-        duration: returningHome ? 600 : parseFloat(style.animationDuration) * 1000,
-        easing: returningHome ? 'ease-in-out' : style.animationTimingFunction,
+        duration: parseFloat(style.animationDuration) * 1000,
+        easing: style.animationTimingFunction,
         fill: 'both' as const,
       };
       if (heroOffset !== 0) {
@@ -434,23 +437,6 @@ export function SectionNavigationProvider({ children }: { children: ReactNode })
           { '--nav-hero-offset': heroOffset },
           { '--nav-hero-offset': 0 },
         ], timing));
-      }
-      if (returningHome) {
-        for (const [snapshot, from, to] of [['old', 1, 0], ['new', 0, 1]] as const) {
-          animations.push(host.animate([
-            { opacity: from },
-            { opacity: to },
-          ], {
-            ...timing,
-            pseudoElement: `::view-transition-${snapshot}(root)`,
-          }));
-        }
-        const startTime = document.timeline.currentTime;
-        if (startTime != null) {
-          animations.forEach(animation => { animation.startTime = startTime; });
-        }
-        resumeScroll();
-        return;
       }
       const title = !goingBack ? el.querySelector<HTMLElement>('.projects-title-scale') : null;
       if (title) {
