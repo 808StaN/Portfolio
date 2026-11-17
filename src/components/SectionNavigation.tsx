@@ -226,9 +226,15 @@ export function SectionNavigationProvider({ children }: { children: ReactNode })
         }
       }
     }
-    // Round project seams only in the moving navbar capture, never in ordinary scrolling.
+    const projectOverlap = returningHome && outgoingPanels.length === 2 && outgoingPanels.every(source => {
+      const transform = getComputedStyle(source).transform;
+      const matrix = new DOMMatrix(transform === 'none' ? undefined : transform);
+      return source.parentElement?.dataset.sectionGroup === 'projects'
+        && Math.abs(matrix.b) < 0.00001 && Math.abs(matrix.a - 1) < 0.00001;
+    });
+    // A project overlap gets one outer radius; its internal seam must stay straight.
     (goingBack ? outgoingPanels : [panel]).forEach(source => {
-      if (!source.matches('[data-section-group="projects"]:not([data-project-id="riftpick"]) > .section-tilt-panel')) return;
+      if (projectOverlap || !source.matches('[data-section-group="projects"]:not([data-project-id="riftpick"]) > .section-tilt-panel')) return;
       roundedPanels.push(source);
       source.setAttribute('data-nav-rounded', '');
     });
@@ -253,7 +259,8 @@ export function SectionNavigationProvider({ children }: { children: ReactNode })
     const titleEndScale = titleMatrix ? STRETCH_START * titleMatrix.a / titleMatrix.d : 1;
     const wasStopped = lenis?.isStopped;
     const panelStyle = goingBack && outgoingStyle ? outgoingStyle : getComputedStyle(panel);
-    const panelRadius = useCompositeSnapshot ? '0px' : panelStyle.getPropertyValue('--section-base-radius').trim() || '0px';
+    const panelRadius = projectOverlap ? getComputedStyle(root).getPropertyValue('--portfolio-radius').trim()
+      : useCompositeSnapshot ? '0px' : panelStyle.getPropertyValue('--section-base-radius').trim() || '0px';
     const panelHeight = useCompositeSnapshot || (goingBack && !outgoingPanel) ? metrics.height : parseFloat(panelStyle.height);
     // Card transitions still blend scene colors, independently of the navbar glass.
     const sourceSection = Array.from(document.querySelectorAll<HTMLElement>('[data-section-tilt]')).reverse().find(section => {
