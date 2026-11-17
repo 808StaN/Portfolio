@@ -1086,7 +1086,8 @@ html.nav-document-transition::view-transition-group(site-nav-shadow) {
 }
 
 .section-shell.section-tilt-section > .section-tilt-panel,
-[data-project-id="riftpick"] > .section-tilt-panel {
+[data-project-id="riftpick"] > .section-tilt-panel,
+.section-tilt-panel[data-nav-rounded] {
   --section-base-radius: var(--portfolio-radius);
 }
 

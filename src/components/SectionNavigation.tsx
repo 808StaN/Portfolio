@@ -132,6 +132,7 @@ export function SectionNavigationProvider({ children }: { children: ReactNode })
     let outgoingSection: HTMLElement | null = null;
     let outgoingTitle: HTMLElement | null = null;
     const outgoingPanels: HTMLElement[] = [];
+    const roundedPanels: HTMLElement[] = [];
     const backCaptures: Array<{
       element: HTMLElement;
       name: string;
@@ -156,6 +157,7 @@ export function SectionNavigationProvider({ children }: { children: ReactNode })
       outgoingSection?.removeAttribute('data-nav-source');
       outgoingTitle?.removeAttribute('data-nav-title-capture');
       clearBackCaptures();
+      if (goingBack) roundedPanels.forEach(source => source.removeAttribute('data-nav-rounded'));
       if (document.documentElement.classList.contains('nav-section-transition')) {
         document.documentElement.classList.add('nav-capture-ready');
       }
@@ -224,6 +226,12 @@ export function SectionNavigationProvider({ children }: { children: ReactNode })
         }
       }
     }
+    // Round project seams only in the moving navbar capture, never in ordinary scrolling.
+    (goingBack ? outgoingPanels : [panel]).forEach(source => {
+      if (!source.matches('[data-section-group="projects"]:not([data-project-id="riftpick"]) > .section-tilt-panel')) return;
+      roundedPanels.push(source);
+      source.setAttribute('data-nav-rounded', '');
+    });
     const outgoingRect = outgoingPanel?.getBoundingClientRect();
     outgoingSection = outgoingPanel?.parentElement ?? null;
     const outgoingStyle = outgoingPanel ? getComputedStyle(outgoingPanel) : null;
@@ -341,6 +349,7 @@ export function SectionNavigationProvider({ children }: { children: ReactNode })
       outgoingSection?.removeAttribute('data-nav-source');
       outgoingTitle?.removeAttribute('data-nav-title-capture');
       clearBackCaptures();
+      roundedPanels.forEach(source => source.removeAttribute('data-nav-rounded'));
       animations.forEach(animation => animation.cancel());
       root.classList.remove('nav-section-transition', 'nav-back-transition', 'nav-back-root-transition', 'nav-capture-ready', 'nav-document-transition');
       scope?.classList.remove('nav-section-transition', 'nav-back-transition', 'nav-back-root-transition');
