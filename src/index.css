@@ -898,6 +898,7 @@ html.nav-document-transition::view-transition-new(site-nav-bg) {
 .nav-back-root-transition::view-transition-old(root) {
   animation: nav-section-return var(--nav-section-duration) cubic-bezier(0.22, 1, 0.36, 1) both;
   transform-origin: 0 var(--nav-section-travel);
+  clip-path: inset(0 round var(--nav-section-top-left-radius) var(--nav-section-top-right-radius) 0 0);
   opacity: 1;
 }
 
@@ -1081,18 +1082,12 @@ html.nav-document-transition::view-transition-group(site-nav-shadow) {
   will-change: transform;
   backface-visibility: hidden;
   pointer-events: none;
-  border-radius: calc(var(--section-base-radius) * var(--section-corner-scale, 1)) calc(var(--section-base-radius) * var(--section-corner-scale, 1)) 0 0;
+  border-radius: var(--section-base-radius) var(--section-base-radius) 0 0;
 }
 
 .section-shell.section-tilt-section > .section-tilt-panel,
 [data-project-id="riftpick"] > .section-tilt-panel {
-  --section-base-radius: var(--panel-radius);
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .section-tilt-panel {
-    --section-corner-scale: 0;
-  }
+  --section-base-radius: var(--portfolio-radius);
 }
 
 .section-shell.section-tilt-section > .section-tilt-panel {

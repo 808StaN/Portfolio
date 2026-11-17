@@ -11,7 +11,6 @@ import {
   hexToHsl,
   blendSectionColor,
   getTiltDrop,
-  getSectionCornerScale,
   getProjectPinStart,
 } from "../utils/tilt";
 
@@ -104,7 +103,6 @@ export default function SectionTiltDirector() {
         const applyBlend = (p: number) => {
           incomingPanel.style.backgroundColor = blendSectionColor(prevHsl, incomingHsl, p);
           incomingPanel.style.setProperty('--section-shader-opacity', String(p));
-          incomingPanel.style.setProperty('--section-corner-scale', String(getSectionCornerScale(p)));
         };
 
         if (sameGroup) {
@@ -282,7 +280,6 @@ export default function SectionTiltDirector() {
       overlapTargets.forEach(({ section, marginTop }) => {
         section.style.marginTop = marginTop;
       });
-      clipTargets.forEach(({ panel }) => panel.style.removeProperty('--section-corner-scale'));
     };
   }, [lenis, experiencePinned, reducedMotion, horizontalProjects]);
 

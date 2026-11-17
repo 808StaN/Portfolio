@@ -3,7 +3,7 @@ import { flushSync } from 'react-dom';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { scrollToY, useLenis } from './LenisScroll';
 import { STRETCH_START, STRETCH_END } from './ProjectTitleStretch';
-import { blendSectionColor, getSectionCornerScale, hexToHsl, incomingAngles } from '../utils/tilt';
+import { blendSectionColor, hexToHsl, incomingAngles } from '../utils/tilt';
 import { getKeyboardScrollDelta, getScrollMetrics, getScrollTargetTop, getScrollViewport } from '../utils/scroll';
 
 export const sectionLinks = [
@@ -137,7 +137,6 @@ export function SectionNavigationProvider({ children }: { children: ReactNode })
       name: string;
       color?: ReturnType<typeof hexToHsl>;
       radius?: string;
-      cornerScale?: number;
     }> = [];
     const clearBackCaptures = () => {
       backCaptures.forEach(({ element }) => {
@@ -295,7 +294,6 @@ export function SectionNavigationProvider({ children }: { children: ReactNode })
         name: !useRootSnapshot && source === outgoingPanel ? 'nav-section' : `nav-background-${index}`,
         color,
         radius: sourceStyle.getPropertyValue('--section-base-radius').trim() || '0px',
-        cornerScale: Number(sourceStyle.getPropertyValue('--section-corner-scale') || 0),
       };
       backCaptures.push(background);
       const content = source.querySelector<HTMLElement>(':scope > .section-tilt-container');
@@ -480,7 +478,7 @@ export function SectionNavigationProvider({ children }: { children: ReactNode })
           return { offset: progress, transform: transform.toString(), transformOrigin: '0 0' };
         }), { ...timing, pseudoElement: titleSnapshot }));
       }
-      backCaptures.forEach(({ name, color, radius, cornerScale = 0 }) => {
+      backCaptures.forEach(({ name, color, radius }) => {
         const group = `::view-transition-group(${name})`;
         const captureStyle = getComputedStyle(host, group);
         const origin = captureStyle.transformOrigin.split(' ').map(Number.parseFloat);
@@ -503,26 +501,14 @@ export function SectionNavigationProvider({ children }: { children: ReactNode })
         if (color) {
           animations.push(host.animate(Array.from({ length: 61 }, (_, index) => {
             const progress = index / 60;
-            const scale = cornerScale + (1 - cornerScale) * getSectionCornerScale(1 - progress);
             return {
               offset: progress,
               backgroundColor: blendSectionColor(color, toHsl, progress),
-              clipPath: `inset(0 round calc(${radius} * ${scale}) calc(${radius} * ${scale}) 0 0)`,
+              clipPath: `inset(0 round ${radius} ${radius} 0 0)`,
             };
           }), { ...timing, pseudoElement: group }));
         }
       });
-      animations.push(host.animate(Array.from({ length: 61 }, (_, index) => {
-        const progress = index / 60;
-        const radius = `calc(${panelRadius} * ${getSectionCornerScale(goingBack ? 1 - progress : progress)})`;
-        return {
-          offset: progress,
-          clipPath: `inset(0 round ${radius} ${radius} 0 0)`,
-        };
-      }), {
-        ...timing,
-        pseudoElement: animatedSnapshot,
-      }));
       if (!goingBack) {
         // The movement eases out early; keep the color blend running for the full transition.
         animations.push(panel.animate(Array.from({ length: 61 }, (_, index) => ({
