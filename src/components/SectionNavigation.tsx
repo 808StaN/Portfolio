@@ -151,6 +151,8 @@ export function SectionNavigationProvider({ children }: { children: ReactNode })
 
     const jump = () => {
       if (jumped || request !== navigationRequest.current || !el.isConnected) return;
+      viewport?.removeAttribute('data-nav-capture');
+      el.removeAttribute('data-nav-home-source');
       outgoingPanel?.removeAttribute('data-nav-capture');
       outgoingSection?.removeAttribute('data-nav-source');
       outgoingTitle?.removeAttribute('data-nav-title-capture');
@@ -223,20 +225,18 @@ export function SectionNavigationProvider({ children }: { children: ReactNode })
         }
       }
     }
-    // Within the hero, rewind scrolling instead of revealing a second copy of it.
-    if (returningHome && outgoingPanels.length === 1 && outgoingPanel === panel) {
-      scrollToY(top, lenis, { onComplete: jump });
-      return;
-    }
     const outgoingRect = outgoingPanel?.getBoundingClientRect();
     outgoingSection = outgoingPanel?.parentElement ?? null;
     const outgoingStyle = outgoingPanel ? getComputedStyle(outgoingPanel) : null;
     const outgoingMatrix = new DOMMatrix(outgoingStyle?.transform === 'none' ? undefined : outgoingStyle?.transform);
     // Preserve the whole frame if multiple tilted cards are visible during an overlap.
-    const useRootSnapshot = goingBack && (!outgoingRect
+    const needsFrameSnapshot = goingBack && (!outgoingRect
       || Math.abs(outgoingMatrix.b) > 0.00001 || Math.abs(outgoingMatrix.a - 1) > 0.00001
       || outgoingRect.top > metrics.top + 1 || outgoingRect.bottom < metrics.top + metrics.height - 1);
-    outgoingTitle = goingBack ? outgoingPanel?.querySelector<HTMLElement>('.projects-title-scale') ?? null : null;
+    // Keep overlap clipping and stacking intact, but never move a second copy of the hero.
+    const useCompositeSnapshot = returningHome && (needsFrameSnapshot || outgoingPanels.includes(panel));
+    const useRootSnapshot = needsFrameSnapshot && !useCompositeSnapshot;
+    outgoingTitle = goingBack && !useCompositeSnapshot ? outgoingPanel?.querySelector<HTMLElement>('.projects-title-scale') ?? null : null;
     const titleRect = outgoingTitle?.getBoundingClientRect();
     if (titleRect && (titleRect.bottom <= metrics.top || titleRect.top >= metrics.top + metrics.height)) outgoingTitle = null;
     const outgoingTitleStyle = outgoingTitle ? getComputedStyle(outgoingTitle) : null;
@@ -246,8 +246,8 @@ export function SectionNavigationProvider({ children }: { children: ReactNode })
     const titleEndScale = titleMatrix ? STRETCH_START * titleMatrix.a / titleMatrix.d : 1;
     const wasStopped = lenis?.isStopped;
     const panelStyle = goingBack && outgoingStyle ? outgoingStyle : getComputedStyle(panel);
-    const panelRadius = panelStyle.getPropertyValue('--section-base-radius').trim() || '0px';
-    const panelHeight = goingBack && !outgoingPanel ? metrics.height : parseFloat(panelStyle.height);
+    const panelRadius = useCompositeSnapshot ? '0px' : panelStyle.getPropertyValue('--section-base-radius').trim() || '0px';
+    const panelHeight = useCompositeSnapshot || (goingBack && !outgoingPanel) ? metrics.height : parseFloat(panelStyle.height);
     // Card transitions still blend scene colors, independently of the navbar glass.
     const sourceSection = Array.from(document.querySelectorAll<HTMLElement>('[data-section-tilt]')).reverse().find(section => {
       const candidate = section.querySelector(':scope > .section-tilt-panel');
@@ -259,7 +259,7 @@ export function SectionNavigationProvider({ children }: { children: ReactNode })
     });
     const fromHsl = hexToHsl(sourceSection?.dataset.sectionColor || targetColor);
     const toHsl = hexToHsl(targetColor);
-    root.style.setProperty('--nav-section-start-color', blendSectionColor(fromHsl, toHsl, 0));
+    root.style.setProperty('--nav-section-start-color', useCompositeSnapshot ? 'transparent' : blendSectionColor(fromHsl, toHsl, 0));
     root.style.setProperty('--nav-section-start-angle', `${incomingAngles[0]}deg`);
     root.style.setProperty('--nav-section-top-left-radius', panelRadius);
     root.style.setProperty('--nav-section-top-right-radius', panelRadius);
@@ -268,7 +268,7 @@ export function SectionNavigationProvider({ children }: { children: ReactNode })
     const snapshotY = useScopedTransition ? 0 : metrics.top;
     root.style.setProperty('--nav-snapshot-x', `${snapshotX}px`);
     root.style.setProperty('--nav-snapshot-y', `${snapshotY}px`);
-    root.style.setProperty('--nav-section-source-transform', goingBack && !useRootSnapshot && outgoingRect
+    root.style.setProperty('--nav-section-source-transform', goingBack && !useRootSnapshot && !useCompositeSnapshot && outgoingRect
       ? `translate(${outgoingRect.left - metrics.left + snapshotX}px, ${outgoingRect.top - metrics.top + snapshotY}px)`
       : useRootSnapshot ? 'translate(0px, 0px)' : `translate(${snapshotX}px, ${snapshotY}px)`);
     root.classList.toggle('nav-back-transition', goingBack);
@@ -281,7 +281,11 @@ export function SectionNavigationProvider({ children }: { children: ReactNode })
     lenis?.stop();
     captureSnapshot = !returningHome && !goingBack;
     outgoingTitle?.setAttribute('data-nav-title-capture', '');
-    outgoingPanels.forEach((source, index) => {
+    if (useCompositeSnapshot) {
+      viewport.setAttribute('data-nav-capture', '');
+      el.setAttribute('data-nav-home-source', '');
+    }
+    if (!useCompositeSnapshot) outgoingPanels.forEach((source, index) => {
       const sourceStyle = getComputedStyle(source);
       // Read the scroll-owned color before making the capture background transparent.
       const rgb = sourceStyle.backgroundColor.match(/\d+/g)!;
@@ -297,7 +301,7 @@ export function SectionNavigationProvider({ children }: { children: ReactNode })
       const content = source.querySelector<HTMLElement>(':scope > .section-tilt-container');
       if (content) backCaptures.push({ element: content, name: `nav-content-${index}` });
     });
-    if (goingBack && !useRootSnapshot && outgoingStyle) {
+    if (goingBack && !useRootSnapshot && !useCompositeSnapshot && outgoingStyle) {
       // Keep the visible card unchanged while capturing its background separately.
       root.style.setProperty('--nav-outgoing-color', outgoingStyle.backgroundColor);
       outgoingSection?.setAttribute('data-nav-source', '');
@@ -332,6 +336,7 @@ export function SectionNavigationProvider({ children }: { children: ReactNode })
       released = true;
       captureSnapshot = false;
       viewport.removeAttribute('data-nav-capture');
+      el.removeAttribute('data-nav-home-source');
       panel.removeAttribute('data-nav-capture');
       panel.removeAttribute('data-nav-blend');
       outgoingPanel?.removeAttribute('data-nav-capture');
