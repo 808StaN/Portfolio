@@ -267,7 +267,8 @@ export function SectionNavigationProvider({ children }: { children: ReactNode })
       }
       return panels;
     };
-    const prepareScroll = (top: number, duration: number) => new Promise<boolean>(resolve => {
+    let overlap: { outgoing: HTMLElement; panels: HTMLElement[]; top: number; duration: number } | null = null;
+    const prepareScroll = (top: number, duration: number, overlapAtHalf = false) => new Promise<boolean>(resolve => {
       const wasStopped = lenis?.isStopped;
       const position = { scroll: getScrollMetrics().scroll };
       let frame = 0;
@@ -308,7 +309,14 @@ export function SectionNavigationProvider({ children }: { children: ReactNode })
       window.addEventListener('resize', cancel);
       ScrollTrigger.addEventListener('refreshInit', cancel);
       tween = gsap.to(position, {
-        scroll: top, duration, ease: 'power3.out', paused: true, onUpdate: update,
+        scroll: top, duration, ease: 'power3.out', paused: true,
+        onUpdate: () => {
+          update();
+          if (overlapAtHalf && overlap && tween && tween.progress() >= 0.5) {
+            overlap.duration = Math.max(0, duration - tween.time());
+            finish(true);
+          }
+        },
         onComplete: () => {
           update();
           // Let pins, shader visibility and the navbar settle before taking a single-card capture.
@@ -334,10 +342,14 @@ export function SectionNavigationProvider({ children }: { children: ReactNode })
           if (!entrance) break;
           const start = entrance.end - metrics.height;
           const progress = Math.max(0, Math.min(1, (metrics.scroll - start) / metrics.height));
-          if (!progress || !await prepareScroll(Math.max(0, start), 1.8 * progress)) return;
+          const under = panels.at(-2);
+          if (under && under !== panel && getSectionTargetTop(el) < start - 2) {
+            overlap = { outgoing: under, panels, top: Math.max(0, start), duration: 0 };
+          }
+          if (!progress || !await prepareScroll(Math.max(0, start), 1.8 * progress, !!overlap)) return;
           if (request !== navigationRequest.current || !el.isConnected) return;
-          const under = visiblePanels().at(-1);
-          if (under === panel) { focusTarget(); return; }
+          if (overlap) break;
+          if (visiblePanels().at(-1) === panel) { focusTarget(); return; }
           continue;
         }
         break;
@@ -358,6 +370,7 @@ export function SectionNavigationProvider({ children }: { children: ReactNode })
     const roundedPanels: HTMLElement[] = [];
     const backCaptures: Array<{
       element: HTMLElement;
+      source: HTMLElement;
       name: string;
       color?: ReturnType<typeof hexToHsl>;
       radius?: string;
@@ -419,10 +432,10 @@ export function SectionNavigationProvider({ children }: { children: ReactNode })
       return;
     }
 
-    if (goingBack) outgoingPanels.push(...visiblePanels());
-    outgoingPanel = outgoingPanels.at(-1) ?? null;
+    if (goingBack) outgoingPanels.push(...(overlap?.panels ?? visiblePanels()));
+    outgoingPanel = overlap?.outgoing ?? outgoingPanels.at(-1) ?? null;
     // Round only the classic navbar capture, never its preparatory scrolling.
-    (goingBack ? outgoingPanels : [panel]).forEach(source => {
+    (goingBack ? outgoingPanels.filter(source => !overlap || source === outgoingPanel) : [panel]).forEach(source => {
       if (!source.matches('[data-section-group="projects"]:not([data-project-id="riftpick"]) > .section-tilt-panel')) return;
       roundedPanels.push(source);
       source.setAttribute('data-nav-rounded', '');
@@ -432,7 +445,7 @@ export function SectionNavigationProvider({ children }: { children: ReactNode })
     const outgoingStyle = outgoingPanel ? getComputedStyle(outgoingPanel) : null;
     const outgoingMatrix = new DOMMatrix(outgoingStyle?.transform === 'none' ? undefined : outgoingStyle?.transform);
     // Preserve the whole frame if multiple tilted cards are visible during an overlap.
-    const useRootSnapshot = goingBack && (!outgoingRect
+    const useRootSnapshot = goingBack && !overlap && (!outgoingRect
       || Math.abs(outgoingMatrix.b) > 0.00001 || Math.abs(outgoingMatrix.a - 1) > 0.00001
       || outgoingRect.top > metrics.top + 1 || outgoingRect.bottom < metrics.top + metrics.height - 1);
     outgoingTitle = goingBack ? outgoingPanel?.querySelector<HTMLElement>('.projects-title-scale') ?? null : null;
@@ -465,6 +478,33 @@ export function SectionNavigationProvider({ children }: { children: ReactNode })
     root.style.setProperty('--nav-section-travel', `${panelHeight}px`);
     const snapshotX = useScopedTransition ? 0 : metrics.left;
     const snapshotY = useScopedTransition ? 0 : metrics.top;
+    const continuingPanels = new Map<HTMLElement, {
+      pivot: DOMPoint;
+      rotation: number;
+      progress: number;
+      fromHsl: ReturnType<typeof hexToHsl>;
+      toHsl: ReturnType<typeof hexToHsl>;
+    }>();
+    if (overlap) {
+      const progress = Math.max(0, Math.min(1, (metrics.scroll - overlap.top) / metrics.height));
+      outgoingPanels.filter(source => source !== outgoingPanel).forEach(source => {
+        const style = getComputedStyle(source);
+        const matrix = new DOMMatrix(style.transform === 'none' ? undefined : style.transform);
+        const origin = style.transformOrigin.split(' ').map(Number.parseFloat);
+        const local = new DOMMatrix().translate(origin[0], origin[1]).multiply(matrix).translate(-origin[0], -origin[1]);
+        const corners = [[0, 0], [source.offsetWidth, 0], [0, source.offsetHeight], [source.offsetWidth, source.offsetHeight]]
+          .map(([x, y]) => new DOMPoint(x, y).matrixTransform(local));
+        const rect = source.getBoundingClientRect();
+        const pivot = new DOMPoint(origin[0], origin[1]).matrixTransform(local);
+        pivot.x += rect.left - Math.min(...corners.map(point => point.x)) - metrics.left + snapshotX;
+        pivot.y += rect.top - Math.min(...corners.map(point => point.y)) - metrics.top + snapshotY;
+        continuingPanels.set(source, {
+          pivot, progress, rotation: Math.atan2(matrix.b, matrix.a) * 180 / Math.PI,
+          fromHsl: hexToHsl(outgoingSection!.dataset.sectionColor!),
+          toHsl: hexToHsl(source.parentElement!.dataset.sectionColor!),
+        });
+      });
+    }
     root.style.setProperty('--nav-snapshot-x', `${snapshotX}px`);
     root.style.setProperty('--nav-snapshot-y', `${snapshotY}px`);
     root.style.setProperty('--nav-section-source-transform', goingBack && !useRootSnapshot && outgoingRect
@@ -487,13 +527,14 @@ export function SectionNavigationProvider({ children }: { children: ReactNode })
       const color = hexToHsl(`#${rgb.slice(0, 3).map(value => Number(value).toString(16).padStart(2, '0')).join('')}`);
       const background = {
         element: source,
+        source,
         name: !useRootSnapshot && source === outgoingPanel ? 'nav-section' : `nav-background-${index}`,
         color,
         radius: sourceStyle.getPropertyValue('--section-base-radius').trim() || '0px',
       };
       backCaptures.push(background);
       const content = source.querySelector<HTMLElement>(':scope > .section-tilt-container');
-      if (content) backCaptures.push({ element: content, name: `nav-content-${index}` });
+      if (content) backCaptures.push({ element: content, source, name: `nav-content-${index}` });
     });
     if (goingBack && !useRootSnapshot && outgoingStyle) {
       // Keep the visible card unchanged while capturing its background separately.
@@ -672,23 +713,52 @@ export function SectionNavigationProvider({ children }: { children: ReactNode })
             .translate(titleOrigin[0], titleOrigin[1])
             .scale(1, 1 + (titleEndScale - 1) * progress)
             .translate(-titleOrigin[0], -titleOrigin[1]);
-          return { offset: progress, transform: transform.toString(), transformOrigin: '0 0' };
+          return { offset: progress, transform: transform.toString(), transformOrigin: '0 0', zIndex: overlap ? outgoingPanels.indexOf(outgoingPanel!) + 1 : 2 };
         }), { ...timing, pseudoElement: titleSnapshot }));
       }
-      backCaptures.forEach(({ name, color, radius }) => {
+      backCaptures.forEach(({ source, name, color, radius }) => {
         const group = `::view-transition-group(${name})`;
         const captureStyle = getComputedStyle(host, group);
         const origin = captureStyle.transformOrigin.split(' ').map(Number.parseFloat);
         const initial = new DOMMatrix().translate(origin[0], origin[1])
           .multiply(new DOMMatrix(captureStyle.transform)).translate(-origin[0], -origin[1]);
-        if (name !== 'nav-section') {
+        const continuing = continuingPanels.get(source);
+        const zIndex = overlap ? outgoingPanels.indexOf(source) + 1 : 2;
+        if (overlap && continuing) {
+          // The front card finishes its scroll motion while the lower card exits independently.
+          const travel = metrics.scroll - overlap.top;
+          const remainingTiming = { duration: overlap.duration * 1000, easing: 'linear', fill: 'both' as const };
+          animations.push(host.animate(Array.from({ length: 61 }, (_, index) => {
+            const progress = 1 - Math.pow(1 - index / 60, 4);
+            const entranceProgress = continuing.progress * (1 - progress);
+            const angleIndex = entranceProgress * (incomingAngles.length - 1);
+            const segment = Math.min(incomingAngles.length - 2, Math.floor(angleIndex));
+            const rotation = incomingAngles[segment]
+              + (incomingAngles[segment + 1] - incomingAngles[segment]) * (angleIndex - segment) - continuing.rotation;
+            const transform = new DOMMatrix().translate(continuing.pivot.x, continuing.pivot.y + travel * progress)
+              .rotate(rotation).translate(-continuing.pivot.x, -continuing.pivot.y).multiply(initial);
+            return {
+              offset: index / 60, transform: transform.toString(), transformOrigin: '0 0', zIndex,
+              ...(color ? {
+                backgroundColor: blendSectionColor(continuing.fromHsl, continuing.toHsl, entranceProgress),
+                clipPath: `inset(0 round ${radius} ${radius} 0 0)`,
+              } : {}),
+            };
+          }), { ...remainingTiming, pseudoElement: group }));
+          animations.push(host.animate(Array.from({ length: 61 }, (_, index) => ({
+            offset: index / 60, opacity: color && continuing.progress ? Math.pow(1 - index / 60, 4) : 1, mixBlendMode: 'normal',
+          })), { ...remainingTiming, pseudoElement: `::view-transition-old(${name})` }));
+          return;
+        } else if (name !== 'nav-section') {
           animations.push(host.animate(Array.from({ length: 61 }, (_, index) => {
             const progress = index / 60;
             const transform = new DOMMatrix().translate(pivot.x, pivot.y)
               .translate(0, panelHeight * progress).rotate(incomingAngles[0] * progress)
               .translate(-pivot.x, -pivot.y).multiply(initial);
-            return { offset: progress, transform: transform.toString(), transformOrigin: '0 0', zIndex: 2 };
+            return { offset: progress, transform: transform.toString(), transformOrigin: '0 0', zIndex };
           }), { ...timing, pseudoElement: group }));
+        } else if (overlap) {
+          animations.push(host.animate([{ zIndex }, { zIndex }], { ...timing, pseudoElement: group }));
         }
         // Only the frozen background fades; foreground captures remain fully opaque.
         animations.push(host.animate([
