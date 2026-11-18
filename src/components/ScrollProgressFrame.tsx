@@ -23,19 +23,21 @@ export default function ScrollProgressFrame() {
     let activeColor = "";
     let colorTween: gsap.core.Tween | undefined;
     let colorFrame = 0;
+    let homeProgress: Animation | undefined;
 
-    const updateColors = () => {
-      const section = getScrollSection();
+    const updateColors = (immediate = false) => {
+      const section = document.documentElement.hasAttribute("data-home-return")
+        ? document.getElementById("home") : getScrollSection();
       const palette = section?.querySelector<HTMLElement>("[data-shader-palette]")?.dataset.shaderPalette as ShaderPalette | undefined;
       const color = palette ? sectionShaderPalettes[palette][3] : section?.dataset.sectionColor;
-      if (!color || color === activeColor) return;
+      if (!color || (color === activeColor && !immediate)) return;
 
       const { h, s } = hexToHsl(color);
       colorTween?.kill();
       colorTween = gsap.to(frame, {
         "--scroll-frame-track": hslToHex(h, s * (palette === 'home' ? 0.75 : 0.85), palette === 'home' ? 0.53 : 0.4),
         "--scroll-frame-progress": hslToHex(h, Math.min(0.95, s * 1.25), 0.6),
-        duration: reducedMotion.matches || !activeColor ? 0 : 0.45,
+        duration: immediate || reducedMotion.matches || !activeColor ? 0 : 0.45,
         ease: "power2.out",
       });
       activeColor = color;
@@ -106,8 +108,31 @@ export default function ScrollProgressFrame() {
     viewport.addEventListener("scroll", scheduleColors, { passive: true });
     ScrollTrigger.addEventListener("refresh", scheduleColors);
     // Navigation changes snapshots without necessarily emitting another scroll event.
-    const navigationObserver = new MutationObserver(scheduleColors);
-    navigationObserver.observe(document.documentElement, { attributes: true, attributeFilter: ["class"] });
+    const navigationObserver = new MutationObserver(records => {
+      if (!records.some(record => record.attributeName === "data-home-return")) {
+        scheduleColors();
+        return;
+      }
+      const offset = getComputedStyle(progress).strokeDashoffset;
+      homeProgress?.cancel();
+      homeProgress = undefined;
+      updateColors(true);
+      if (document.documentElement.hasAttribute("data-home-return")) {
+        // Override the scroll-owned attribute until the curtain hands control back.
+        const closing = document.querySelector(".page-loader--home .page-loader__panel")?.getAnimations()[0];
+        if (!closing?.effect) return;
+        const { duration, easing } = closing.effect.getTiming();
+        const animation = progress.animate([
+          { strokeDashoffset: offset },
+          { strokeDashoffset: "1" },
+        ], { duration, easing, fill: "both" });
+        homeProgress = animation;
+        void closing.ready.then(() => {
+          if (homeProgress === animation && closing.startTime !== null) animation.startTime = closing.startTime;
+        }, () => {});
+      }
+    });
+    navigationObserver.observe(document.documentElement, { attributes: true, attributeFilter: ["class", "data-home-return"] });
     reducedMotion.addEventListener("change", onMotionChange);
 
     return () => {
@@ -118,6 +143,7 @@ export default function ScrollProgressFrame() {
       reducedMotion.removeEventListener("change", onMotionChange);
       if (colorFrame) cancelAnimationFrame(colorFrame);
       colorTween?.kill();
+      homeProgress?.cancel();
       tween.scrollTrigger?.kill();
       tween.kill();
     };
