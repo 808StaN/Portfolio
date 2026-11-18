@@ -10,5 +10,4 @@ graphify-out/
 *.code-workspace
 
 # Fontshare permits self-hosting, not redistribution in public repos.
-public/fonts/satoshi-variable.woff2
 public/fonts/chillax-variable.woff2

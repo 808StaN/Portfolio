@@ -40,7 +40,7 @@ export default function Cursor() {
       const target = e.target as Element;
 
       const interactive = target.closest(
-        'a, button, [role="link"], [tabindex]:not([tabindex="-1"]), .custom-scrollbar-track, .custom-scrollbar-thumb',
+        'a, button, [role="link"], [tabindex]:not([tabindex="-1"])',
       );
       const isDisabled =
         interactive instanceof HTMLButtonElement && interactive.disabled;
