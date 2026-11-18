@@ -6,6 +6,19 @@ import './PageLoader.css';
 
 export type PageLoaderStage = 'intro' | 'revealing' | 'done';
 
+export function PageLoaderPanels() {
+  return (
+    <>
+      <div className="page-loader__panel page-loader__panel--top" style={{ background: sectionColors.home }}>
+        <p className="page-loader__heading">Dawid Stanisz</p>
+      </div>
+      <div className="page-loader__panel page-loader__panel--bottom" style={{ background: sectionColors.home }}>
+        <p className="page-loader__subtitle">[ WEB DEVELOPER ]</p>
+      </div>
+    </>
+  );
+}
+
 export default function PageLoader({ ready, onStageChange }: { ready: boolean; onStageChange: (stage: PageLoaderStage) => void }) {
   const lenis = useLenis();
   const rootRef = useRef<HTMLDivElement>(null);
@@ -75,12 +88,7 @@ export default function PageLoader({ ready, onStageChange }: { ready: boolean; o
       }}
     >
       <div className="page-loader__backdrop" aria-hidden="true" />
-      <div className="page-loader__panel page-loader__panel--top" style={{ background: sectionColors.home }}>
-        <p className="page-loader__heading">Dawid Stanisz</p>
-      </div>
-      <div className="page-loader__panel page-loader__panel--bottom" style={{ background: sectionColors.home }}>
-        <p className="page-loader__subtitle">[ WEB DEVELOPER ]</p>
-      </div>
+      <PageLoaderPanels />
       <button ref={skipRef} className="page-loader__skip" type="button" onClick={() => onStageChange('done')}>
         Skip intro
       </button>

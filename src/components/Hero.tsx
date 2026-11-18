@@ -1,5 +1,5 @@
-import { useEffect, useId, useRef, type MouseEvent } from 'react';
-import { motion, useReducedMotion } from 'framer-motion';
+import { useEffect, useId, useLayoutEffect, useRef, useState, type MouseEvent } from 'react';
+import { motion, useAnimationControls } from 'framer-motion';
 import SectionBandsBackground from './SectionBandsBackground';
 import { sectionColors } from '../constants/sectionColors';
 import { useSectionNavigation } from './SectionNavigation';
@@ -10,10 +10,27 @@ const words = ['fast', 'scalable', 'reliable', 'responsive', 'modern'];
 const easeOut = [0.16, 1, 0.3, 1] as const;
 
 export default function Hero({ ready }: { ready: boolean }) {
-  const prefersReduced = useReducedMotion();
-  const { navigate } = useSectionNavigation();
+  const [prefersReduced, setPrefersReduced] = useState(() => window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+  const { navigate, homeEntrance } = useSectionNavigation();
+  const entrance = useAnimationControls();
   const wordRef = useRef<HTMLSpanElement>(null);
   const outlineFilterId = useId();
+
+  useEffect(() => {
+    const media = window.matchMedia('(prefers-reduced-motion: reduce)');
+    const update = () => setPrefersReduced(media.matches);
+    media.addEventListener('change', update);
+    return () => media.removeEventListener('change', update);
+  }, []);
+
+  useLayoutEffect(() => {
+    entrance.stop();
+    entrance.set('hidden');
+    if (ready) {
+      if (prefersReduced) entrance.set('visible');
+      else void entrance.start('visible');
+    }
+  }, [entrance, ready, homeEntrance, prefersReduced]);
 
   const handleProjectsClick = (event: MouseEvent<HTMLAnchorElement>) => {
     if (event.defaultPrevented) return;
@@ -27,6 +44,7 @@ export default function Hero({ ready }: { ready: boolean }) {
   useEffect(() => {
     if (!ready || prefersReduced || !wordRef.current) return;
     const el = wordRef.current;
+    el.textContent = words[0];
     let idx = 0;
     el.style.transition = 'opacity 0.35s cubic-bezier(0.16, 1, 0.3, 1), transform 0.35s cubic-bezier(0.16, 1, 0.3, 1)';
 
@@ -49,7 +67,7 @@ export default function Hero({ ready }: { ready: boolean }) {
       el.style.opacity = '1';
       el.style.transform = 'translateY(0)';
     };
-  }, [prefersReduced, ready]);
+  }, [prefersReduced, ready, homeEntrance]);
 
   return (
     <section
@@ -80,8 +98,9 @@ export default function Hero({ ready }: { ready: boolean }) {
               <span className="hero-headline-reveal">
                 <motion.span
                   className="hero-headline hero-headline-gradient"
-                  initial={{ opacity: 0, y: 28 }}
-                  animate={{ opacity: ready ? 1 : 0, y: ready ? 0 : 28 }}
+                  initial="hidden"
+                  animate={entrance}
+                  variants={{ hidden: { opacity: 0, y: 28 }, visible: { opacity: 1, y: 0 } }}
                   transition={{ duration: prefersReduced ? 0 : 0.9, delay: prefersReduced ? 0 : 0.52, ease: easeOut }}
                 >
                   I build
@@ -91,8 +110,9 @@ export default function Hero({ ready }: { ready: boolean }) {
               <span className="hero-headline-reveal">
                 <motion.span
                   className="hero-headline hero-headline-rotating"
-                  initial={{ opacity: 0, y: 28 }}
-                  animate={{ opacity: ready ? 1 : 0, y: ready ? 0 : 28 }}
+                  initial="hidden"
+                  animate={entrance}
+                  variants={{ hidden: { opacity: 0, y: 28 }, visible: { opacity: 1, y: 0 } }}
                   transition={{ duration: prefersReduced ? 0 : 0.9, delay: prefersReduced ? 0 : 0.64, ease: easeOut }}
                 >
                   <span
@@ -112,8 +132,9 @@ export default function Hero({ ready }: { ready: boolean }) {
               <span className="hero-headline-reveal">
                 <motion.span
                   className="hero-headline hero-headline-gradient"
-                  initial={{ opacity: 0, y: 28 }}
-                  animate={{ opacity: ready ? 1 : 0, y: ready ? 0 : 28 }}
+                  initial="hidden"
+                  animate={entrance}
+                  variants={{ hidden: { opacity: 0, y: 28 }, visible: { opacity: 1, y: 0 } }}
                   transition={{ duration: prefersReduced ? 0 : 0.9, delay: prefersReduced ? 0 : 0.76, ease: easeOut }}
                 >
                   web apps
@@ -135,8 +156,9 @@ export default function Hero({ ready }: { ready: boolean }) {
             <div className="hero-copy">
               <motion.p
                 className="hero-description"
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: ready ? 1 : 0, y: ready ? 0 : 20 }}
+                initial="hidden"
+                animate={entrance}
+                variants={{ hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0 } }}
                 transition={{ duration: prefersReduced ? 0 : 0.9, delay: prefersReduced ? 0 : 0.9, ease: easeOut }}
               >
                 Frontend-focused developer working with React, Next.js, and TypeScript. I turn ideas into fast, polished digital experiences with a focus on design, performance, and usability.
@@ -144,8 +166,9 @@ export default function Hero({ ready }: { ready: boolean }) {
 
               <motion.div
                 className="hero-actions"
-                initial={{ opacity: 0, y: 18 }}
-                animate={{ opacity: ready ? 1 : 0, y: ready ? 0 : 18 }}
+                initial="hidden"
+                animate={entrance}
+                variants={{ hidden: { opacity: 0, y: 18 }, visible: { opacity: 1, y: 0 } }}
                 transition={{ duration: prefersReduced ? 0 : 0.85, delay: prefersReduced ? 0 : 1.02, ease: easeOut }}
               >
                 <GravityLink
@@ -170,8 +193,9 @@ export default function Hero({ ready }: { ready: boolean }) {
 
           <motion.div
             className="hero-footer"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: ready ? 1 : 0 }}
+            initial="hidden"
+            animate={entrance}
+            variants={{ hidden: { opacity: 0 }, visible: { opacity: 1 } }}
             transition={{ delay: prefersReduced ? 0 : 1.4, duration: prefersReduced ? 0 : 0.8 }}
           >
             <span className="hero-scroll-label">Scroll</span>

@@ -133,6 +133,22 @@ html[data-page-loading] {
   to { opacity: 0; }
 }
 
+html[data-home-return] .portfolio-scrollport {
+  overflow: hidden;
+}
+
+.page-loader--home :is(.page-loader__panel, .page-loader__heading, .page-loader__subtitle) {
+  animation: none;
+}
+
+.page-loader--home .page-loader__panel--top {
+  transform: translateY(calc(-100% - 50px));
+}
+
+.page-loader--home .page-loader__panel--bottom {
+  transform: translateY(calc(100% + 50px));
+}
+
 @media (prefers-reduced-motion: reduce) {
   .page-loader * { animation: none !important; }
 }

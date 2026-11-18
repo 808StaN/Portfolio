@@ -4,8 +4,9 @@ import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { scrollToY, useLenis } from './LenisScroll';
 import { STRETCH_START, STRETCH_END } from './ProjectTitleStretch';
+import { PageLoaderPanels } from './PageLoader';
 import { blendSectionColor, hexToHsl, incomingAngles } from '../utils/tilt';
-import { getKeyboardScrollDelta, getScrollMetrics, getScrollSection, getScrollTargetTop, getScrollViewport } from '../utils/scroll';
+import { getKeyboardScrollDelta, getScrollMetrics, getScrollTargetTop, getScrollViewport } from '../utils/scroll';
 
 export const sectionLinks = [
   { label: 'Projects', href: '#work' },
@@ -23,6 +24,7 @@ type SectionNavigationContextValue = {
   navigate: (href: string) => Promise<void>;
   cancelNavigation: () => Promise<boolean>;
   activeSection: string;
+  homeEntrance: number;
 };
 
 const SectionNavigationContext = createContext<SectionNavigationContextValue | null>(null);
@@ -36,15 +38,25 @@ export function useSectionNavigation() {
 export function SectionNavigationProvider({ children }: { children: ReactNode }) {
   const lenis = useLenis();
   const [activeSection, setActiveSection] = useState('');
+  const [homeEntrance, setHomeEntrance] = useState(0);
+  const [homeCurtainVisible, setHomeCurtainVisible] = useState(false);
+  const homeCurtain = useRef<HTMLDivElement>(null);
+  const homeReturn = useRef<{ finished: Promise<void>; cancel: (complete?: boolean) => void } | null>(null);
+  const mounted = useRef(false);
   const navigationRequest = useRef(0);
   const preparation = useRef<(() => void) | null>(null);
   const navigation = useRef<{ transition: ViewTransition; release: () => void } | null>(null);
 
-  useEffect(() => () => {
-    navigationRequest.current += 1;
-    preparation.current?.();
-    navigation.current?.transition.skipTransition();
-    navigation.current?.release();
+  useEffect(() => {
+    mounted.current = true;
+    return () => {
+      mounted.current = false;
+      navigationRequest.current += 1;
+      homeReturn.current?.cancel();
+      preparation.current?.();
+      navigation.current?.transition.skipTransition();
+      navigation.current?.release();
+    };
   }, []);
 
   const getSectionTargetTop = (section: HTMLElement) => {
@@ -110,7 +122,9 @@ export function SectionNavigationProvider({ children }: { children: ReactNode })
   }, [lenis]);
 
   const navigate = async (href: string) => {
+    if (href === '#home' && homeReturn.current) return homeReturn.current.finished;
     const request = ++navigationRequest.current;
+    homeReturn.current?.cancel();
     preparation.current?.();
     const previous = navigation.current;
     if (previous) {
@@ -121,7 +135,6 @@ export function SectionNavigationProvider({ children }: { children: ReactNode })
 
     const el = document.querySelector(href) as HTMLElement | null;
     if (!el) return;
-    const returningHome = el.id === 'home';
     const panel = el.querySelector<HTMLElement>('.section-tilt-panel');
     const root = document.documentElement;
     const scope = document.querySelector<TransitionScope>('#page-transition-scope');
@@ -136,6 +149,106 @@ export function SectionNavigationProvider({ children }: { children: ReactNode })
       if (!el.hasAttribute('tabindex')) el.setAttribute('tabindex', '-1');
       el.focus({ preventScroll: true });
     };
+    if (el.id === 'home') {
+      if (getScrollMetrics().scroll < 2) { focusTarget(); return; }
+      let jumpedHome = false;
+      const jumpHome = () => {
+        if (jumpedHome || request !== navigationRequest.current || !el.isConnected) return;
+        jumpedHome = true;
+        if (lenis) lenis.scrollTo(0, { immediate: true, force: true });
+        else scrollToY(0, null, { immediate: true });
+        ScrollTrigger.update();
+        flushSync(() => {
+          setActiveSection('home');
+          setHomeEntrance(entrance => entrance + 1);
+        });
+      };
+      const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
+      if (reducedMotion.matches) { jumpHome(); focusTarget(); return; }
+
+      const wasStopped = lenis?.isStopped;
+      const shell = document.querySelector<HTMLElement>('.app-shell');
+      const wasInert = shell?.inert ?? false;
+      const previousFocus = document.activeElement;
+      const animations: Animation[] = [];
+      let released = false;
+      let timeout = 0;
+      let resolveFinished!: () => void;
+      const finished = new Promise<void>(resolve => { resolveFinished = resolve; });
+      const release = (complete = false) => {
+        if (released) return;
+        if (complete) jumpHome();
+        released = true;
+        clearTimeout(timeout);
+        animations.forEach(animation => animation.cancel());
+        window.removeEventListener('wheel', preventScroll, true);
+        window.removeEventListener('touchmove', preventScroll, true);
+        window.removeEventListener('keydown', onKeyDown, true);
+        window.removeEventListener('resize', skip);
+        reducedMotion.removeEventListener('change', skip);
+        root.removeAttribute('data-home-return');
+        if (shell) shell.inert = wasInert;
+        homeReturn.current = null;
+        if (mounted.current) {
+          flushSync(() => setHomeCurtainVisible(false));
+          if (complete) focusTarget();
+          else if (previousFocus instanceof HTMLElement && previousFocus.isConnected) previousFocus.focus({ preventScroll: true });
+        }
+        if (!wasStopped) lenis?.start();
+        resolveFinished();
+      };
+      const preventScroll = (event: Event) => {
+        if (event instanceof WheelEvent && event.ctrlKey) return;
+        if (event.cancelable) event.preventDefault();
+      };
+      const skip = (event?: Event) => {
+        release(true);
+        if (event?.type === 'resize') {
+          // Pin refreshes can reparent Hero and clear its focus after resize.
+          requestAnimationFrame(() => requestAnimationFrame(() => {
+            if (mounted.current && request === navigationRequest.current) focusTarget();
+          }));
+        }
+      };
+      const onKeyDown = (event: KeyboardEvent) => {
+        if (event.key === 'Escape') { event.preventDefault(); skip(); }
+        else if (event.key === 'Tab') {
+          event.preventDefault();
+          homeCurtain.current?.querySelector('button')?.focus();
+        } else if (getKeyboardScrollDelta(event) !== null) event.preventDefault();
+      };
+      homeReturn.current = { finished, cancel: release };
+      lenis?.stop();
+      root.setAttribute('data-home-return', '');
+      if (shell) shell.inert = true;
+      flushSync(() => setHomeCurtainVisible(true));
+      homeCurtain.current?.focus({ preventScroll: true });
+      window.addEventListener('wheel', preventScroll, { capture: true, passive: false });
+      window.addEventListener('touchmove', preventScroll, { capture: true, passive: false });
+      window.addEventListener('keydown', onKeyDown, true);
+      window.addEventListener('resize', skip);
+      reducedMotion.addEventListener('change', skip);
+      timeout = window.setTimeout(skip, 2400);
+      void (async () => {
+        try {
+          const panels = homeCurtain.current!.querySelectorAll<HTMLElement>('.page-loader__panel');
+          panels.forEach(panel => animations.push(panel.animate([
+            { transform: getComputedStyle(panel).transform },
+            { transform: 'translateY(0)' },
+          ], { duration: 800, easing: 'cubic-bezier(0.44, 0, 0.56, 1)', fill: 'both' })));
+          // Both halves must be opaque at the seam before changing the live page.
+          await Promise.all(animations.map(animation => animation.finished));
+          if (released) return;
+          jumpHome();
+          animations.forEach(animation => animation.reverse());
+          await Promise.all(animations.map(animation => animation.finished));
+          release(true);
+        } catch {
+          if (!released) release(true);
+        }
+      })();
+      return finished;
+    }
     const visiblePanels = () => {
       const metrics = getScrollMetrics();
       const panels: HTMLElement[] = [];
@@ -224,22 +337,8 @@ export function SectionNavigationProvider({ children }: { children: ReactNode })
           if (!progress || !await prepareScroll(Math.max(0, start), 1.8 * progress)) return;
           if (request !== navigationRequest.current || !el.isConnected) return;
           const under = visiblePanels().at(-1);
-          if (under === panel && !returningHome) { focusTarget(); return; }
+          if (under === panel) { focusTarget(); return; }
           continue;
-        }
-        if (returningHome && panels.length > 1 && panels.every(source => source.parentElement?.dataset.sectionGroup === 'projects')) {
-          const dominant = getScrollSection();
-          if (!dominant) break;
-          const target = getSectionTargetTop(dominant);
-          const distance = Math.abs(metrics.scroll - target);
-          if (distance < 2) break;
-          if (!await prepareScroll(target, 1.8 * Math.min(1, distance / metrics.height))) return;
-          if (request !== navigationRequest.current || !el.isConnected) return;
-          continue;
-        }
-        if (returningHome && front === panel) {
-          if (await prepareScroll(0, 1.8 * Math.min(1, metrics.scroll / metrics.height))) focusTarget();
-          return;
         }
         break;
       }
@@ -296,12 +395,10 @@ export function SectionNavigationProvider({ children }: { children: ReactNode })
         panel?.setAttribute('data-nav-blend', '');
       }
       // Reveal scroll-triggered content, but leave the hero's looping animation alone.
-      if (!returningHome) {
-        el.querySelectorAll<HTMLElement>('.section-tilt-container [style*="opacity"]')
-          .forEach(node => {
-            if (!node.closest('[data-scroll-journey]')) node.setAttribute('data-nav-revealed', '');
-          });
-      }
+      el.querySelectorAll<HTMLElement>('.section-tilt-container [style*="opacity"]')
+        .forEach(node => {
+          if (!node.closest('[data-scroll-journey]')) node.setAttribute('data-nav-revealed', '');
+        });
       focusTarget();
       // Pin and capture layout updates can adjust the browser's scroll position.
       if (Math.abs(getScrollMetrics().scroll - top) > 1) {
@@ -381,7 +478,7 @@ export function SectionNavigationProvider({ children }: { children: ReactNode })
     scope?.classList.toggle('nav-back-root-transition', useRootSnapshot);
     scope?.classList.add('nav-section-transition');
     lenis?.stop();
-    captureSnapshot = !returningHome && !goingBack;
+    captureSnapshot = !goingBack;
     outgoingTitle?.setAttribute('data-nav-title-capture', '');
     outgoingPanels.forEach((source, index) => {
       const sourceStyle = getComputedStyle(source);
@@ -643,6 +740,7 @@ export function SectionNavigationProvider({ children }: { children: ReactNode })
 
   const cancelNavigation = async () => {
     const request = ++navigationRequest.current;
+    homeReturn.current?.cancel();
     preparation.current?.();
     const previous = navigation.current;
     if (previous) {
@@ -653,8 +751,14 @@ export function SectionNavigationProvider({ children }: { children: ReactNode })
   };
 
   return (
-    <SectionNavigationContext.Provider value={{ navigate, cancelNavigation, activeSection }}>
+    <SectionNavigationContext.Provider value={{ navigate, cancelNavigation, activeSection, homeEntrance }}>
       {children}
+      {homeCurtainVisible && (
+        <div ref={homeCurtain} className="page-loader page-loader--home" role="dialog" aria-modal="true" aria-label="Returning to Home" tabIndex={-1}>
+          <PageLoaderPanels />
+          <button className="page-loader__skip" type="button" onClick={() => homeReturn.current?.cancel(true)}>Skip transition</button>
+        </div>
+      )}
     </SectionNavigationContext.Provider>
   );
 }
