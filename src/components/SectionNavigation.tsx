@@ -1,10 +1,11 @@
 import { createContext, useContext, useState, useEffect, useRef, type ReactNode } from 'react';
 import { flushSync } from 'react-dom';
+import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { scrollToY, useLenis } from './LenisScroll';
 import { STRETCH_START, STRETCH_END } from './ProjectTitleStretch';
 import { blendSectionColor, hexToHsl, incomingAngles } from '../utils/tilt';
-import { getKeyboardScrollDelta, getScrollMetrics, getScrollTargetTop, getScrollViewport } from '../utils/scroll';
+import { getKeyboardScrollDelta, getScrollMetrics, getScrollSection, getScrollTargetTop, getScrollViewport } from '../utils/scroll';
 
 export const sectionLinks = [
   { label: 'Projects', href: '#work' },
@@ -36,10 +37,12 @@ export function SectionNavigationProvider({ children }: { children: ReactNode })
   const lenis = useLenis();
   const [activeSection, setActiveSection] = useState('');
   const navigationRequest = useRef(0);
+  const preparation = useRef<(() => void) | null>(null);
   const navigation = useRef<{ transition: ViewTransition; release: () => void } | null>(null);
 
   useEffect(() => () => {
     navigationRequest.current += 1;
+    preparation.current?.();
     navigation.current?.transition.skipTransition();
     navigation.current?.release();
   }, []);
@@ -47,7 +50,7 @@ export function SectionNavigationProvider({ children }: { children: ReactNode })
   const getSectionTargetTop = (section: HTMLElement) => {
     if (section.id === 'home') return 0;
     const { limit } = getScrollMetrics();
-    const transitionTarget = ScrollTrigger.getById(`section-target-${section.id}`);
+    const transitionTarget = ScrollTrigger.getById(`section-target-${section.id || section.dataset.projectId}`);
     const top =
       transitionTarget?.end !== undefined
         ? transitionTarget.end
@@ -108,6 +111,7 @@ export function SectionNavigationProvider({ children }: { children: ReactNode })
 
   const navigate = async (href: string) => {
     const request = ++navigationRequest.current;
+    preparation.current?.();
     const previous = navigation.current;
     if (previous) {
       previous.transition.skipTransition();
@@ -118,15 +122,135 @@ export function SectionNavigationProvider({ children }: { children: ReactNode })
     const el = document.querySelector(href) as HTMLElement | null;
     if (!el) return;
     const returningHome = el.id === 'home';
+    const panel = el.querySelector<HTMLElement>('.section-tilt-panel');
+    const root = document.documentElement;
+    const scope = document.querySelector<TransitionScope>('#page-transition-scope');
+    const useScopedTransition = typeof scope?.startViewTransition === 'function';
+    const host = useScopedTransition ? scope : root;
+    // Keep native card animations when only document-wide transitions are available.
+    const startTransition = useScopedTransition
+      ? scope.startViewTransition!.bind(scope)
+      : document.startViewTransition?.bind(document);
+    const focusTarget = () => {
+      flushSync(() => setActiveSection(el.id));
+      if (!el.hasAttribute('tabindex')) el.setAttribute('tabindex', '-1');
+      el.focus({ preventScroll: true });
+    };
+    const visiblePanels = () => {
+      const metrics = getScrollMetrics();
+      const panels: HTMLElement[] = [];
+      for (const section of document.querySelectorAll<HTMLElement>('[data-section-tilt]')) {
+        const candidate = section.querySelector<HTMLElement>(':scope > .section-tilt-panel');
+        if (!candidate) continue;
+        const rect = candidate.getBoundingClientRect();
+        const sectionRect = section.getBoundingClientRect();
+        if (sectionRect.top >= metrics.top + metrics.height || sectionRect.bottom <= metrics.top
+          || rect.top >= metrics.top + metrics.height || rect.bottom <= metrics.top) continue;
+        const transform = getComputedStyle(candidate).transform;
+        const matrix = new DOMMatrix(transform === 'none' ? undefined : transform);
+        if (Math.abs(matrix.b) < 0.00001 && rect.top <= metrics.top + 1
+          && rect.bottom >= metrics.top + metrics.height - 1) panels.length = 0;
+        panels.push(candidate);
+      }
+      return panels;
+    };
+    const prepareScroll = (top: number, duration: number) => new Promise<boolean>(resolve => {
+      const wasStopped = lenis?.isStopped;
+      const position = { scroll: getScrollMetrics().scroll };
+      let frame = 0;
+      let released = false;
+      let tween: gsap.core.Tween | undefined;
+      const cancel = () => finish(false);
+      const finish = (completed: boolean) => {
+        if (released) return;
+        released = true;
+        tween?.kill();
+        cancelAnimationFrame(frame);
+        window.removeEventListener('wheel', interrupt, true);
+        window.removeEventListener('touchstart', interrupt, true);
+        window.removeEventListener('keydown', interrupt, true);
+        window.removeEventListener('resize', cancel);
+        ScrollTrigger.removeEventListener('refreshInit', cancel);
+        if (preparation.current === cancel) preparation.current = null;
+        if (!wasStopped) lenis?.start();
+        resolve(completed && request === navigationRequest.current);
+      };
+      const interrupt = (event: Event) => {
+        if (event.defaultPrevented || (event.target instanceof Element
+          && event.target.closest('.mobile-menu-backdrop'))) return;
+        if (event instanceof WheelEvent && (event.ctrlKey || (!event.deltaY && !event.deltaX))) return;
+        if (event instanceof KeyboardEvent && (event.key !== 'Escape' && getKeyboardScrollDelta(event) === null)) return;
+        finish(false);
+      };
+      const update = () => {
+        if (lenis) lenis.scrollTo(position.scroll, { immediate: true, force: true });
+        else scrollToY(position.scroll, null, { immediate: true });
+        ScrollTrigger.update();
+      };
+      preparation.current = cancel;
+      lenis?.stop();
+      window.addEventListener('wheel', interrupt, { capture: true, passive: true });
+      window.addEventListener('touchstart', interrupt, { capture: true, passive: true });
+      window.addEventListener('keydown', interrupt, true);
+      window.addEventListener('resize', cancel);
+      ScrollTrigger.addEventListener('refreshInit', cancel);
+      tween = gsap.to(position, {
+        scroll: top, duration, ease: 'power3.out', paused: true, onUpdate: update,
+        onComplete: () => {
+          update();
+          // Let pins, shader visibility and the navbar settle before taking a single-card capture.
+          frame = requestAnimationFrame(() => {
+            frame = requestAnimationFrame(() => finish(true));
+          });
+        },
+      });
+      tween.play();
+    });
+
+    if (typeof startTransition === 'function' && !window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      while (getSectionTargetTop(el) < getScrollMetrics().scroll - 2) {
+        const metrics = getScrollMetrics();
+        const panels = visiblePanels();
+        const front = panels.at(-1);
+        if (!front) break;
+        const section = front.parentElement!;
+        const transform = getComputedStyle(front).transform;
+        const matrix = new DOMMatrix(transform === 'none' ? undefined : transform);
+        if (Math.abs(matrix.b) > 0.00001) {
+          const entrance = ScrollTrigger.getById(`section-target-${section.id || section.dataset.projectId}`);
+          if (!entrance) break;
+          const start = entrance.end - metrics.height;
+          const progress = Math.max(0, Math.min(1, (metrics.scroll - start) / metrics.height));
+          if (!progress || !await prepareScroll(Math.max(0, start), 1.8 * progress)) return;
+          if (request !== navigationRequest.current || !el.isConnected) return;
+          const under = visiblePanels().at(-1);
+          if (under === panel && !returningHome) { focusTarget(); return; }
+          continue;
+        }
+        if (returningHome && panels.length > 1 && panels.every(source => source.parentElement?.dataset.sectionGroup === 'projects')) {
+          const dominant = getScrollSection();
+          if (!dominant) break;
+          const target = getSectionTargetTop(dominant);
+          const distance = Math.abs(metrics.scroll - target);
+          if (distance < 2) break;
+          if (!await prepareScroll(target, 1.8 * Math.min(1, distance / metrics.height))) return;
+          if (request !== navigationRequest.current || !el.isConnected) return;
+          continue;
+        }
+        if (returningHome && front === panel) {
+          if (await prepareScroll(0, 1.8 * Math.min(1, metrics.scroll / metrics.height))) focusTarget();
+          return;
+        }
+        break;
+      }
+    }
     const top = getSectionTargetTop(el);
     const metrics = getScrollMetrics();
     const viewport = getScrollViewport();
-    if (Math.abs(metrics.scroll - top) < 2) return;
-    const root = document.documentElement;
+    if (Math.abs(metrics.scroll - top) < 2) { focusTarget(); return; }
     const startProgress = Number(getComputedStyle(root).getPropertyValue('--nav-hero-progress'));
     let heroOffset = 0;
     const goingBack = top < metrics.scroll;
-    const panel = el.querySelector<HTMLElement>('.section-tilt-panel');
     const targetColor = panel?.closest<HTMLElement>('[data-section-color]')?.dataset.sectionColor;
     let outgoingPanel: HTMLElement | null = null;
     let outgoingSection: HTMLElement | null = null;
@@ -151,8 +275,6 @@ export function SectionNavigationProvider({ children }: { children: ReactNode })
 
     const jump = () => {
       if (jumped || request !== navigationRequest.current || !el.isConnected) return;
-      viewport?.removeAttribute('data-nav-capture');
-      el.removeAttribute('data-nav-home-source');
       outgoingPanel?.removeAttribute('data-nav-capture');
       outgoingSection?.removeAttribute('data-nav-source');
       outgoingTitle?.removeAttribute('data-nav-title-capture');
@@ -180,9 +302,7 @@ export function SectionNavigationProvider({ children }: { children: ReactNode })
             if (!node.closest('[data-scroll-journey]')) node.setAttribute('data-nav-revealed', '');
           });
       }
-      flushSync(() => setActiveSection(el.id));
-      if (!el.hasAttribute('tabindex')) el.setAttribute('tabindex', '-1');
-      el.focus({ preventScroll: true });
+      focusTarget();
       // Pin and capture layout updates can adjust the browser's scroll position.
       if (Math.abs(getScrollMetrics().scroll - top) > 1) {
         scrollToY(top, null, { immediate: true });
@@ -195,13 +315,6 @@ export function SectionNavigationProvider({ children }: { children: ReactNode })
       }
     };
 
-    const scope = document.querySelector<TransitionScope>('#page-transition-scope');
-    const useScopedTransition = typeof scope?.startViewTransition === 'function';
-    const host = useScopedTransition ? scope : root;
-    // Keep native card animations when only document-wide transitions are available.
-    const startTransition = useScopedTransition
-      ? scope.startViewTransition!.bind(scope)
-      : document.startViewTransition?.bind(document);
     if (!startTransition
       || window.matchMedia('(prefers-reduced-motion: reduce)').matches
       || !panel || !targetColor || !viewport) {
@@ -209,32 +322,11 @@ export function SectionNavigationProvider({ children }: { children: ReactNode })
       return;
     }
 
-    if (goingBack) {
-      for (const section of document.querySelectorAll<HTMLElement>('[data-section-tilt]')) {
-        const candidate = section.querySelector<HTMLElement>(':scope > .section-tilt-panel');
-        if (!candidate) continue;
-        const rect = candidate.getBoundingClientRect();
-        const sectionRect = section.getBoundingClientRect();
-        if (sectionRect.top < metrics.top + metrics.height && sectionRect.bottom > metrics.top
-          && rect.top < metrics.top + metrics.height && rect.bottom > metrics.top) {
-          const matrix = getComputedStyle(candidate).transform;
-          const transform = new DOMMatrix(matrix === 'none' ? undefined : matrix);
-          if (Math.abs(transform.b) < 0.00001 && rect.top <= metrics.top + 1
-            && rect.bottom >= metrics.top + metrics.height - 1) outgoingPanels.length = 0;
-          outgoingPanels.push(candidate);
-          outgoingPanel = candidate;
-        }
-      }
-    }
-    const projectOverlap = returningHome && outgoingPanels.length === 2 && outgoingPanels.every(source => {
-      const transform = getComputedStyle(source).transform;
-      const matrix = new DOMMatrix(transform === 'none' ? undefined : transform);
-      return source.parentElement?.dataset.sectionGroup === 'projects'
-        && Math.abs(matrix.b) < 0.00001 && Math.abs(matrix.a - 1) < 0.00001;
-    });
-    // A project overlap gets one outer radius; its internal seam must stay straight.
+    if (goingBack) outgoingPanels.push(...visiblePanels());
+    outgoingPanel = outgoingPanels.at(-1) ?? null;
+    // Round only the classic navbar capture, never its preparatory scrolling.
     (goingBack ? outgoingPanels : [panel]).forEach(source => {
-      if (projectOverlap || !source.matches('[data-section-group="projects"]:not([data-project-id="riftpick"]) > .section-tilt-panel')) return;
+      if (!source.matches('[data-section-group="projects"]:not([data-project-id="riftpick"]) > .section-tilt-panel')) return;
       roundedPanels.push(source);
       source.setAttribute('data-nav-rounded', '');
     });
@@ -243,13 +335,10 @@ export function SectionNavigationProvider({ children }: { children: ReactNode })
     const outgoingStyle = outgoingPanel ? getComputedStyle(outgoingPanel) : null;
     const outgoingMatrix = new DOMMatrix(outgoingStyle?.transform === 'none' ? undefined : outgoingStyle?.transform);
     // Preserve the whole frame if multiple tilted cards are visible during an overlap.
-    const needsFrameSnapshot = goingBack && (!outgoingRect
+    const useRootSnapshot = goingBack && (!outgoingRect
       || Math.abs(outgoingMatrix.b) > 0.00001 || Math.abs(outgoingMatrix.a - 1) > 0.00001
       || outgoingRect.top > metrics.top + 1 || outgoingRect.bottom < metrics.top + metrics.height - 1);
-    // Keep overlap clipping and stacking intact, but never move a second copy of the hero.
-    const useCompositeSnapshot = returningHome && (needsFrameSnapshot || outgoingPanels.includes(panel));
-    const useRootSnapshot = needsFrameSnapshot && !useCompositeSnapshot;
-    outgoingTitle = goingBack && !useCompositeSnapshot ? outgoingPanel?.querySelector<HTMLElement>('.projects-title-scale') ?? null : null;
+    outgoingTitle = goingBack ? outgoingPanel?.querySelector<HTMLElement>('.projects-title-scale') ?? null : null;
     const titleRect = outgoingTitle?.getBoundingClientRect();
     if (titleRect && (titleRect.bottom <= metrics.top || titleRect.top >= metrics.top + metrics.height)) outgoingTitle = null;
     const outgoingTitleStyle = outgoingTitle ? getComputedStyle(outgoingTitle) : null;
@@ -259,9 +348,8 @@ export function SectionNavigationProvider({ children }: { children: ReactNode })
     const titleEndScale = titleMatrix ? STRETCH_START * titleMatrix.a / titleMatrix.d : 1;
     const wasStopped = lenis?.isStopped;
     const panelStyle = goingBack && outgoingStyle ? outgoingStyle : getComputedStyle(panel);
-    const panelRadius = projectOverlap ? getComputedStyle(root).getPropertyValue('--portfolio-radius').trim()
-      : useCompositeSnapshot ? '0px' : panelStyle.getPropertyValue('--section-base-radius').trim() || '0px';
-    const panelHeight = useCompositeSnapshot || (goingBack && !outgoingPanel) ? metrics.height : parseFloat(panelStyle.height);
+    const panelRadius = panelStyle.getPropertyValue('--section-base-radius').trim() || '0px';
+    const panelHeight = goingBack && !outgoingPanel ? metrics.height : parseFloat(panelStyle.height);
     // Card transitions still blend scene colors, independently of the navbar glass.
     const sourceSection = Array.from(document.querySelectorAll<HTMLElement>('[data-section-tilt]')).reverse().find(section => {
       const candidate = section.querySelector(':scope > .section-tilt-panel');
@@ -273,7 +361,7 @@ export function SectionNavigationProvider({ children }: { children: ReactNode })
     });
     const fromHsl = hexToHsl(sourceSection?.dataset.sectionColor || targetColor);
     const toHsl = hexToHsl(targetColor);
-    root.style.setProperty('--nav-section-start-color', useCompositeSnapshot ? 'transparent' : blendSectionColor(fromHsl, toHsl, 0));
+    root.style.setProperty('--nav-section-start-color', blendSectionColor(fromHsl, toHsl, 0));
     root.style.setProperty('--nav-section-start-angle', `${incomingAngles[0]}deg`);
     root.style.setProperty('--nav-section-top-left-radius', panelRadius);
     root.style.setProperty('--nav-section-top-right-radius', panelRadius);
@@ -282,7 +370,7 @@ export function SectionNavigationProvider({ children }: { children: ReactNode })
     const snapshotY = useScopedTransition ? 0 : metrics.top;
     root.style.setProperty('--nav-snapshot-x', `${snapshotX}px`);
     root.style.setProperty('--nav-snapshot-y', `${snapshotY}px`);
-    root.style.setProperty('--nav-section-source-transform', goingBack && !useRootSnapshot && !useCompositeSnapshot && outgoingRect
+    root.style.setProperty('--nav-section-source-transform', goingBack && !useRootSnapshot && outgoingRect
       ? `translate(${outgoingRect.left - metrics.left + snapshotX}px, ${outgoingRect.top - metrics.top + snapshotY}px)`
       : useRootSnapshot ? 'translate(0px, 0px)' : `translate(${snapshotX}px, ${snapshotY}px)`);
     root.classList.toggle('nav-back-transition', goingBack);
@@ -295,11 +383,7 @@ export function SectionNavigationProvider({ children }: { children: ReactNode })
     lenis?.stop();
     captureSnapshot = !returningHome && !goingBack;
     outgoingTitle?.setAttribute('data-nav-title-capture', '');
-    if (useCompositeSnapshot) {
-      viewport.setAttribute('data-nav-capture', '');
-      el.setAttribute('data-nav-home-source', '');
-    }
-    if (!useCompositeSnapshot) outgoingPanels.forEach((source, index) => {
+    outgoingPanels.forEach((source, index) => {
       const sourceStyle = getComputedStyle(source);
       // Read the scroll-owned color before making the capture background transparent.
       const rgb = sourceStyle.backgroundColor.match(/\d+/g)!;
@@ -314,7 +398,7 @@ export function SectionNavigationProvider({ children }: { children: ReactNode })
       const content = source.querySelector<HTMLElement>(':scope > .section-tilt-container');
       if (content) backCaptures.push({ element: content, name: `nav-content-${index}` });
     });
-    if (goingBack && !useRootSnapshot && !useCompositeSnapshot && outgoingStyle) {
+    if (goingBack && !useRootSnapshot && outgoingStyle) {
       // Keep the visible card unchanged while capturing its background separately.
       root.style.setProperty('--nav-outgoing-color', outgoingStyle.backgroundColor);
       outgoingSection?.setAttribute('data-nav-source', '');
@@ -349,7 +433,6 @@ export function SectionNavigationProvider({ children }: { children: ReactNode })
       released = true;
       captureSnapshot = false;
       viewport.removeAttribute('data-nav-capture');
-      el.removeAttribute('data-nav-home-source');
       panel.removeAttribute('data-nav-capture');
       panel.removeAttribute('data-nav-blend');
       outgoingPanel?.removeAttribute('data-nav-capture');
@@ -388,8 +471,9 @@ export function SectionNavigationProvider({ children }: { children: ReactNode })
     };
 
     const onWheel = (event: WheelEvent) => {
-      if (scrollReady || event.ctrlKey || event.defaultPrevented || (event.target instanceof Element
+      if (event.ctrlKey || event.defaultPrevented || (!event.deltaY && !event.deltaX) || (event.target instanceof Element
         && event.target.closest('.mobile-menu-backdrop'))) return;
+      if (scrollReady) return;
       const unit = event.deltaMode === WheelEvent.DOM_DELTA_LINE ? 100 / 6
         : event.deltaMode === WheelEvent.DOM_DELTA_PAGE ? window.innerHeight : 1;
       consumeScroll(event.deltaY * unit * (lenis?.options.wheelMultiplier ?? 1), event);
@@ -559,6 +643,7 @@ export function SectionNavigationProvider({ children }: { children: ReactNode })
 
   const cancelNavigation = async () => {
     const request = ++navigationRequest.current;
+    preparation.current?.();
     const previous = navigation.current;
     if (previous) {
       previous.transition.skipTransition();

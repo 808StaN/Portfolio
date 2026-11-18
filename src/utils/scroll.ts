@@ -30,6 +30,31 @@ export const getScrollTargetTop = (element: HTMLElement) => {
   return scroll + element.getBoundingClientRect().top - top;
 };
 
+export const getScrollSection = () => {
+  const viewport = getScrollViewport();
+  if (!viewport) return null;
+  const rect = viewport.getBoundingClientRect();
+  const x = rect.left + rect.width / 2;
+  const y = rect.top + rect.height / 2;
+  const hit = document.elementFromPoint(x, y)?.closest<HTMLElement>('[data-section-color]');
+  if (hit) return hit;
+
+  // Panels ignore pointer events, and navigation snapshots can intercept hit testing.
+  let section: HTMLElement | null = null;
+  let closestDistance = Infinity;
+  for (const candidate of Array.from(viewport.querySelectorAll<HTMLElement>('[data-section-color]')).reverse()) {
+    const panel = candidate.querySelector(':scope > .section-tilt-panel')?.getBoundingClientRect();
+    if (!panel) continue;
+    const distance = Math.max(panel.top - y, y - panel.bottom, 0);
+    if (distance < closestDistance) {
+      section = candidate;
+      closestDistance = distance;
+    }
+    if (distance === 0) break;
+  }
+  return section;
+};
+
 export const getKeyboardScrollDelta = (event: KeyboardEvent): number | null => {
   const viewport = getScrollViewport();
   if (!viewport || event.defaultPrevented || event.isComposing || event.altKey || event.ctrlKey || event.metaKey

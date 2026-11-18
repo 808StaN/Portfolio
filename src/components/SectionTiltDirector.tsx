@@ -92,6 +92,7 @@ export default function SectionTiltDirector() {
 
         const prevColor = section.dataset.sectionColor || 'transparent';
         const incomingColor = incomingSection.dataset.sectionColor || 'transparent';
+        const targetId = `section-target-${incomingSection.id || incomingSection.dataset.projectId}`;
         const prevHsl = hexToHsl(prevColor);
         const incomingHsl = hexToHsl(incomingColor);
         const sameGroup =
@@ -110,6 +111,7 @@ export default function SectionTiltDirector() {
           updateTiltClip(incomingSection, incomingPanel);
 
           ScrollTrigger.create({
+            id: targetId,
             scroller,
             trigger: incomingSection,
             start: 'top bottom',
@@ -150,7 +152,7 @@ export default function SectionTiltDirector() {
           // One owner keeps horizontal travel and the following tilt on the same scroll clock.
           const tl = gsap.timeline({
             scrollTrigger: {
-              id: incomingSection.id ? `section-target-${incomingSection.id}` : undefined,
+              id: targetId,
               scroller,
               trigger: section,
               start: () => getProjectPinStart(section),
@@ -180,9 +182,7 @@ export default function SectionTiltDirector() {
           const tl = gsap.timeline({
             scrollTrigger: {
               scroller,
-              id: incomingSection.id
-                ? `section-target-${incomingSection.id}`
-                : undefined,
+              id: targetId,
               trigger: section,
               start: () => getProjectPinStart(section),
               end: () => `+=${getScrollMetrics().height * (isOutgoingExperience ? experienceTravelScreens + 1 : 3)}`,
@@ -216,9 +216,7 @@ export default function SectionTiltDirector() {
 
         ScrollTrigger.create({
           scroller,
-          id: incomingSection.id
-            ? `section-target-${incomingSection.id}`
-            : undefined,
+          id: targetId,
           trigger: section,
           start: "bottom bottom",
           end: "bottom top",

@@ -2,7 +2,7 @@ import { useLayoutEffect, useRef } from "react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { sectionShaderPalettes, type ShaderPalette } from "../constants/sectionColors";
-import { getScrollViewport } from "../utils/scroll";
+import { getScrollSection, getScrollViewport } from "../utils/scroll";
 import { hexToHsl, hslToHex } from "../utils/tilt";
 
 gsap.registerPlugin(ScrollTrigger);
@@ -19,32 +19,13 @@ export default function ScrollProgressFrame() {
     const viewport = getScrollViewport();
     if (!frame || !track || !progress || !viewport) return;
 
-    const sections = Array.from(viewport.querySelectorAll<HTMLElement>("[data-section-color]")).reverse();
     const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
     let activeColor = "";
     let colorTween: gsap.core.Tween | undefined;
     let colorFrame = 0;
 
     const updateColors = () => {
-      const rect = viewport.getBoundingClientRect();
-      const x = rect.left + rect.width / 2;
-      const y = rect.top + rect.height / 2;
-      const hit = document.elementFromPoint(x, y)?.closest<HTMLElement>("[data-section-color]");
-      // Panels ignore pointer events, and navigation snapshots can intercept hit testing.
-      let section = hit;
-      let closestDistance = Infinity;
-      if (!section) {
-        for (const candidate of sections) {
-          const panel = candidate.querySelector(":scope > .section-tilt-panel")?.getBoundingClientRect();
-          if (!panel) continue;
-          const distance = Math.max(panel.top - y, y - panel.bottom, 0);
-          if (distance < closestDistance) {
-            section = candidate;
-            closestDistance = distance;
-          }
-          if (distance === 0) break;
-        }
-      }
+      const section = getScrollSection();
       const palette = section?.querySelector<HTMLElement>("[data-shader-palette]")?.dataset.shaderPalette as ShaderPalette | undefined;
       const color = palette ? sectionShaderPalettes[palette][3] : section?.dataset.sectionColor;
       if (!color || color === activeColor) return;
