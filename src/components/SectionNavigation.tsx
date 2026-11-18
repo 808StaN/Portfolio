@@ -268,7 +268,7 @@ export function SectionNavigationProvider({ children }: { children: ReactNode })
       return panels;
     };
     let overlap: { outgoing: HTMLElement; panels: HTMLElement[]; top: number; duration: number } | null = null;
-    const prepareScroll = (top: number, duration: number, overlapAtHalf = false) => new Promise<boolean>(resolve => {
+    const prepareScroll = (top: number, duration: number) => new Promise<boolean>(resolve => {
       const wasStopped = lenis?.isStopped;
       const position = { scroll: getScrollMetrics().scroll };
       let frame = 0;
@@ -312,7 +312,7 @@ export function SectionNavigationProvider({ children }: { children: ReactNode })
         scroll: top, duration, ease: 'power3.out', paused: true,
         onUpdate: () => {
           update();
-          if (overlapAtHalf && overlap && tween && tween.progress() >= 0.5) {
+          if (overlap && tween && tween.progress() >= 0.5) {
             overlap.duration = Math.max(0, duration - tween.time());
             finish(true);
           }
@@ -346,7 +346,7 @@ export function SectionNavigationProvider({ children }: { children: ReactNode })
           if (under && under !== panel && getSectionTargetTop(el) < start - 2) {
             overlap = { outgoing: under, panels, top: Math.max(0, start), duration: 0 };
           }
-          if (!progress || !await prepareScroll(Math.max(0, start), 1.8 * progress, !!overlap)) return;
+          if (!progress || !await prepareScroll(Math.max(0, start), 1.8 * progress)) return;
           if (request !== navigationRequest.current || !el.isConnected) return;
           if (overlap) break;
           if (visiblePanels().at(-1) === panel) { focusTarget(); return; }
@@ -604,8 +604,7 @@ export function SectionNavigationProvider({ children }: { children: ReactNode })
     const consumeScroll = (delta: number, event: Event) => {
       if (released || wasStopped || delta === 0) return;
       if (event.cancelable) event.preventDefault();
-      if (scrollReady) scrollBy(delta);
-      else queuedDelta += delta;
+      queuedDelta += delta;
     };
 
     const onWheel = (event: WheelEvent) => {
@@ -687,96 +686,97 @@ export function SectionNavigationProvider({ children }: { children: ReactNode })
           { '--nav-title-stretch': 1 },
         ], timing));
       }
-      const sourceTransform = new DOMMatrix(root.style.getPropertyValue('--nav-section-source-transform'));
-      const motionOrigin = style.transformOrigin.split(' ').map(Number.parseFloat);
-      const rootTransform = useRootSnapshot
-        ? new DOMMatrix(getComputedStyle(host, '::view-transition-group(root)').transform)
-        : new DOMMatrix();
-      // Root snapshots rotate locally; named captures use the host's coordinate space.
-      const pivot = new DOMPoint(sourceTransform.e + motionOrigin[0], sourceTransform.f + motionOrigin[1])
-        .matrixTransform(rootTransform);
-      if (outgoingTitle) {
-        // The old section is frozen; move its separate title snapshot around the same pivot.
-        const titleSnapshot = '::view-transition-group(nav-title)';
-        const titleStyle = getComputedStyle(host, titleSnapshot);
-        const snapshotOrigin = titleStyle.transformOrigin.split(' ').map(Number.parseFloat);
-        const titleTransform = new DOMMatrix().translate(snapshotOrigin[0], snapshotOrigin[1])
-          .multiply(new DOMMatrix(titleStyle.transform)).translate(-snapshotOrigin[0], -snapshotOrigin[1]);
-        animations.push(host.animate(Array.from({ length: 61 }, (_, index) => {
-          const progress = index / 60;
-          const transform = new DOMMatrix()
-            .translate(pivot.x, pivot.y)
-            .translate(0, panelHeight * progress)
-            .rotate(incomingAngles[0] * progress)
-            .translate(-pivot.x, -pivot.y)
-            .multiply(titleTransform)
-            .translate(titleOrigin[0], titleOrigin[1])
-            .scale(1, 1 + (titleEndScale - 1) * progress)
-            .translate(-titleOrigin[0], -titleOrigin[1]);
-          return { offset: progress, transform: transform.toString(), transformOrigin: '0 0', zIndex: overlap ? outgoingPanels.indexOf(outgoingPanel!) + 1 : 2 };
-        }), { ...timing, pseudoElement: titleSnapshot }));
-      }
-      backCaptures.forEach(({ source, name, color, radius }) => {
-        const group = `::view-transition-group(${name})`;
-        const captureStyle = getComputedStyle(host, group);
-        const origin = captureStyle.transformOrigin.split(' ').map(Number.parseFloat);
-        const initial = new DOMMatrix().translate(origin[0], origin[1])
-          .multiply(new DOMMatrix(captureStyle.transform)).translate(-origin[0], -origin[1]);
-        const continuing = continuingPanels.get(source);
-        const zIndex = overlap ? outgoingPanels.indexOf(source) + 1 : 2;
-        if (overlap && continuing) {
-          // The front card finishes its scroll motion while the lower card exits independently.
-          const travel = metrics.scroll - overlap.top;
-          const remainingTiming = { duration: overlap.duration * 1000, easing: 'linear', fill: 'both' as const };
+      if (goingBack) {
+        const sourceTransform = new DOMMatrix(root.style.getPropertyValue('--nav-section-source-transform'));
+        const motionOrigin = style.transformOrigin.split(' ').map(Number.parseFloat);
+        const rootTransform = useRootSnapshot
+          ? new DOMMatrix(getComputedStyle(host, '::view-transition-group(root)').transform)
+          : new DOMMatrix();
+        // Root snapshots rotate locally; named captures use the host's coordinate space.
+        const pivot = new DOMPoint(sourceTransform.e + motionOrigin[0], sourceTransform.f + motionOrigin[1])
+          .matrixTransform(rootTransform);
+        if (outgoingTitle) {
+          // The old section is frozen; move its separate title snapshot around the same pivot.
+          const titleSnapshot = '::view-transition-group(nav-title)';
+          const titleStyle = getComputedStyle(host, titleSnapshot);
+          const snapshotOrigin = titleStyle.transformOrigin.split(' ').map(Number.parseFloat);
+          const titleTransform = new DOMMatrix().translate(snapshotOrigin[0], snapshotOrigin[1])
+            .multiply(new DOMMatrix(titleStyle.transform)).translate(-snapshotOrigin[0], -snapshotOrigin[1]);
           animations.push(host.animate(Array.from({ length: 61 }, (_, index) => {
-            const progress = 1 - Math.pow(1 - index / 60, 4);
-            const entranceProgress = continuing.progress * (1 - progress);
-            const angleIndex = entranceProgress * (incomingAngles.length - 1);
-            const segment = Math.min(incomingAngles.length - 2, Math.floor(angleIndex));
-            const rotation = incomingAngles[segment]
-              + (incomingAngles[segment + 1] - incomingAngles[segment]) * (angleIndex - segment) - continuing.rotation;
-            const transform = new DOMMatrix().translate(continuing.pivot.x, continuing.pivot.y + travel * progress)
-              .rotate(rotation).translate(-continuing.pivot.x, -continuing.pivot.y).multiply(initial);
-            return {
-              offset: index / 60, transform: transform.toString(), transformOrigin: '0 0', zIndex,
-              ...(color ? {
-                backgroundColor: blendSectionColor(continuing.fromHsl, continuing.toHsl, entranceProgress),
+            const progress = index / 60;
+            const transform = new DOMMatrix()
+              .translate(pivot.x, pivot.y)
+              .translate(0, panelHeight * progress)
+              .rotate(incomingAngles[0] * progress)
+              .translate(-pivot.x, -pivot.y)
+              .multiply(titleTransform)
+              .translate(titleOrigin[0], titleOrigin[1])
+              .scale(1, 1 + (titleEndScale - 1) * progress)
+              .translate(-titleOrigin[0], -titleOrigin[1]);
+            return { offset: progress, transform: transform.toString(), transformOrigin: '0 0', zIndex: overlap ? outgoingPanels.indexOf(outgoingPanel!) + 1 : 2 };
+          }), { ...timing, pseudoElement: titleSnapshot }));
+        }
+        backCaptures.forEach(({ source, name, color, radius }) => {
+          const group = `::view-transition-group(${name})`;
+          const captureStyle = getComputedStyle(host, group);
+          const origin = captureStyle.transformOrigin.split(' ').map(Number.parseFloat);
+          const initial = new DOMMatrix().translate(origin[0], origin[1])
+            .multiply(new DOMMatrix(captureStyle.transform)).translate(-origin[0], -origin[1]);
+          const continuing = continuingPanels.get(source);
+          const zIndex = overlap ? outgoingPanels.indexOf(source) + 1 : 2;
+          if (overlap && continuing) {
+            // The front card finishes its scroll motion while the lower card exits independently.
+            const travel = metrics.scroll - overlap.top;
+            const remainingTiming = { duration: overlap.duration * 1000, easing: 'linear', fill: 'both' as const };
+            animations.push(host.animate(Array.from({ length: 61 }, (_, index) => {
+              const progress = 1 - Math.pow(1 - index / 60, 4);
+              const entranceProgress = continuing.progress * (1 - progress);
+              const angleIndex = entranceProgress * (incomingAngles.length - 1);
+              const segment = Math.min(incomingAngles.length - 2, Math.floor(angleIndex));
+              const rotation = incomingAngles[segment]
+                + (incomingAngles[segment + 1] - incomingAngles[segment]) * (angleIndex - segment) - continuing.rotation;
+              const transform = new DOMMatrix().translate(continuing.pivot.x, continuing.pivot.y + travel * progress)
+                .rotate(rotation).translate(-continuing.pivot.x, -continuing.pivot.y).multiply(initial);
+              return {
+                offset: index / 60, transform: transform.toString(), transformOrigin: '0 0', zIndex,
+                ...(color ? {
+                  backgroundColor: blendSectionColor(continuing.fromHsl, continuing.toHsl, entranceProgress),
+                  clipPath: `inset(0 round ${radius} ${radius} 0 0)`,
+                } : {}),
+              };
+            }), { ...remainingTiming, pseudoElement: group }));
+            animations.push(host.animate(Array.from({ length: 61 }, (_, index) => ({
+              offset: index / 60, opacity: color && continuing.progress ? Math.pow(1 - index / 60, 4) : 1, mixBlendMode: 'normal',
+            })), { ...remainingTiming, pseudoElement: `::view-transition-old(${name})` }));
+            return;
+          } else if (name !== 'nav-section') {
+            animations.push(host.animate(Array.from({ length: 61 }, (_, index) => {
+              const progress = index / 60;
+              const transform = new DOMMatrix().translate(pivot.x, pivot.y)
+                .translate(0, panelHeight * progress).rotate(incomingAngles[0] * progress)
+                .translate(-pivot.x, -pivot.y).multiply(initial);
+              return { offset: progress, transform: transform.toString(), transformOrigin: '0 0', zIndex };
+            }), { ...timing, pseudoElement: group }));
+          } else if (overlap) {
+            animations.push(host.animate([{ zIndex }, { zIndex }], { ...timing, pseudoElement: group }));
+          }
+          // Only the frozen background fades; foreground captures remain fully opaque.
+          animations.push(host.animate([
+            { opacity: 1, mixBlendMode: 'normal' },
+            { opacity: color ? 0 : 1, mixBlendMode: 'normal' },
+          ], { ...timing, pseudoElement: `::view-transition-old(${name})` }));
+          if (color) {
+            animations.push(host.animate(Array.from({ length: 61 }, (_, index) => {
+              const progress = index / 60;
+              return {
+                offset: progress,
+                backgroundColor: blendSectionColor(color, toHsl, progress),
                 clipPath: `inset(0 round ${radius} ${radius} 0 0)`,
-              } : {}),
-            };
-          }), { ...remainingTiming, pseudoElement: group }));
-          animations.push(host.animate(Array.from({ length: 61 }, (_, index) => ({
-            offset: index / 60, opacity: color && continuing.progress ? Math.pow(1 - index / 60, 4) : 1, mixBlendMode: 'normal',
-          })), { ...remainingTiming, pseudoElement: `::view-transition-old(${name})` }));
-          return;
-        } else if (name !== 'nav-section') {
-          animations.push(host.animate(Array.from({ length: 61 }, (_, index) => {
-            const progress = index / 60;
-            const transform = new DOMMatrix().translate(pivot.x, pivot.y)
-              .translate(0, panelHeight * progress).rotate(incomingAngles[0] * progress)
-              .translate(-pivot.x, -pivot.y).multiply(initial);
-            return { offset: progress, transform: transform.toString(), transformOrigin: '0 0', zIndex };
-          }), { ...timing, pseudoElement: group }));
-        } else if (overlap) {
-          animations.push(host.animate([{ zIndex }, { zIndex }], { ...timing, pseudoElement: group }));
-        }
-        // Only the frozen background fades; foreground captures remain fully opaque.
-        animations.push(host.animate([
-          { opacity: 1, mixBlendMode: 'normal' },
-          { opacity: color ? 0 : 1, mixBlendMode: 'normal' },
-        ], { ...timing, pseudoElement: `::view-transition-old(${name})` }));
-        if (color) {
-          animations.push(host.animate(Array.from({ length: 61 }, (_, index) => {
-            const progress = index / 60;
-            return {
-              offset: progress,
-              backgroundColor: blendSectionColor(color, toHsl, progress),
-              clipPath: `inset(0 round ${radius} ${radius} 0 0)`,
-            };
-          }), { ...timing, pseudoElement: group }));
-        }
-      });
-      if (!goingBack) {
+              };
+            }), { ...timing, pseudoElement: group }));
+          }
+        });
+      } else {
         // The movement eases out early; keep the color blend running for the full transition.
         animations.push(panel.animate(Array.from({ length: 61 }, (_, index) => ({
           offset: index / 60,
