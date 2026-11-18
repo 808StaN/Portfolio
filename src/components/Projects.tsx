@@ -84,7 +84,7 @@ export default function Projects() {
               data-project-id={project.id}
             >
               <div className="section-tilt-panel projects-project-panel" style={{ background: project.color }}>
-                <SectionBandsBackground palette={project.glowColor === 'riftpick' ? 'projectRiftPick' : project.glowColor === 'openstudio' ? 'projectOpenStudio' : 'projectOtakuVersus'} />
+                <SectionBandsBackground palette={project.shaderPalette} />
                 <div className="section-tilt-container section-inner projects-inner projects-project-inner relative z-10">
                   <div className={`projects-layout ${reversed ? "is-reversed" : ""}`}>
                     <motion.div

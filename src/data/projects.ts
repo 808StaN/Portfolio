@@ -19,8 +19,7 @@ import openStudio3Original from "../assets/projects/openstudio3.jpg";
 import chatTracePreview from "../assets/projects/ChatTrace.webp";
 import slodkoSlonyPreview from "../assets/projects/SlodkoSlonyMore.webp";
 import jobFitPreview from "../assets/projects/JobFit.webp";
-import type { GlowColor } from "../components/ui/spotlight-card";
-import { sectionColors } from "../constants/sectionColors";
+import { sectionColors, type ShaderPalette } from "../constants/sectionColors";
 
 export interface ProjectImage {
   src1100: string;
@@ -59,7 +58,7 @@ export interface Project {
   linkLabel?: string;
   accent: string;
   color: string;
-  glowColor: GlowColor;
+  shaderPalette: ShaderPalette;
   index: string;
   /** false = poza główną galerią 3D. */
   featured?: boolean;
@@ -100,7 +99,7 @@ export const projects: Project[] = [
     linkLabel: 'View App',
     accent: '#c89b3c',
     color: sectionColors.projectRiftPick,
-    glowColor: 'riftpick',
+    shaderPalette: 'projectRiftPick',
     index: '01',
   },
   {
@@ -119,7 +118,7 @@ export const projects: Project[] = [
     link: 'https://github.com/808StaN/OpenStudio',
     accent: '#14b8a6',
     color: sectionColors.projectOpenStudio,
-    glowColor: 'openstudio',
+    shaderPalette: 'projectOpenStudio',
     index: '02',
   },
   {
@@ -138,7 +137,7 @@ export const projects: Project[] = [
     link: 'https://github.com/808StaN/OtakuVersus',
     accent: '#4f8ef7',
     color: sectionColors.projectOtakuVersus,
-    glowColor: 'otakuversus',
+    shaderPalette: 'projectOtakuVersus',
     index: '03',
   },
 ];
